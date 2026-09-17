@@ -1,0 +1,108 @@
+/**
+ * Design tokens of the recreation.
+ *
+ * Values come from the "Windows Standard" colour scheme of Windows 95 at
+ * 96 dpi. Everything the desktop uses is expressed here so the look can be
+ * retuned (or a different scheme plugged in) without touching components.
+ */
+:root {
+  /* --- Surfaces ------------------------------------------------------ */
+  --w95-face: #c0c0c0;
+  --w95-face-light: #dfdfdf;
+  --w95-white: #ffffff;
+  --w95-black: #000000;
+  --w95-gray: #808080;
+  --w95-gray-mid: #a0a0a0;
+  --w95-window-bg: #ffffff;
+  --w95-window-text: #000000;
+
+  /* --- Accents ------------------------------------------------------- */
+  --w95-navy: #000080;
+  --w95-blue: #0000ff;
+  --w95-teal: #008080;
+  --w95-cyan: #00ffff;
+  --w95-maroon: #800000;
+  --w95-red: #ff0000;
+  --w95-green: #008000;
+  --w95-yellow: #ffff00;
+  --w95-tooltip-bg: #ffffe1;
+
+  /* --- States -------------------------------------------------------- */
+  --w95-hilite: #000080;
+  --w95-hilite-text: #ffffff;
+  --w95-disabled-text: #808080;
+  --w95-disabled-shadow: #ffffff;
+  --w95-title-active: #000080;
+  --w95-title-active-text: #ffffff;
+  /* The reference screenshot shows light grey inactive captions with black
+   * text. Swap to #808080 / #c0c0c0 for the other classic variant. */
+  --w95-title-inactive: #c0c0c0;
+  --w95-title-inactive-text: #000000;
+  --w95-frame-active: #c0c0c0;
+  --w95-frame-inactive: #c0c0c0;
+
+  /* --- Fonts --------------------------------------------------------- */
+  --w95-font: Tahoma, 'MS Sans Serif', 'Segoe UI', Verdana, Geneva, 'DejaVu Sans', sans-serif;
+  --w95-font-size: 11px;
+  --w95-font-size-sm: 11px;
+  --w95-font-weight-bold: 700;
+
+  /* --- Metrics (96 dpi) ---------------------------------------------- */
+  --w95-title-height: 18px;
+  --w95-menubar-height: 20px;
+  --w95-menuitem-height: 18px;
+  --w95-menuitem-padding: 4px 20px 4px 22px;
+  --w95-taskbar-height: 28px;
+  --w95-taskbar-button-height: 22px;
+  --w95-taskbar-button-max: 160px;
+  --w95-statusbar-height: 20px;
+  --w95-button-height: 23px;
+  --w95-button-min-width: 75px;
+  --w95-field-height: 21px;
+  --w95-icon-cell: 75px;
+  --w95-start-menu-strip: 21px;
+  --w95-window-frame: 3px;
+
+  /* --- Wallpaper ----------------------------------------------------- */
+  --w95-desktop-color: #00005e;
+
+  /* --- Scrollbars ---------------------------------------------------- */
+  --w95-scrollbar-size: 16px;
+
+  /* --- Stacking ------------------------------------------------------ */
+  --w95-z-desktop: 0;
+  --w95-z-windows: 100;
+  --w95-z-dialogs: 9000;
+  --w95-z-taskbar: 10000;
+  --w95-z-startmenu: 10100;
+  --w95-z-menus: 10500;
+  --w95-z-marquee: 500;
+  --w95-z-boot: 20000;
+}
+
+/* Crisp text: the original UI was rendered by a bitmap font engine. */
+.w95 {
+  font-family: var(--w95-font);
+  font-size: var(--w95-font-size);
+  color: var(--w95-window-text);
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: grayscale;
+  font-smooth: never;
+  user-select: none;
+  cursor: var(--cursor-arrow);
+}
+
+.w95 img.pixel {
+  image-rendering: pixelated;
+  -ms-interpolation-mode: nearest-neighbor;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .w95 *,
+  .w95 *::before,
+  .w95 *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

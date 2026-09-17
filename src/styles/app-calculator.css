@@ -1,0 +1,91 @@
+/**
+ * Calculator: grey panel, sunken display and the classic key grid.
+ *
+ * Selectors are namespaced under .app-calculator because application
+ * stylesheets may be loaded before the shared control kit.
+ */
+
+.app-calculator {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.app-calculator .calc-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px;
+  overflow: auto;
+}
+
+.app-calculator .calc-display-row {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.app-calculator .calc-memory-flag {
+  flex: 0 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--w95-face);
+  font-weight: var(--w95-font-weight-bold);
+}
+
+.app-calculator .calc-display {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 26px;
+  padding: 2px 6px;
+  background: var(--w95-window-bg);
+  color: var(--w95-window-text);
+  font-family: 'Lucida Console', 'Courier New', monospace;
+  font-size: 15px;
+  line-height: 1;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.app-calculator .calc-grid {
+  display: grid;
+  gap: 2px;
+}
+
+.app-calculator .calc-grid--basic {
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-areas:
+    'back   ce     c     mc     mr    ms'
+    'k7     k8     k9    div    sqrt  mplus'
+    'k4     k5     k6    mul    pct   mplus'
+    'k1     k2     k3    sub    recip equals'
+    'k0     k0     sign  dot    add   equals';
+}
+
+.app-calculator .calc-grid--scientific {
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-areas:
+    's1 s2 s3 s4 s5 s6'
+    's7 s8 s9 s10 s11 s12';
+}
+
+/* Beats the min-width of .btn without touching the shared control kit. */
+.app-calculator .btn.calc-key {
+  min-width: 0;
+  height: 24px;
+  padding: 0 2px;
+  font-weight: var(--w95-font-weight-bold);
+}
+
+.app-calculator .btn.calc-key--small {
+  height: 20px;
+  font-weight: normal;
+}

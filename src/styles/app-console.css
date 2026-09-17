@@ -1,0 +1,74 @@
+/**
+ * Command prompt: MS-DOS style screen over the virtual disk. Namespaced under
+ * .app-console (see app-calculator.css for the reason).
+ */
+
+.app-console {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.app-console .console-screen {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 3px 3px 0;
+  padding: 4px 6px;
+  background: var(--w95-black);
+  color: var(--w95-face);
+  border: 1px solid;
+  border-color: var(--w95-gray) var(--w95-white) var(--w95-white) var(--w95-gray);
+  box-shadow: inset 1px 1px 0 var(--w95-black);
+  font-family: 'Lucida Console', 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.35;
+  cursor: var(--cursor-text);
+  user-select: text;
+}
+
+.app-console .console-line {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.app-console .console-line[data-kind='command'] {
+  color: var(--w95-white);
+}
+
+.app-console .console-line[data-kind='error'] {
+  color: #ff8080;
+}
+
+.app-console .console-prompt {
+  color: var(--w95-white);
+}
+
+.app-console .console-input-row {
+  display: flex;
+  align-items: center;
+  margin: 0 3px 3px;
+  padding: 2px 6px 4px;
+  background: var(--w95-black);
+  color: var(--w95-face);
+  border: 1px solid;
+  border-top: 0;
+  border-color: var(--w95-gray) var(--w95-white) var(--w95-white) var(--w95-gray);
+  font-family: 'Lucida Console', 'Courier New', monospace;
+  font-size: 12px;
+}
+
+.app-console .console-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0 0 0 2px;
+  background: transparent;
+  border: 0;
+  color: var(--w95-white);
+  font: inherit;
+}
+
+.app-console .console-input:focus-visible {
+  outline: 1px dotted var(--w95-face);
+  outline-offset: -1px;
+}

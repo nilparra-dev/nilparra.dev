@@ -1,0 +1,119 @@
+/**
+ * Media Player: black viewing surface, seek bar and beveled transport row.
+ *
+ * Selectors are namespaced under .app-mediaplayer because application
+ * stylesheets may be loaded before the shared control kit.
+ */
+
+.app-mediaplayer {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.app-mediaplayer .media-screen {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 120px;
+  margin: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--w95-black);
+  color: var(--w95-white);
+}
+
+.app-mediaplayer .media-element {
+  max-width: 100%;
+  max-height: 100%;
+  transform-origin: center;
+}
+
+.app-mediaplayer .media-element[data-hidden='true'] {
+  display: none;
+}
+
+.app-mediaplayer .media-notice {
+  padding: 12px;
+  text-align: center;
+  color: var(--w95-white);
+}
+
+.app-mediaplayer .media-seek {
+  position: relative;
+  flex: 0 0 auto;
+  height: 20px;
+  margin: 0 4px;
+  padding: 2px;
+  background: var(--w95-face);
+  cursor: var(--cursor-arrow);
+  touch-action: none;
+}
+
+.app-mediaplayer .media-seek:focus-visible {
+  outline: 1px dotted var(--w95-black);
+  outline-offset: -3px;
+}
+
+.app-mediaplayer .media-seek-fill {
+  height: 100%;
+  min-width: 0;
+  background: var(--w95-navy);
+}
+
+.app-mediaplayer .media-controls {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+}
+
+.app-mediaplayer .media-transport {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 24px;
+  padding: 0;
+  background: var(--w95-face);
+  color: var(--w95-window-text);
+  border: 1px solid;
+  border-color: var(--w95-white) var(--w95-black) var(--w95-black) var(--w95-white);
+  box-shadow: inset 1px 1px 0 var(--w95-face-light), inset -1px -1px 0 var(--w95-gray);
+  cursor: var(--cursor-arrow);
+}
+
+.app-mediaplayer .media-transport:active:not(:disabled) {
+  border-color: var(--w95-gray) var(--w95-white) var(--w95-white) var(--w95-gray);
+  box-shadow: inset 1px 1px 0 var(--w95-black), inset -1px -1px 0 var(--w95-face-light);
+}
+
+.app-mediaplayer .media-transport:active:not(:disabled) > * {
+  transform: translate(1px, 1px);
+}
+
+.app-mediaplayer .media-transport:focus-visible {
+  outline: 1px dotted var(--w95-black);
+  outline-offset: -4px;
+}
+
+.app-mediaplayer .media-transport:disabled {
+  color: var(--w95-disabled-text);
+  text-shadow: 1px 1px 0 var(--w95-disabled-shadow);
+}
+
+.app-mediaplayer .media-time {
+  margin-left: auto;
+  padding: 0 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.app-mediaplayer .media-volume {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+}

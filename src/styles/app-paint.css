@@ -1,0 +1,131 @@
+/**
+ * Paint: tool column, palette and the canvas stage. The canvas keeps its own
+ * pixel size and is scaled with CSS, so 2x and 4x stay crisp.
+ *
+ * Selectors are namespaced under .app-paint because application stylesheets
+ * may be loaded before the shared control kit.
+ */
+
+.app-paint {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.app-paint .paint-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+}
+
+.app-paint .paint-side {
+  flex: 0 0 176px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: auto;
+}
+
+.app-paint .paint-tools {
+  display: grid;
+  grid-template-columns: repeat(3, 28px);
+  gap: 2px;
+  align-content: start;
+}
+
+.app-paint .paint-tool {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: var(--w95-face);
+  color: var(--w95-window-text);
+  border: 1px solid;
+  border-color: var(--w95-white) var(--w95-black) var(--w95-black) var(--w95-white);
+  box-shadow: inset 1px 1px 0 var(--w95-face-light), inset -1px -1px 0 var(--w95-gray);
+  cursor: var(--cursor-arrow);
+}
+
+.app-paint .paint-tool[aria-pressed='true'] {
+  border-color: var(--w95-gray) var(--w95-white) var(--w95-white) var(--w95-gray);
+  box-shadow: inset 1px 1px 0 var(--w95-black), inset -1px -1px 0 var(--w95-face-light);
+}
+
+.app-paint .paint-tool:focus-visible {
+  outline: 1px dotted var(--w95-black);
+  outline-offset: -4px;
+}
+
+.app-paint .paint-option {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.app-paint .paint-current {
+  display: block;
+  width: 30px;
+  height: 22px;
+  border-color: var(--w95-gray) var(--w95-white) var(--w95-white) var(--w95-gray);
+  box-shadow: inset 1px 1px 0 var(--w95-black);
+}
+
+.app-paint .paint-palette {
+  display: grid;
+  grid-template-columns: repeat(14, 15px);
+  gap: 1px;
+}
+
+.app-paint .paint-swatch {
+  width: 15px;
+  height: 15px;
+  padding: 0;
+  border: 1px solid var(--w95-gray);
+  cursor: var(--cursor-arrow);
+}
+
+.app-paint .paint-swatch:focus-visible {
+  outline: 1px dotted var(--w95-black);
+  outline-offset: 1px;
+}
+
+.app-paint .paint-swatch[aria-pressed='true'] {
+  outline: 1px solid var(--w95-black);
+  outline-offset: 1px;
+}
+
+.app-paint .paint-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: stretch;
+}
+
+.app-paint .paint-actions .btn {
+  min-width: 0;
+}
+
+.app-paint .paint-stage {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  padding: 6px;
+  background: var(--w95-gray);
+  border: 1px solid;
+  border-color: var(--w95-gray) var(--w95-white) var(--w95-white) var(--w95-gray);
+  box-shadow: inset 1px 1px 0 var(--w95-black);
+}
+
+.app-paint .paint-canvas {
+  display: block;
+  background: var(--w95-white);
+  box-shadow: 1px 1px 0 var(--w95-black);
+  image-rendering: pixelated;
+  cursor: var(--cursor-cross);
+  touch-action: none;
+}

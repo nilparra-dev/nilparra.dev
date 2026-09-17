@@ -1,0 +1,58 @@
+/**
+ * Run: classic command box. Namespaced under .app-run (see app-calculator.css
+ * for the reason).
+ */
+
+.app-run {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.app-run .run-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 12px 12px;
+  overflow: auto;
+}
+
+.app-run .run-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.app-run .run-text {
+  padding-top: 6px;
+  line-height: 1.4;
+}
+
+.app-run .run-input {
+  width: 100%;
+}
+
+.app-run .run-history {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.app-run .run-select {
+  width: 100%;
+}
+
+.app-run .run-hint {
+  line-height: 1.4;
+}
+
+.app-run .run-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 6px;
+}

@@ -1,0 +1,132 @@
+/**
+ * Find: form, result list and status bar. The result grid is shared by the
+ * header row and the clickable rows so the columns always line up.
+ *
+ * Selectors are namespaced under .app-find because application stylesheets
+ * may be loaded before the shared control kit.
+ */
+
+.app-find {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.app-find .find-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px;
+}
+
+.app-find .find-heading {
+  font-weight: var(--w95-font-weight-bold);
+}
+
+.app-find .find-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.app-find .find-field-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.app-find .find-label {
+  flex: 0 0 72px;
+}
+
+.app-find .find-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.app-find .find-results {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--w95-window-bg);
+  padding: 1px;
+}
+
+.app-find .find-head,
+.app-find .find-result {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) 110px 80px 140px;
+}
+
+.app-find .find-head {
+  flex: 0 0 auto;
+  background: var(--w95-face);
+  border-bottom: 1px solid var(--w95-gray);
+}
+
+.app-find .find-head span {
+  padding: 3px 5px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  border-right: 1px solid var(--w95-gray);
+}
+
+.app-find .find-list {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.app-find .find-result {
+  width: 100%;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: var(--cursor-arrow);
+}
+
+.app-find .find-result > span {
+  padding: 3px 5px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.app-find .find-result-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.app-find .find-result-text {
+  min-width: 0;
+}
+
+.app-find .find-result[data-selected='true'] {
+  background: var(--w95-hilite);
+  color: var(--w95-hilite-text);
+}
+
+.app-find .find-result:focus-visible {
+  outline: 1px dotted var(--w95-black);
+  outline-offset: -1px;
+}
+
+.app-find .find-result[data-selected='true']:focus-visible {
+  outline-color: var(--w95-hilite-text);
+}
+
+.app-find .find-empty {
+  padding: 12px;
+  color: var(--w95-gray);
+}

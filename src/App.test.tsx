@@ -65,7 +65,7 @@ describe('shell', () => {
     const windows = await screen.findAllByRole('dialog');
     expect(windows).toHaveLength(1);
     expect(within(windows[0]).getByText('Bienvenida')).toBeTruthy();
-    expect(within(windows[0]).getByText(/Estoy ahora mismo estudiando 2n de ASIX/)).toBeTruthy();
+    expect(within(windows[0]).getByText('Estudiante de ASIX')).toBeTruthy();
   });
 
   it('seeds the virtual disk with the system folders and the shortcuts', async () => {

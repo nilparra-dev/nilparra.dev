@@ -7,6 +7,12 @@
   <img alt="MIT licence" src="https://img.shields.io/badge/license-MIT-blue.svg">
 </p>
 
+<p align="center">
+  <a href="docs/architecture.md">Architecture</a> ·
+  <a href="CONTRIBUTING.md">Contributing</a> ·
+  <a href=".github/SECURITY.md">Security</a>
+</p>
+
 <p align="center"><img alt="Opening the Start menu, playing Solitaire and drawing in Paint" src="docs/desktop.gif"></p>
 
 Open the site and Windows 95 boots: windows, a Start menu, a taskbar and a virtual disk. My CV,
@@ -43,6 +49,8 @@ manager.
   key in `ca.ts` or `en.ts` fails the build.
 - CI (`.github/workflows/ci.yml`) runs the type check, 152 tests with Vitest and Testing Library,
   and a production build on every pull request.
+
+More detail in [`docs/architecture.md`](docs/architecture.md).
 
 ## Running it locally
 

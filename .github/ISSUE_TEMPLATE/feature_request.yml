@@ -1,0 +1,19 @@
+name: Feature request
+description: An idea for the desktop
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like to see?
+      description: The application, interaction or detail you are missing.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why does it fit the desktop?
+      description: Optional context, references or screenshots.
+    validations:
+      required: false

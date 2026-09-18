@@ -1,84 +1,78 @@
-# Nil Parra Luna — portfolio as a Windows 95 desktop
+# Nil Parra Luna
 
-My personal website: an interactive Windows 95 desktop that runs entirely in the browser. The
-portfolio lives inside the machine as a virtual disk the visitor can browse, with real windows,
-menus, applications and files. There is no backend and no emulated CPU — every "program" is a
-React application talking to a window manager.
+<p align="center">Personal website built as an interactive Windows 95 desktop.</p>
 
-> **Trademark notice.** Windows is a registered trademark of Microsoft Corporation. This is an
-> unofficial tribute, not affiliated with Microsoft. The icons, cursors, patterns and sounds
-> are original artwork generated from code; the only Microsoft material kept for fidelity is a
-> set of classic wallpaper bitmaps, documented in `public/wallpapers/windows95/README.md`.
+<p align="center">
+  <a href="https://github.com/nilparra-dev/nilparra.dev/actions/workflows/ci.yml"><img alt="CI status" src="https://github.com/nilparra-dev/nilparra.dev/actions/workflows/ci.yml/badge.svg"></a>
+  <img alt="MIT licence" src="https://img.shields.io/badge/license-MIT-blue.svg">
+</p>
 
-## What is inside
+<p align="center"><img alt="Opening the Start menu, playing Solitaire and drawing in Paint" src="docs/desktop.gif"></p>
 
-- A window manager with dragging, resizing, maximise/restore and a session that survives reloads.
-- A virtual disk on IndexedDB with folders, a recycle bin, search, import/export and a
-  read-only `C:\Portfolio` seeded from the content modules.
-- Around twenty applications: Explorer, Notepad, Paint, Minesweeper, a complete Klondike
-  Solitaire, No-Limit Texas Hold'em against computer opponents, a media player, a command
-  prompt and more.
-- An Internet window with real web search: results are listed inside the window and every link
-  opens in a real browser tab.
-- Spanish, Catalan and English, with translation catalogues checked by the compiler.
+Open the site and Windows 95 boots: windows, a Start menu, a taskbar and a virtual disk. My CV,
+my projects and my contact details live there as files. Everything runs in the browser, with no
+backend and no emulator underneath. Each program is a React application driven by a window
+manager.
+
+## What you can do
+
+- Move, resize and minimise the windows. The desktop remembers their position on the next visit.
+- Browse `C:\` with Explorer or the command prompt, create and edit files, send them to the
+  recycle bin and export them to your real computer.
+- Play Klondike Solitaire and no-limit Texas Hold'em against computer opponents.
+- Search the web from the Internet window. Results appear inside the window and each link opens
+  in a real browser tab.
+- Switch the interface between Spanish, Catalan and English.
 
 ## How it is built
 
-- **React 19 + TypeScript + Vite.** The whole desktop is one client-side React tree, and
-  `npm run build` produces a plain static folder.
-- **The window manager is a pure reducer** (`src/core/window/`): a single state tree for
-  position, size, z-order, focus and minimise/restore, persisted to `localStorage`.
-- **The file system is a small VFS over IndexedDB** (`src/core/fs/`): text and binary files,
-  folders, recycle bin, search by name and content, and import/export of real files.
-- **Content is data, not markup** (`src/core/content/`): profile, projects and help are typed
-  modules, and the same data seeds `C:\Portfolio` and the About and Projects windows.
-- **The artwork is generated from code** (`scripts/`): a small PNG encoder and drawing
-  primitives produce the 52 icons, the cursors and the wallpaper patterns. `npm run assets`
-  rebuilds them and writes review sheets to compare against period references.
-- **The games run on real engines**: Klondike rules and a No-Limit Hold'em engine with hand
-  evaluation, blinds, side pots and bot opponents, all in pure TypeScript.
-- **i18n is compiler-checked**: `es.ts` is the source of truth and `ca.ts` / `en.ts` are typed
-  as complete records, so a missing translation fails the build instead of leaking a key.
-- **Nothing leaves the browser** except the queries typed in the Internet window: documents
-  live in IndexedDB, preferences in `localStorage`, with no server and no analytics.
-- **GitHub Actions runs the checks**: every pull request gets a type check, 152 tests
-  (Vitest + Testing Library) and the production build before it can be merged.
+- React 19, TypeScript and Vite. The production build is a static folder that runs on any file
+  host.
+- The window manager (`src/core/window/`) is a pure reducer. One state tree holds geometry,
+  z-order, focus and minimise state, and `localStorage` persists the layout.
+- The virtual disk (`src/core/fs/`) is a small file system on IndexedDB: folders, text and binary
+  files, recycle bin, search, import and export.
+- The portfolio lives in typed modules under `src/core/content/`. The same data feeds the
+  Welcome, About, Projects and Explorer windows.
+- All artwork is generated by `scripts/`. A hand-written PNG encoder draws the 52 icons, the
+  cursors and the wallpaper patterns; `npm run assets` rebuilds them and writes review sheets to
+  compare against period references.
+- Klondike and Hold'em run on plain TypeScript engines with tests. The poker engine handles hand
+  evaluation, blinds, side pots and bot opponents.
+- The translation catalogues are compiler-checked. `es.ts` is the source of truth, and a missing
+  key in `ca.ts` or `en.ts` fails the build.
+- CI (`.github/workflows/ci.yml`) runs the type check, 152 tests with Vitest and Testing Library,
+  and a production build on every pull request.
 
-## Getting started
+## Running it locally
 
 Node.js 20 or newer.
 
 ```bash
 npm install
 npm run dev      # development server at http://localhost:5173
-npm run build    # type check + static production build in dist/
+npm run build    # type check plus static build in dist/
 npm test         # test suite
-```
-
-## Project layout
-
-```
-scripts/     asset generators: icons, cursors, patterns, PNG encoder
-src/core/    window manager, virtual file system, i18n, content, preferences, dialogs
-src/ui/      shared Windows 95 control kit (buttons, fields, menus, tabs…)
-src/apps/    one folder per application
-src/styles/  design tokens and the classic theme
 ```
 
 ## Deployment
 
-`dist/` is fully static and can be hosted anywhere. The repository ships a GitHub Actions
-workflow that publishes it to GitHub Pages; while the site is not public yet, it is triggered
-by hand (**Actions → Deploy to GitHub Pages → Run workflow**). Set the `BASE_PATH` repository
-variable when hosting under a subdirectory or with a custom domain.
+`npm run build` writes everything to `dist/`, ready for any static host. The repository ships a
+GitHub Actions workflow that publishes it to GitHub Pages; it is triggered by hand while the
+site is not public (**Actions → Deploy to GitHub Pages → Run workflow**). Set the `BASE_PATH`
+repository variable when hosting under a subdirectory or with a custom domain.
 
-`main` is protected: changes land through pull requests (commit messages in English) and the CI
-workflow runs the type check, the tests and the build.
+`main` is protected. Changes go through pull requests that pass CI, and commit messages are
+written in English.
 
-## Credits
+## Credits and trademark notice
 
-Code, artwork and sounds by **Nil Parra Luna**, released under the [MIT licence](LICENSE).
-The MS Sans Serif look-alike fonts come from [React95](https://github.com/react95-io/React95)
-(MIT), and the classic pointer bitmap follows [JS Paint](https://github.com/1j01/jspaint)
-(MIT). Style references for everything else are the public Windows 95 documentation and
-screenshots.
+Code, artwork and sounds by Nil Parra Luna, released under the [MIT licence](LICENSE). The
+bundled MS Sans Serif fonts come from [React95](https://github.com/react95-io/React95) and the
+classic pointer follows [JS Paint](https://github.com/1j01/jspaint), both MIT. Style references
+for everything else are the public Windows 95 documentation and screenshots.
+
+Windows is a registered trademark of Microsoft Corporation. This is an unofficial tribute, not
+affiliated with Microsoft. The only Microsoft material in the repository is the archived
+wallpaper set documented in
+[`public/wallpapers/windows95/README.md`](public/wallpapers/windows95/README.md).

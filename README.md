@@ -21,6 +21,7 @@ backend, no hay máquina virtual y no se emula ninguna CPU.
 - [Aplicaciones incluidas](#aplicaciones-incluidas)
 - [Atajos y accesibilidad](#atajos-y-accesibilidad)
 - [Recursos gráficos y sustituciones](#recursos-gráficos-y-sustituciones)
+- [Flujo de trabajo en GitHub](#flujo-de-trabajo-en-github)
 - [Despliegue en GitHub Pages](#despliegue-en-github-pages)
 - [Pruebas](#pruebas)
 - [Estado y limitaciones conocidas](#estado-y-limitaciones-conocidas)
@@ -234,9 +235,26 @@ Los iconos y cursores se regeneran con `npm run assets`, que además escribe hoj
 (`qa/icons-sheet@2x.png`, `qa/cursors-sheet@3x.png`, `qa/pattern-*@3x.png`) para comparar el
 resultado con la referencia.
 
+## Flujo de trabajo en GitHub
+
+La rama `main` está protegida: no admite pushes directos, ni forzados, ni borrado. Los cambios
+entran siempre mediante una pull request, que antes de fusionarse ejecuta el flujo
+`.github/workflows/ci.yml` (comprobación de tipos, pruebas y build).
+
+```bash
+git switch -c mi-cambio
+git commit -m "feat: describe the change in English"
+git push -u origin mi-cambio
+gh pr create --fill            # o abre la pull request desde la web
+```
+
+Los mensajes de commit se escriben en inglés; el contenido del sitio sigue en es/ca/en.
+
 ## Despliegue en GitHub Pages
 
-El flujo `.github/workflows/deploy.yml` compila y publica el sitio en cada `push` a `main`.
+El flujo `.github/workflows/deploy.yml` compila y publica el sitio, pero **no se ejecuta solo**:
+mientras el repositorio sea privado y la web no esté lista para publicarse, el despliegue se lanza
+a mano desde **Actions → Deploy to GitHub Pages → Run workflow**. Nada se publica hasta entonces.
 
 1. En el repositorio: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 2. Si el sitio se publica en un subdirectorio (`https://usuario.github.io/repositorio/`), el
@@ -245,6 +263,9 @@ El flujo `.github/workflows/deploy.yml` compila y publica el sitio en cada `push
    `BASE_PATH` con el valor `/` (**Settings → Secrets and variables → Actions → Variables**).
 4. El workflow añade `404.html` (copia de `index.html`) y `.nojekyll`, de modo que recargar
    cualquier ruta no da error.
+
+Para volver a desplegar automáticamente en cada `push` a `main`, recupera el disparador
+`push: branches: [main]` dentro de `deploy.yml`; el propio archivo documenta el bloque exacto.
 
 Para probar en local con la misma base:
 

@@ -133,7 +133,7 @@ export function RecycleBinApp({ windowId }: AppRenderProps) {
                   });
                 }}
               >
-                <Icon id={iconForNode(node)} size={16} />
+                <Icon id={iconForNode(node)} size={16} shortcut={Boolean(node.shortcut)} />
                 <span className="u-grow">{nodeDisplayName(node, t)}</span>
                 <span className="u-muted bin-row-type">{nodeTypeLabel(node, t)}</span>
                 <span className="u-muted bin-row-origin">{origin}</span>

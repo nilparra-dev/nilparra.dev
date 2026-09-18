@@ -1,0 +1,171 @@
+/**
+ * Solitaire: the green table, the cards (drawn with SVG and CSS, no bitmaps)
+ * and the status bar. Namespaced under .app-solitaire.
+ */
+
+.app-solitaire {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* --- The table (cards live in cards.css) ----------------------------- */
+
+.sol-board {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  padding: 8px;
+  overflow: hidden;
+  background: var(--w95-green);
+}
+
+.sol-row {
+  display: flex;
+  gap: 10px;
+}
+
+.sol-row-top {
+  align-items: flex-start;
+}
+
+.sol-spacer {
+  flex: 1 1 auto;
+}
+
+.sol-tableau {
+  display: grid;
+  flex: 1 1 auto;
+  grid-template-columns: repeat(7, 71px);
+  gap: 10px;
+  min-height: 0;
+}
+
+.sol-pile {
+  position: relative;
+  width: 71px;
+  min-height: 96px;
+}
+
+.sol-column {
+  height: 100%;
+}
+
+.sol-slot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 71px;
+  height: 96px;
+  background: rgba(0, 0, 0, 0.14);
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45);
+}
+
+.sol-stock {
+  height: 96px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: var(--cursor-hand);
+}
+
+.sol-stock[aria-disabled='true'] {
+  cursor: var(--cursor-arrow);
+}
+
+.sol-stock:focus-visible {
+  outline: 1px dotted var(--w95-black);
+  outline-offset: 2px;
+}
+
+.sol-slot-glyph {
+  position: absolute;
+  inset: 0;
+  width: 30px;
+  height: 30px;
+  margin: auto;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.sol-pile[data-drop='valid'] .sol-slot {
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: inset 0 0 0 2px var(--w95-white);
+}
+
+.sol-pile[data-drop='valid'] .card:last-child {
+  outline: 2px solid var(--w95-white);
+  outline-offset: -4px;
+}
+
+/* --- Drag layer and win animation ------------------------------------ */
+
+.sol-drag {
+  position: absolute;
+  z-index: 30;
+  width: 71px;
+  pointer-events: none;
+}
+
+.sol-drag .card {
+  left: 0;
+}
+
+.sol-win-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  overflow: hidden;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+.sol-win-layer[data-done='true'] {
+  opacity: 0;
+}
+
+.sol-win-card {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 71px;
+  height: 96px;
+  will-change: transform;
+}
+
+/* --- Hint and status bar --------------------------------------------- */
+
+.sol-hint {
+  min-height: 18px;
+  padding: 2px 8px 0;
+}
+
+.sol-hint[data-state='won'] {
+  font-weight: var(--w95-font-weight-bold);
+}
+
+.sol-status {
+  display: flex;
+  gap: 2px;
+  padding: 2px 3px 3px;
+  background: var(--w95-face);
+}
+
+.sol-status-panel {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 1px 6px;
+  overflow: hidden;
+  border: 1px solid;
+  border-color: var(--w95-gray) var(--w95-white) var(--w95-white) var(--w95-gray);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sol-status-time {
+  text-align: right;
+}

@@ -106,10 +106,16 @@ describe('applications', () => {
     expect(screen.getAllByText('Pendiente').length).toBeGreaterThan(0);
   });
 
-  it('renders the about window with the real name and the CV note', async () => {
+  it('renders the about window with education grouped by school and hides unpublished sections', async () => {
     renderApp('about');
     expect(await screen.findByRole('heading', { name: 'Nil Parra Luna' })).toBeTruthy();
-    expect(screen.getAllByText(/estudiando 2n de ASIX/).length).toBeGreaterThan(0);
+    expect(screen.getByText('Estudiante de ASIX')).toBeTruthy();
+    expect(screen.getAllByRole('heading', { name: 'Institut Sa Palomera, Blanes' })).toHaveLength(1);
+    expect(screen.getByText('En curso')).toBeTruthy();
+    expect(screen.getByText('Experiencia')).toBeTruthy();
+    expect(screen.getByText(/iDiomund, SL/)).toBeTruthy();
+    expect(screen.queryByText('Conocimientos')).toBeNull();
+    expect(screen.queryByText('Currículum')).toBeNull();
   });
 
   it('renders the browser, the mail window and the control panel', async () => {
@@ -119,6 +125,10 @@ describe('applications', () => {
 
     const mail = renderApp('mail');
     expect(await screen.findByDisplayValue('nilparra@nilparra.dev')).toBeTruthy();
+    // Opening the external program gives feedback inside the window: a machine
+    // without a mail app would otherwise look like a broken button.
+    fireEvent.click(screen.getByRole('link', { name: 'Abrir mi cliente de correo' }));
+    expect(screen.getAllByText(/Si no se abre, copia la dirección/).length).toBeGreaterThan(0);
     mail.unmount();
 
     renderApp('controlpanel');
@@ -128,7 +138,7 @@ describe('applications', () => {
   it('renders the system information window', async () => {
     renderApp('sysinfo');
     expect(await screen.findByRole('tab', { name: 'General' })).toBeTruthy();
-    expect(screen.getAllByText(/Nil Parra 95/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Windows 95/).length).toBeGreaterThan(0);
   });
 
   it('renders paint with a real canvas', async () => {
@@ -167,6 +177,25 @@ describe('applications', () => {
     await waitFor(() =>
       expect(container.querySelectorAll('button').length).toBeGreaterThan(40),
     );
+  });
+
+  it('renders a solitaire table and deals from the deck', async () => {
+    const { container } = renderApp('solitaire');
+    await waitFor(() =>
+      expect(container.querySelectorAll('.card').length).toBeGreaterThanOrEqual(28),
+    );
+    // Seven columns plus the four foundations.
+    expect(container.querySelectorAll('[data-sol-pile]')).toHaveLength(11);
+    fireEvent.click(screen.getByRole('button', { name: /Mazo/ }));
+    await waitFor(() => expect(container.querySelectorAll('.sol-waste .card')).toHaveLength(1));
+  });
+
+  it('renders the poker lobby and starts a match', async () => {
+    const { container } = renderApp('poker');
+    fireEvent.click(await screen.findByRole('button', { name: 'Empezar a jugar' }));
+    await waitFor(() => expect(container.querySelectorAll('.poker-seat').length).toBe(4));
+    expect(container.querySelectorAll('.poker-card').length).toBeGreaterThanOrEqual(8);
+    expect(container.querySelector('.poker-actions')).toBeTruthy();
   });
 
   it('accepts a command in the run dialog', async () => {

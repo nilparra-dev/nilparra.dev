@@ -7,16 +7,17 @@ import { useI18n } from '../../core/i18n/I18nProvider';
 import { useWindowManager } from '../../core/window/WindowManagerProvider';
 import { MenuBar, type MenuBarMenu } from '../../ui/menu/MenuBar';
 import { StatusBar } from '../../ui/StatusBar';
-import { Button } from '../../ui/Button';
 import { menuSeparator } from '../../ui/menu/types';
 
-const TEXT_FILTERS = [
-  {
-    label: 'Documentos de texto (*.txt)',
-    test: (name: string) => ['.txt', '.log', '.ini', '.md'].includes(extensionOf(name)),
-  },
-  { label: 'Todos los archivos (*.*)', test: () => true },
-];
+function textFilters(t: ReturnType<typeof useI18n>['t']) {
+  return [
+    {
+      label: t('notepad.textFilesFilter'),
+      test: (name: string) => ['.txt', '.log', '.ini', '.md'].includes(extensionOf(name)),
+    },
+    { label: t('notepad.allFilesFilter'), test: () => true },
+  ];
+}
 
 /**
  * Notepad: a real text editor over the virtual disk. Saving writes to
@@ -34,7 +35,6 @@ export function NotepadApp({ windowId, params }: AppRenderProps) {
   const [savedText, setSavedText] = useState('');
   const [wrap, setWrap] = useState(true);
   const [loading, setLoading] = useState(initialFileId !== null);
-  const [findOpen, setFindOpen] = useState(false);
   const [findTerm, setFindTerm] = useState('');
   const [notice, setNotice] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -50,6 +50,7 @@ export function NotepadApp({ windowId, params }: AppRenderProps) {
       setLoading(false);
       return;
     }
+    if (!vfs.ready) return;
     void (async () => {
       const content = await vfs.readFileContent(initialFileId);
       if (cancelled) return;
@@ -60,7 +61,7 @@ export function NotepadApp({ windowId, params }: AppRenderProps) {
     return () => {
       cancelled = true;
     };
-  }, [initialFileId, vfs]);
+  }, [initialFileId, vfs.ready]);
 
   useEffect(() => {
     if (!node) return;
@@ -86,7 +87,7 @@ export function NotepadApp({ windowId, params }: AppRenderProps) {
       title: t('notepad.saveAs'),
       startFolderId: node?.parentId ?? documentsFolder,
       fileName: node?.name ?? `${t('file.untitled')}.txt`,
-      filters: TEXT_FILTERS,
+      filters: textFilters(t),
     });
     if (!result) return false;
 
@@ -155,7 +156,7 @@ export function NotepadApp({ windowId, params }: AppRenderProps) {
     const result = await dialogs.openFile({
       title: t('notepad.open'),
       startFolderId: node?.parentId ?? documentsFolder,
-      filters: TEXT_FILTERS,
+      filters: textFilters(t),
     });
     if (!result?.node) return;
     const content = await vfs.readFileContent(result.node.id);
@@ -214,6 +215,17 @@ export function NotepadApp({ windowId, params }: AppRenderProps) {
     },
     [t, text],
   );
+
+  const openFindDialog = useCallback(async () => {
+    const value = await dialogs.prompt({
+      title: t('notepad.find'),
+      label: t('notepad.findWhat'),
+      initialValue: findTerm,
+    });
+    if (value === null) return;
+    setFindTerm(value);
+    findNext(value);
+  }, [dialogs, findNext, findTerm, t]);
 
   /* --- menus ------------------------------------------------------- */
   const menus = useMemo<MenuBarMenu[]>(
@@ -307,11 +319,15 @@ export function NotepadApp({ windowId, params }: AppRenderProps) {
             id: 'find',
             label: t('notepad.find'),
             onSelect: () => {
-              setFindOpen(true);
-              window.setTimeout(() => document.getElementById('notepad-find-input')?.focus(), 0);
+              void openFindDialog();
             },
           },
-          { kind: 'item', id: 'find-next', label: t('notepad.findNext'), onSelect: () => findNext(findTerm) },
+          {
+            kind: 'item',
+            id: 'find-next',
+            label: t('notepad.findNext'),
+            onSelect: () => (findTerm ? findNext(findTerm) : void openFindDialog()),
+          },
         ],
       },
       {
@@ -342,7 +358,7 @@ export function NotepadApp({ windowId, params }: AppRenderProps) {
         ],
       },
     ],
-    [exportDocument, findNext, findTerm, newDocument, openDocument, save, saveAs, t, windowId, wm, wrap, formatDateTime],
+    [exportDocument, findNext, findTerm, formatDateTime, newDocument, openDocument, openFindDialog, save, saveAs, t, windowId, wm, wrap],
   );
 
   const path = fileId ? vfs.pathOf(fileId)?.path ?? '' : t('file.untitled');
@@ -350,33 +366,6 @@ export function NotepadApp({ windowId, params }: AppRenderProps) {
   return (
     <div className="app-notepad">
       <MenuBar menus={menus} ariaLabel={t('app.notepad')} />
-
-      {findOpen && (
-        <div className="notepad-find">
-          <label className="field-label" htmlFor="notepad-find-input">
-            {t('notepad.find')}
-          </label>
-          <input
-            id="notepad-find-input"
-            className="field"
-            value={findTerm}
-            onChange={(event) => setFindTerm(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                event.preventDefault();
-                findNext(findTerm, event.shiftKey);
-              }
-              if (event.key === 'Escape') setFindOpen(false);
-            }}
-          />
-          <Button size="small" onClick={() => findNext(findTerm)}>
-            {t('notepad.findNext')}
-          </Button>
-          <Button size="small" onClick={() => setFindOpen(false)}>
-            {t('common.close')}
-          </Button>
-        </div>
-      )}
 
       <textarea
         ref={textareaRef}

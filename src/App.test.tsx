@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import 'fake-indexeddb/auto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { App } from './App';
 
 /**
@@ -76,7 +76,35 @@ describe('shell', () => {
     });
     expect(within(desktop).getByText('Mi PC')).toBeTruthy();
     expect(within(desktop).getByText('Papelera de reciclaje')).toBeTruthy();
-    expect(within(desktop).getByText('Mis proyectos.lnk')).toBeTruthy();
+    expect(within(desktop).getByText('Mis proyectos')).toBeTruthy();
+    expect(within(desktop).queryByText('Mis proyectos.lnk')).toBeNull();
+  });
+
+  it('translates the seeded desktop shortcuts when the language changes', async () => {
+    render(<App />);
+    const desktopEs = await screen.findByRole('listbox', { name: 'Escritorio' }, { timeout: 4000 });
+    expect(within(desktopEs).getByText('Bienvenida')).toBeTruthy();
+
+    // The disk stays seeded in Spanish: only the interface language changes.
+    cleanup();
+    window.localStorage.setItem(
+      'nilparra-win95:preferences',
+      JSON.stringify({ version: 1, data: { ...PREFERENCES, locale: 'en' } }),
+    );
+    render(<App />);
+    const desktopEn = await screen.findByRole('listbox', { name: 'Desktop' }, { timeout: 4000 });
+    expect(within(desktopEn).getByText('Welcome')).toBeTruthy();
+    expect(within(desktopEn).getByText('My projects')).toBeTruthy();
+    expect(within(desktopEn).queryByText('Bienvenida')).toBeNull();
+  });
+
+  it('opens the GitHub shortcut inside the Internet window', async () => {
+    render(<App />);
+    const desktop = await screen.findByRole('listbox', { name: 'Escritorio' }, { timeout: 4000 });
+    fireEvent.doubleClick(within(desktop).getByRole('option', { name: 'GitHub' }));
+
+    expect(await screen.findByText(/no permite que su página se muestre dentro de otra web/)).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'GitHub' })).toBeTruthy();
   });
 
   it('opens the Start menu with Ctrl+Esc', async () => {
@@ -86,10 +114,88 @@ describe('shell', () => {
     expect(await screen.findByRole('menu', { name: 'Inicio' })).toBeTruthy();
   });
 
+  it.each([
+    ['Accesorios', 'Calculadora'],
+    ['Juegos', 'Buscaminas'],
+    ['Internet', 'Correo'],
+  ])('launches an application through Programas > %s', async (group, application) => {
+    render(<App />);
+    await screen.findByRole('listbox', { name: 'Escritorio' }, { timeout: 4000 });
+    fireEvent.click(screen.getByRole('button', { name: 'Inicio' }));
+    const programs = screen.getByRole('menuitem', { name: 'Programas' });
+    fireEvent.mouseEnter(programs);
+    // Clicking a group already opened by hover must not close it.
+    fireEvent.click(programs);
+    const child = within(screen.getByRole('menu', { name: 'Programas' })).getByRole('menuitem', { name: group });
+    fireEvent.mouseEnter(child);
+    fireEvent.click(child);
+    const menu = screen.getByRole('menu', { name: group });
+    fireEvent.click(within(menu).getByRole('menuitem', { name: application }));
+    expect(screen.queryByRole('menu', { name: 'Inicio' })).toBeNull();
+    expect(await screen.findByRole('dialog', { name: new RegExp(`^${application}(?: - .+)?$`) })).toBeTruthy();
+  });
+
+  it('navigates nested Start groups with the keyboard without launching an application early', async () => {
+    render(<App />);
+    await screen.findByRole('listbox', { name: 'Escritorio' }, { timeout: 4000 });
+    const start = screen.getByRole('button', { name: 'Inicio' });
+    fireEvent.click(start);
+    const programs = screen.getByRole('menuitem', { name: 'Programas' });
+    fireEvent.focus(programs);
+    fireEvent.keyDown(programs, { key: 'Enter' });
+    const programMenu = screen.getByRole('menu', { name: 'Programas' });
+    expect(programMenu.contains(document.activeElement)).toBe(true);
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
+    const accessories = within(programMenu).getByRole('menuitem', { name: 'Accesorios' });
+    fireEvent.focus(accessories);
+    fireEvent.keyDown(accessories, { key: 'ArrowRight' });
+    const accessoryMenu = screen.getByRole('menu', { name: 'Accesorios' });
+    expect(accessoryMenu.contains(document.activeElement)).toBe(true);
+    fireEvent.keyDown(document.activeElement ?? accessoryMenu, { key: 'ArrowDown' });
+    expect(document.activeElement?.textContent).toBe('Calculadora');
+    fireEvent.keyDown(document.activeElement ?? accessoryMenu, { key: 'ArrowLeft' });
+    expect(screen.queryByRole('menu', { name: 'Accesorios' })).toBeNull();
+    expect(document.activeElement).toBe(accessories);
+    fireEvent.keyDown(accessories, { key: 'Escape' });
+    expect(screen.queryByRole('menu', { name: 'Programas' })).toBeNull();
+    expect(document.activeElement).toBe(programs);
+    fireEvent.keyDown(programs, { key: 'Escape' });
+    expect(screen.queryByRole('menu', { name: 'Inicio' })).toBeNull();
+    expect(document.activeElement).toBe(start);
+  });
+
+  it('closes the previous branch when hovering a sibling and dismisses on outside click', async () => {
+    render(<App />);
+    await screen.findByRole('listbox', { name: 'Escritorio' }, { timeout: 4000 });
+    fireEvent.click(screen.getByRole('button', { name: 'Inicio' }));
+    fireEvent.mouseEnter(screen.getByRole('menuitem', { name: 'Programas' }));
+    fireEvent.mouseEnter(screen.getByRole('menuitem', { name: 'Accesorios' }));
+    expect(screen.getByRole('menu', { name: 'Accesorios' })).toBeTruthy();
+    fireEvent.mouseEnter(screen.getByRole('menuitem', { name: 'Juegos' }));
+    expect(screen.queryByRole('menu', { name: 'Accesorios' })).toBeNull();
+    expect(screen.getByRole('menu', { name: 'Juegos' })).toBeTruthy();
+    fireEvent.pointerDown(document.body);
+    expect(screen.queryByRole('menu', { name: 'Inicio' })).toBeNull();
+  });
+
   it('applies the stored language to the document', async () => {
     render(<App />);
     await screen.findByRole('listbox', { name: 'Escritorio' }, { timeout: 4000 });
     expect(document.documentElement.lang).toBe('es');
+  });
+
+  it('opens and highlights a desktop submenu after separators and dismisses outside it', async () => {
+    render(<App />);
+    const desktop = await screen.findByRole('listbox', { name: 'Escritorio' }, { timeout: 4000 });
+    fireEvent.contextMenu(desktop, { clientX: 500, clientY: 250 });
+    const newItem = screen.getByRole('menuitem', { name: 'Nuevo' });
+    fireEvent.mouseEnter(newItem);
+    expect(newItem.getAttribute('data-highlighted')).toBe('true');
+    expect(screen.getByRole('menuitem', { name: 'Carpeta' })).toBeTruthy();
+    fireEvent.mouseEnter(screen.getByRole('menuitem', { name: 'Propiedades' }));
+    expect(screen.queryByRole('menuitem', { name: 'Carpeta' })).toBeNull();
+    fireEvent.pointerDown(document.body);
+    expect(screen.queryByRole('menu')).toBeNull();
   });
 
   it('lists the desktop icons and keeps their positions stable', async () => {

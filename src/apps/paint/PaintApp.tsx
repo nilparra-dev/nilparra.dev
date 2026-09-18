@@ -1,3 +1,4 @@
+import { uiRect, uiPixels } from '../../ui/scale';
 import {
   useCallback,
   useEffect,
@@ -524,10 +525,10 @@ export function PaintApp({ windowId, params }: AppRenderProps) {
 
 function canvasPosition(event: ReactPointerEvent<HTMLCanvasElement>, zoom: number) {
   const canvas = event.currentTarget;
-  const rect = canvas.getBoundingClientRect();
+  const rect = uiRect(canvas);
   return {
-    x: Math.max(0, Math.min(canvas.width - 1, Math.floor((event.clientX - rect.left) / zoom))),
-    y: Math.max(0, Math.min(canvas.height - 1, Math.floor((event.clientY - rect.top) / zoom))),
+    x: Math.max(0, Math.min(canvas.width - 1, Math.floor((uiPixels(event.clientX) - rect.left) / zoom))),
+    y: Math.max(0, Math.min(canvas.height - 1, Math.floor((uiPixels(event.clientY) - rect.top) / zoom))),
   };
 }
 

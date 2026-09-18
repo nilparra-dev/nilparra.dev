@@ -1,3 +1,4 @@
+import { uiPixels, uiRect, uiViewport } from '../scale';
 import {
   createContext,
   useCallback,
@@ -9,9 +10,9 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { ICON_URLS } from '../../assets/generated/icons';
 import { useT } from '../../core/i18n/I18nProvider';
 import { CheckGlyph, BulletGlyph, SubmenuArrow } from '../glyphs';
+import { Icon } from '../Icon';
 import type { MenuEntry } from './types';
 
 /**
@@ -73,7 +74,7 @@ export function MenuLayerProvider({ children }: { children: ReactNode }) {
   const open = useCallback((next: MenuRequest) => {
     setRequest(next);
     const id = 0;
-    setLevels([{ id, entries: next.entries, anchor: { x: next.x, y: next.y }, parentLevelId: null, parentItemIndex: -1 }]);
+    setLevels([{ id, entries: next.entries, anchor: { x: uiPixels(next.x), y: uiPixels(next.y) }, parentLevelId: null, parentItemIndex: -1 }]);
     setHighlight({ 0: -1 });
     setPositions({});
     nextId.current = 1;
@@ -82,23 +83,33 @@ export function MenuLayerProvider({ children }: { children: ReactNode }) {
   /* Close on scroll/resize: a popup must not stay anchored to nothing. */
   useEffect(() => {
     if (!request) return;
-    const onScrollOrResize = () => close();
+    const onScrollOrResize = (event: Event) => {
+      if (event.target instanceof Element && event.target.closest('.menu-popup')) return;
+      close();
+    };
+    const onPointerDown = (event: PointerEvent) => {
+      if (event.target instanceof Element && event.target.closest('.menu-layer')) return;
+      close();
+    };
     window.addEventListener('resize', onScrollOrResize);
     window.addEventListener('scroll', onScrollOrResize, true);
+    document.addEventListener('pointerdown', onPointerDown, true);
     return () => {
       window.removeEventListener('resize', onScrollOrResize);
       window.removeEventListener('scroll', onScrollOrResize, true);
+      document.removeEventListener('pointerdown', onPointerDown, true);
     };
   }, [request, close]);
 
   const openSubmenu = useCallback(
     (levelId: number, index: number) => {
       const level = levels.find((candidate) => candidate.id === levelId);
-      const entry = level?.entries[index];
+      const entry = level?.entries.filter((entry) => entry.kind !== 'separator')[index];
       if (!level || !entry || entry.kind !== 'submenu' || !entry.items || entry.disabled) return;
       const element = itemRefs.current.get(`${levelId}:${index}`);
-      const rect = element?.getBoundingClientRect();
+      const rect = element ? uiRect(element) : undefined;
       const anchor = rect ? { x: rect.right - 3, y: rect.top - 3 } : level.anchor;
+      if (levels.some((candidate) => candidate.parentLevelId === levelId && candidate.parentItemIndex === index)) return;
       const id = nextId.current;
       nextId.current += 1;
       setLevels((current) => [
@@ -116,27 +127,32 @@ export function MenuLayerProvider({ children }: { children: ReactNode }) {
         close();
         return;
       }
+      const parentId = levels.find((candidate) => candidate.id === levelId)?.parentLevelId;
       setLevels((current) => current.filter((candidate) => candidate.id < levelId));
+      if (parentId !== null && parentId !== undefined) popupRefs.current.get(parentId)?.focus({ preventScroll: true });
     },
-    [close],
+    [close, levels],
   );
 
   /* Measure each popup once rendered and flip it inside the viewport. */
   useLayoutEffect(() => {
     if (!levels.length) return;
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
+    const { width: viewportWidth, height: viewportHeight } = uiViewport();
     setPositions((current) => {
       let changed = false;
       const next = { ...current };
       for (const level of levels) {
         const element = popupRefs.current.get(level.id);
-        const rect = element?.getBoundingClientRect();
+        const rect = element ? uiRect(element) : undefined;
         const width = Math.max(rect?.width ?? MENU_MIN_WIDTH, MENU_MIN_WIDTH);
         const height = rect?.height ?? 0;
         let left = level.anchor.x;
         let top = level.anchor.y;
-        if (left + width > viewportWidth - 2) left = Math.max(2, level.anchor.x - width + 3);
+        if (left + width > viewportWidth - 2) {
+          const parent = itemRefs.current.get(`${level.parentLevelId}:${level.parentItemIndex}`);
+          const parentRect = parent ? uiRect(parent) : undefined;
+          left = Math.max(2, (parentRect?.left ?? level.anchor.x) - width + 3);
+        }
         if (top + height > viewportHeight - 2) top = Math.max(2, viewportHeight - height - 2);
         if (top < 2) top = 2;
         const previous = next[level.id];
@@ -250,12 +266,9 @@ export function MenuLayerProvider({ children }: { children: ReactNode }) {
                 highlighted={highlight[level.id] ?? -1}
                 onHighlight={(index) => setHighlight((current) => ({ ...current, [level.id]: index }))}
                 onHoverEntry={(index, entry) => {
-                  setLevels((current) =>
-                    current.filter(
-                      (candidate) => candidate.id <= level.id || candidate.parentLevelId !== level.id,
-                    ),
-                  );
-                  if (entry.kind === 'submenu') openSubmenu(level.id, index);
+                  setHighlight((current) => ({ ...current, [level.id]: index }));
+                  if (entry.kind === 'submenu' && !entry.disabled) openSubmenu(level.id, index);
+                  else setLevels((current) => current.filter((candidate) => candidate.id <= level.id));
                 }}
                 onActivate={(index, entry) => handleItem(level.id, index, entry)}
                 onKeyDown={(event) => onKeyDown(level.id, event)}
@@ -349,7 +362,6 @@ function MenuPopup({
             data-disabled={entry.disabled || undefined}
             onMouseEnter={() => onHoverEntry(entryIndex, entry)}
             onClick={() => {
-              if (entry.kind === 'submenu') return;
               onActivate(entryIndex, entry);
             }}
             onMouseDown={(event) => {
@@ -367,7 +379,7 @@ function MenuPopup({
                   <CheckGlyph color={isHighlighted ? '#ffffff' : '#000000'} />
                 )
               ) : entry.iconId ? (
-                <img className="pixel" src={ICON_URLS[entry.iconId]} width={16} height={16} alt="" />
+                <Icon id={entry.iconId} size={16} />
               ) : null}
             </span>
             <span className="menu-item-label">{entry.label}</span>

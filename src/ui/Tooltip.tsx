@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { uiRect, uiViewport } from './scale';
 
 export interface TooltipProps {
   text: string;
@@ -30,9 +31,9 @@ export function Tooltip({ text, children, delay = 600 }: TooltipProps) {
     timer.current = window.setTimeout(() => {
       const element = wrapperRef.current;
       if (!element) return;
-      const rect = element.getBoundingClientRect();
+      const rect = uiRect(element);
       setPosition({
-        left: Math.round(Math.min(rect.left, window.innerWidth - 260)),
+        left: Math.round(Math.max(2, Math.min(rect.left, uiViewport().width - 260))),
         top: Math.round(rect.bottom + 2),
       });
     }, delay);

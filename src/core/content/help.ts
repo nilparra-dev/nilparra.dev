@@ -112,6 +112,71 @@ export const HELP_TOPICS: HelpTopic[] = [
     },
   },
   {
+    id: 'solitaire',
+    title: {
+      es: 'Solitario (Klondike)',
+      ca: 'Solitari (Klondike)',
+      en: 'Solitaire (Klondike)',
+    },
+    body: {
+      es: [
+        'El objetivo es colocar las 52 cartas en las cuatro pilas de fundación, ordenadas por palo desde el as hasta el rey.',
+        'Las cartas se mueven arrastrándolas con el ratón o el dedo, o con doble clic para enviarlas directamente a su fundación. Las columnas se construyen en orden descendente y con colores alternos; una columna vacía solo acepta un rey.',
+        'El mazo reparte cartas al descarte. En el menú Juego puedes elegir entre robar una o tres cartas; cuando el mazo se agota, el descarte se recicla con el coste en puntos correspondiente.',
+        'Cada carta que llega a una fundación suma 10 puntos, descubrir una carta de una columna suma 5 y devolver una carta de la fundación a la mesa resta 15. Al ganar se añade una bonificación por tiempo.',
+        'Desde el menú Juego también puedes empezar una partida nueva (F2), volver a repartir la misma partida, deshacer el último movimiento (Ctrl+Z) o completar automáticamente cuando ya no queden cartas boca abajo.',
+      ],
+      ca: [
+        'L’objectiu és col·locar les 52 cartes en les quatre piles de fundació, ordenades per coll des de l’as fins al rei.',
+        'Les cartes es mouen arrossegant-les amb el ratolí o el dit, o amb doble clic per enviar-les directament a la seva fundació. Les columnes es construeixen en ordre descendent i amb colors alterns; una columna buida només accepta un rei.',
+        'La baralla reparteix cartes al descart. Al menú Joc pots triar entre robar una o tres cartes; quan la baralla s’esgota, el descart es recicla amb el cost en punts corresponent.',
+        'Cada carta que arriba a una fundació suma 10 punts, descobrir una carta d’una columna suma 5 i tornar una carta de la fundació a la taula resta 15. En guanyar s’afegeix una bonificació per temps.',
+        'Des del menú Joc també pots començar una partida nova (F2), tornar a repartir la mateixa partida, desfer l’últim moviment (Ctrl+Z) o completar automàticament quan ja no quedin cartes boca avall.',
+      ],
+      en: [
+        'The goal is to move all 52 cards to the four foundation piles, ordered by suit from ace to king.',
+        'Drag cards with the mouse or a finger, or double click to send them straight to their foundation. Columns build downwards in alternating colours; an empty column only accepts a king.',
+        'The deck deals cards to the waste. In the Game menu you can choose one or three cards per draw; when the deck runs out, the waste recycles with its score cost.',
+        'Every card that reaches a foundation scores 10, turning over a column card scores 5, and pulling a card back from a foundation to the table costs 15. Winning adds a time bonus.',
+        'The Game menu also starts a new deal (F2), redeals the same game, undoes the last move (Ctrl+Z) or finishes automatically once no face-down cards are left.',
+      ],
+    },
+  },
+  {
+    id: 'poker',
+    title: {
+      es: 'Póker (Texas Hold’em)',
+      ca: 'Pòquer (Texas Hold’em)',
+      en: 'Poker (Texas Hold’em)',
+    },
+    body: {
+      es: [
+        'El objetivo es ganar todas las fichas de la mesa. Se juega al Texas Hold’em sin límite con dinero ficticio: no hay apuestas reales, premios ni compras.',
+        'Cada jugador recibe dos cartas y hay cinco comunitarias que se descubren en tres rondas: el flop (tres cartas), el turn (una) y el river (una). Gana la mejor combinación de cinco cartas, formada con las tuyas y las de la mesa.',
+        'En cada ronda puedes retirarte, pasar (si nadie ha apostado), igualar la apuesta o subir. Las subidas tienen un mínimo: la última subida completa; si a alguien le queda menos, puede irse «todo» por menos cantidad y la acción no se reabre para quien ya había hablado. Cuando alguien se queda sin fichas en la mano, se crean botes laterales y cada bote se lo lleva la mejor mano entre sus aspirantes.',
+        'Las ciegas son fijas (10/20) y el botón del repartidor marca quién paga la ciega pequeña en cada mano. Arriba, en el menú Juego, tienes «Partida nueva» y «Mano siguiente» (F2). La partida sigue hasta que un jugador se queda con todas las fichas.',
+        'Los rivales los controla el ordenador, sin trampas: no ven tus cartas. En la mesa nueva eliges cuántos quieres, su estilo (tranquilos, variados o agresivos) y las fichas iniciales. Cada partida reparte nombres y caracteres distintos para que no se juegue siempre igual.',
+        'Órdenes de manos, de menor a mayor: carta alta, pareja, doble pareja, trío, escalera, color, full, póker y escalera de color (la escalera real es la más alta). En la mesa verás el nombre de tu mano actual bajo el fieltro.',
+      ],
+      ca: [
+        'L’objectiu és guanyar totes les fitxes de la taula. Es juga al Texas Hold’em sense límit amb diners ficticis: no hi ha apostes reals, premis ni compres.',
+        'Cada jugador rep dues cartes i n’hi ha cinc de comunitàries que es descobreixen en tres rondes: el flop (tres cartes), el turn (una) i el river (una). Guanya la millor combinació de cinc cartes, formada amb les teves i les de la taula.',
+        'A cada ronda pots retirar-te, passar (si ningú ha apostat), igualar l’aposta o apujar. Les apujades tenen un mínim: l’última apujada completa; si a algú li queda menys, pot anar «tot» per menys quantitat i l’acció no es reobre per a qui ja havia parlat. Quan algú es queda sense fitxes a la mà, es creen pots laterals i cada pot se’l queda la millor mà entre els seus aspirants.',
+        'Les cegues són fixes (10/20) i el botó del repartidor marca qui paga la ciega petita a cada mà. A dalt, al menú Joc, tens «Partida nova» i «Mà següent» (F2). La partida continua fins que un jugador es queda amb totes les fitxes.',
+        'Els rivals els controla l’ordinador, sense trampes: no veuen les teves cartes. A la taula nova tries quants en vols, el seu estil (tranquils, variats o agressius) i les fitxes inicials. Cada partida reparteix noms i caràcters diferents perquè no es jugui sempre igual.',
+        'Ordre de mans, de menor a major: carta alta, parella, doble parella, trio, escala, color, full, pòquer i escala de color (l’escala reial és la més alta). A la taula veuràs el nom de la teva mà actual sota el feltre.',
+      ],
+      en: [
+        'The goal is to win every chip on the table. This is no-limit Texas Hold’em played with play money: there is no real betting, no prizes and nothing to buy.',
+        'Every player gets two cards and five community cards are revealed in three rounds: the flop (three cards), the turn (one) and the river (one). The best five-card combination of your cards and the board wins.',
+        'On each round you can fold, check (when nobody has bet), call or raise. Raises have a minimum: the last full raise; a player with fewer chips may go all in for less and that does not reopen the action for those who already acted. When someone runs out of chips in a hand, side pots appear and each pot goes to the best hand among its contenders.',
+        'Blinds are fixed (10/20) and the dealer button decides who posts the small blind each hand. The Game menu holds “New match” and “Next hand” (F2). The match runs until one player holds every chip.',
+        'Rivals are controlled by the computer and never cheat: they cannot see your cards. In the lobby you choose how many you want, their style (calm, mixed or wild) and the starting chips. Every match deals fresh names and characters, so no two games feel the same.',
+        'Hand ranking, from lowest to highest: high card, pair, two pair, three of a kind, straight, flush, full house, four of a kind and straight flush (a royal flush is the highest). The table shows the name of your current hand under the felt.',
+      ],
+    },
+  },
+  {
     id: 'credits',
     title: {
       es: 'Créditos, licencias y sustituciones',

@@ -361,7 +361,7 @@ export function CalculatorApp({ windowId }: AppRenderProps) {
     {
       id: 'divide',
       area: 'div',
-      label: '/',
+      label: '÷',
       ariaLabel: t('calc.divide'),
       pressed: pending === 'divide',
       onPress: () => beginOperator('divide'),
@@ -369,7 +369,7 @@ export function CalculatorApp({ windowId }: AppRenderProps) {
     {
       id: 'multiply',
       area: 'mul',
-      label: '*',
+      label: '×',
       ariaLabel: t('calc.multiply'),
       pressed: pending === 'multiply',
       onPress: () => beginOperator('multiply'),

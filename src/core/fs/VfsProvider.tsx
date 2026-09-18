@@ -12,7 +12,7 @@ import { usePreferences } from '../prefs/PreferencesProvider';
 import type { IconId } from '../../assets/generated/icons';
 import { buildPortfolioSeed, buildSeed } from './seed';
 import { FsError, ROOT_ID, type FsBlob, type FsNode, type NodeWithPath, type ShortcutTarget, type SystemFolderKey } from './types';
-import { diskUsage, loadNodes, putBlobs, putNodes, readBlobData, removeNodes, warmUp, wipeDisk } from './vfs';
+import { diskUsage, initializeNodes, repairDuplicateDesktopShortcuts, putBlobs, putNodes, readBlobData, removeNodes, warmUp, wipeDisk } from './vfs';
 import {
   childrenOf as childrenOfNodes,
   duplicateSubtree,
@@ -98,13 +98,9 @@ export function VfsProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     const boot = async () => {
       try {
-        await warmUp();
-        let stored = await loadNodes();
-        if (stored.length === 0) {
-          const { nodes: seedNodes } = buildSeed(localeRef.current);
-          await putNodes(seedNodes);
-          stored = seedNodes;
-        }
+        const initial = await initializeNodes(() => buildSeed(localeRef.current).nodes);
+        if (cancelled) return;
+        const stored = await repairDuplicateDesktopShortcuts(initial);
         if (cancelled) return;
         setNodes(new Map(stored.map((node) => [node.id, node])));
         setReady(true);

@@ -31,6 +31,8 @@ const ALIASES: Record<string, string[]> = {
   sysinfo: ['sysinfo', 'sistema', 'propiedades del sistema'],
   calculator: ['calc', 'calculadora', 'calculator'],
   minesweeper: ['mine', 'minas', 'buscaminas', 'minesweeper'],
+  solitaire: ['solitaire', 'solitario', 'solitari', 'cartas', 'cards', 'klondike'],
+  poker: ['poker', 'poquer', 'texas', 'holdem', 'hold em'],
   paint: ['paint'],
   console: ['cmd', 'consola', 'console', 'simbolo del sistema'],
   find: ['find', 'buscar'],

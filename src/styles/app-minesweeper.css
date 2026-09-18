@@ -42,7 +42,7 @@
   color: #ff0000;
   border: 1px solid;
   border-color: var(--w95-gray) var(--w95-white) var(--w95-white) var(--w95-gray);
-  font-family: 'Lucida Console', 'Courier New', monospace;
+  font-family: var(--w95-mono-font);
   font-size: 16px;
   line-height: 1.1;
   letter-spacing: 1px;

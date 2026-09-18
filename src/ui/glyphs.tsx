@@ -57,21 +57,21 @@ export function RestoreGlyph({ size = 10 }: GlyphProps) {
       <rect x="3" y="0" width="7" height="2" fill="currentColor" />
       <rect x="3" y="0" width="1" height="4" fill="currentColor" />
       <rect x="9" y="0" width="1" height="7" fill="currentColor" />
-      <rect x="3" y="6" width="7" height="1" fill="currentColor" />
+      <rect x="7" y="6" width="3" height="1" fill="currentColor" />
     </Svg>
   );
 }
 
-/** Close: a 2px X. */
-export function CloseGlyph({ size = 9 }: GlyphProps) {
+/** Close: an X with two-pixel-wide diagonal strokes. */
+export function CloseGlyph({ size = 10 }: GlyphProps) {
   const pixels: Array<[number, number]> = [];
   for (let i = 0; i < 8; i += 1) {
-    pixels.push([i, i], [7 - i, i]);
+    pixels.push([i, i], [i + 1, i], [7 - i, i], [8 - i, i]);
   }
   return (
-    <Svg size={size} viewBox="0 0 8 8">
+    <Svg size={size} viewBox="0 0 10 10">
       {pixels.map(([x, y], index) => (
-        <rect key={index} x={x} y={y} width="1" height="1" fill="currentColor" />
+        <rect key={index} x={x} y={y + 1} width="1" height="1" fill="currentColor" />
       ))}
     </Svg>
   );
@@ -119,7 +119,7 @@ export function CheckGlyph({ color = '#000000' }: { color?: string }) {
 export function BulletGlyph({ color = '#000000' }: { color?: string }) {
   return (
     <svg width="5" height="5" viewBox="0 0 5 5" shapeRendering="crispEdges" aria-hidden="true">
-      <rect x="0" y="0" width="3" height="3" fill={color} />
+      <rect x="1" y="1" width="3" height="3" fill={color} />
     </svg>
   );
 }

@@ -13,10 +13,11 @@ import { clampViewportSize, effectiveRect, isViewportSmall, TASKBAR_HEIGHT } fro
 import { loadWindowLayout, saveWindowLayout } from './layoutPersistence';
 import { activeWindowId, createWindowManagerState, windowManagerReducer } from './reducer';
 import type { NewWindow, ViewportSize, WindowInstance, WindowRect } from './types';
+import { uiViewport } from '../../ui/scale';
 
 function measureViewport(): ViewportSize {
   if (typeof window === 'undefined') return { width: 1024, height: 740 };
-  return clampViewportSize({ width: window.innerWidth, height: window.innerHeight });
+  return clampViewportSize(uiViewport());
 }
 
 function prefersCoarsePointer(): boolean {

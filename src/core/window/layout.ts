@@ -1,7 +1,7 @@
 import type { ViewportSize, WindowInstance, WindowRect } from './types';
 
 /** Height of the taskbar, mirrored from the CSS token. */
-export const TASKBAR_HEIGHT = 28;
+export const TASKBAR_HEIGHT = 34;
 
 /** Smallest window we ever allow. */
 export const MIN_WINDOW_WIDTH = 180;

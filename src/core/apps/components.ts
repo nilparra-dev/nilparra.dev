@@ -16,6 +16,8 @@ import { FindApp } from '../../apps/find/FindApp';
 import { ViewerApp } from '../../apps/viewer/ViewerApp';
 import { CalculatorApp } from '../../apps/calculator/CalculatorApp';
 import { MinesweeperApp } from '../../apps/minesweeper/MinesweeperApp';
+import { SolitaireApp } from '../../apps/solitaire/SolitaireApp';
+import { PokerApp } from '../../apps/poker/PokerApp';
 import { RunApp } from '../../apps/run/RunApp';
 import { ConsoleApp } from '../../apps/console/ConsoleApp';
 
@@ -43,6 +45,8 @@ export const APP_COMPONENTS: Record<string, AppComponent> = {
   viewer: ViewerApp,
   calculator: CalculatorApp,
   minesweeper: MinesweeperApp,
+  solitaire: SolitaireApp,
+  poker: PokerApp,
   run: RunApp,
   console: ConsoleApp,
 };

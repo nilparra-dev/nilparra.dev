@@ -8,20 +8,29 @@
 import { createCanvas, ellipseRing, setPixel, stamp, text } from '../lib/raster.mjs';
 import { fillBox, fillPolygon, outlineShape, translate } from '../lib/vector.mjs';
 
-/** Classic 9x arrow: triangle head plus the slanted tail. */
-const ARROW_POINTS = [
-  [1, 1],
-  [12, 10],
-  [7, 10],
-  [9, 16],
-  [6, 17],
-  [4, 11],
-  [1, 11],
-];
-
+/** Classic 11x19 pointer; see scripts/art/THIRD_PARTY.md for the bitmap reference. */
 const drawArrow = (canvas) => {
-  fillPolygon(canvas, ARROW_POINTS, 'W');
-  outlineShape(canvas, 'K');
+  stamp(canvas, [
+    'K',
+    'KK',
+    'KWK',
+    'KWWK',
+    'KWWWK',
+    'KWWWWK',
+    'KWWWWWK',
+    'KWWWWWWK',
+    'KWWWWWWWK',
+    'KWWWWWWWWK',
+    'KWWWWWKKKKK',
+    'KWWKWWK',
+    'KWK.KWWK',
+    'KK..KWWK',
+    'K....KWWK',
+    '.....KWWK',
+    '......KWWK',
+    '......KWWK',
+    '.......KK',
+  ], 1, 1);
 };
 
 /** I-beam: top and bottom serifs joined by a 1px stem. */
@@ -29,26 +38,24 @@ const drawIBeam = (canvas) => {
   stamp(
     canvas,
     [
-      'KKKKKKKKK',
-      'KWWWWWWWK',
-      'KWWWWWWWK',
-      'KKKKWKKKK',
-      '...KWK...',
-      '...KWK...',
-      '...KWK...',
-      '...KWK...',
-      '...KWK...',
-      '...KWK...',
-      '...KWK...',
-      '...KWK...',
-      '...KWK...',
-      'KKKKWKKKK',
-      'KWWWWWWWK',
-      'KWWWWWWWK',
-      'KKKKKKKKK',
+      'KKK.KKK',
+      '...K...',
+      '...K...',
+      '...K...',
+      '...K...',
+      '...K...',
+      '...K...',
+      '...K...',
+      '...K...',
+      '...K...',
+      '...K...',
+      '...K...',
+      '...K...',
+      '...K...',
+      'KKK.KKK',
     ],
-    12,
-    8,
+    13,
+    9,
   );
 };
 
@@ -79,35 +86,12 @@ const drawHourglass = (canvas) => {
 
 /** Two-headed arrow, `vertical` selects the axis. */
 const doubleArrowPoints = (vertical) => {
-  const shaft = 3;
-  const half = 8;
-  const head = 6;
-  if (vertical) {
-    return [
-      [shaft / 2, -half],
-      [head, -half + head],
-      [0, -half],
-      [-head, -half + head],
-      [-shaft / 2, -half],
-      [-shaft / 2, half - head],
-      [-head, half - head],
-      [0, half],
-      [head, half - head],
-      [shaft / 2, half - head],
-    ];
-  }
-  return [
-    [-half, shaft / 2],
-    [-half + head, head],
-    [-half, 0],
-    [-half + head, -head],
-    [-half, -shaft / 2],
-    [half - head, -shaft / 2],
-    [half - head, -head],
-    [half, 0],
-    [half - head, head],
-    [half - head, shaft / 2],
+  // Walk the perimeter once; self-intersecting polygons lose an arrowhead.
+  const points = [
+    [0, -12], [4, -7], [2, -7], [2, 7], [4, 7],
+    [0, 12], [-4, 7], [-2, 7], [-2, -7], [-4, -7],
   ];
+  return vertical ? points : points.map(([x, y]) => [y, x]);
 };
 
 const drawDoubleArrow = (canvas, vertical) => {
@@ -117,36 +101,11 @@ const drawDoubleArrow = (canvas, vertical) => {
 
 /** Diagonal two-headed arrow (NW-SE), optionally mirrored to NE-SW. */
 const drawDiagonalArrow = (canvas, flip) => {
-  const reach = 8;
-  const thickness = 3;
-  const head = 5;
   fillPolygon(
     canvas,
     [
-      [16 - reach, 16 - reach],
-      [16 - reach + thickness, 16 - reach],
-      [16 + reach, 16 + reach - thickness],
-      [16 + reach, 16 + reach],
-    ],
-    'W',
-  );
-  const tipStart = 16 - reach - 2;
-  const tipEnd = 16 + reach + 2;
-  fillPolygon(
-    canvas,
-    [
-      [tipStart, tipStart],
-      [tipStart + head, tipStart + 1],
-      [tipStart + 1, tipStart + head],
-    ],
-    'W',
-  );
-  fillPolygon(
-    canvas,
-    [
-      [tipEnd, tipEnd],
-      [tipEnd - head, tipEnd - 1],
-      [tipEnd - 1, tipEnd - head],
+      [6, 6], [13, 6], [10, 9], [23, 22], [26, 19],
+      [26, 26], [19, 26], [22, 23], [9, 10], [6, 13],
     ],
     'W',
   );
@@ -155,7 +114,7 @@ const drawDiagonalArrow = (canvas, flip) => {
     const snapshot = canvas.pixels.slice();
     for (let y = 0; y < canvas.height; y += 1) {
       for (let x = 0; x < canvas.width; x += 1) {
-        canvas.pixels[y * canvas.width + x] = snapshot[x * canvas.width + y];
+        canvas.pixels[y * canvas.width + x] = snapshot[y * canvas.width + canvas.width - 1 - x];
       }
     }
   }

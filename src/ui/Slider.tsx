@@ -1,5 +1,7 @@
 import { useCallback, useRef } from 'react';
 
+import { uiRect, uiPixels } from './scale';
+
 export interface SliderProps {
   value: number;
   min?: number;
@@ -33,9 +35,9 @@ export function Slider({
     (clientX: number) => {
       const track = trackRef.current;
       if (!track) return;
-      const rect = track.getBoundingClientRect();
+      const rect = uiRect(track);
       const usable = rect.width - thumbWidth;
-      const ratio = Math.max(0, Math.min(1, (clientX - rect.left - thumbWidth / 2) / usable));
+      const ratio = Math.max(0, Math.min(1, (uiPixels(clientX) - rect.left - thumbWidth / 2) / usable));
       onChange(Math.round(min + ratio * (max - min)));
     },
     [max, min, onChange],

@@ -29,6 +29,13 @@ export function MailApp({ windowId }: AppRenderProps) {
     }
   };
 
+  /**
+   * The link itself carries the mailto:, so the browser keeps full control over
+   * the external program. The notice is there because a machine without a mail
+   * app gives no feedback at all and the button looks broken.
+   */
+  const openMailClient = () => setNotice(t('mail.openingHint'));
+
   const otherLinks = PROFILE.links.filter((link) => !link.url.startsWith('mailto'));
 
   return (
@@ -50,7 +57,7 @@ export function MailApp({ windowId }: AppRenderProps) {
             <Button onClick={() => void copyAddress()}>{t('mail.copy')}</Button>
           </div>
           <div className="u-row mail-actions">
-            <a className="btn" href={`mailto:${PROFILE.email}`}>
+            <a className="btn" href={`mailto:${PROFILE.email}`} onClick={openMailClient}>
               {t('mail.open')}
             </a>
           </div>

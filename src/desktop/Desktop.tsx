@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useAppLauncher } from '../core/apps/launcher';
 import { useDialogs } from '../core/dialogs/DialogProvider';
 import { useClipboard } from '../core/fs/clipboard';
 import { useClipboardActions } from '../core/fs/useFileOpener';
@@ -17,8 +18,9 @@ import {
 } from '../core/desktop/iconLayout';
 import { useI18n } from '../core/i18n/I18nProvider';
 import { usePreferences } from '../core/prefs/PreferencesProvider';
-import { findWallpaper } from '../core/prefs/wallpapers';
-import { patternBackground } from '../theme/patterns.generated';
+import { findWallpaper, wallpaperStyle } from '../core/prefs/wallpapers';
+import { uiPixels, uiRect, uiViewport } from '../ui/scale';
+import { TASKBAR_HEIGHT } from '../core/window/layout';
 import { Icon } from '../ui/Icon';
 import { useMenuLayer } from '../ui/menu/MenuLayer';
 import { menuSeparator, type MenuEntry } from '../ui/menu/types';
@@ -50,6 +52,7 @@ function intersects(a: MarqueeBox, b: MarqueeBox): boolean {
  * behaviour, marquee selection, keyboard navigation and the background menu.
  */
 export function Desktop() {
+  const launch = useAppLauncher();
   const { t } = useI18n();
   const { preferences, update } = usePreferences();
   const items = useDesktopItems();
@@ -61,7 +64,11 @@ export function Desktop() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const surfaceRef = useRef<HTMLDivElement | null>(null);
-  const [area, setArea] = useState({ width: 0, height: 0 });
+  const [area, setArea] = useState(() =>
+    typeof window === 'undefined'
+      ? { width: 0, height: 0 }
+      : { width: uiViewport().width, height: Math.max(0, uiViewport().height - TASKBAR_HEIGHT) },
+  );
   const [stored, setStored] = useState<IconLayout>(() => readIconLayout());
   const [selection, setSelection] = useState<string[]>([]);
   const [focusedId, setFocusedId] = useState<string | null>(null);
@@ -140,9 +147,10 @@ export function Desktop() {
 
     const movingIds = additive ? [item.id] : nextSelection;
     const target = event.currentTarget;
-    const surfaceRect = surface?.getBoundingClientRect() ?? new DOMRect();
+    const surfaceRect = surface ? uiRect(surface) : new DOMRect();
+    target.setPointerCapture(event.pointerId);
     const startSlot = layout[item.id];
-    const origin = { x: event.clientX, y: event.clientY };
+    const origin = { x: uiPixels(event.clientX), y: uiPixels(event.clientY) };
     const grabOffset = startSlot
       ? {
           x: origin.x - surfaceRect.left - slotToPixels(startSlot).x,
@@ -153,7 +161,7 @@ export function Desktop() {
     let lastPointer = { ...origin };
 
     const onMove = (moveEvent: PointerEvent) => {
-      lastPointer = { x: moveEvent.clientX, y: moveEvent.clientY };
+      lastPointer = { x: uiPixels(moveEvent.clientX), y: uiPixels(moveEvent.clientY) };
       const dx = lastPointer.x - origin.x;
       const dy = lastPointer.y - origin.y;
       if (!moved && Math.abs(dx) + Math.abs(dy) < 4) return;
@@ -165,6 +173,7 @@ export function Desktop() {
       target.removeEventListener('pointermove', onMove);
       target.removeEventListener('pointerup', finish);
       target.removeEventListener('pointercancel', finish);
+      if (target.hasPointerCapture(event.pointerId)) target.releasePointerCapture(event.pointerId);
       setDragging(null);
       if (!moved || preferences.autoArrangeIcons || !startSlot) return;
 
@@ -187,7 +196,10 @@ export function Desktop() {
           col: Math.max(0, Math.min(grid.cols - 1, current.col + dcol)),
           row: Math.max(0, Math.min(grid.rows - 1, current.row + drow)),
         };
-        next[id] = nearestFreeSlot(slotToPixels(desired), next, movingIds, grid);
+         // The moving entries were removed from `next`; include each slot
+         // assigned in this loop so a multi-selection cannot collapse onto one
+         // destination.
+         next[id] = nearestFreeSlot(slotToPixels(desired), next, [], grid);
       }
       setStored(next);
     };
@@ -204,16 +216,17 @@ export function Desktop() {
     const surface = surfaceRef.current;
     if (!surface) return;
     if (event.target !== surface) return;
-    const rect = surface.getBoundingClientRect();
-    const origin = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    surface.setPointerCapture(event.pointerId);
+    const rect = uiRect(surface);
+    const origin = { x: uiPixels(event.clientX) - rect.left, y: uiPixels(event.clientY) - rect.top };
     const additive = event.shiftKey || event.ctrlKey || event.metaKey;
     const baseSelection = additive ? selection : [];
     if (!additive) setSelection([]);
 
     const onMove = (moveEvent: PointerEvent) => {
       const current = {
-        x: Math.max(0, Math.min(rect.width, moveEvent.clientX - rect.left)),
-        y: Math.max(0, Math.min(rect.height, moveEvent.clientY - rect.top)),
+        x: Math.max(0, Math.min(rect.width, uiPixels(moveEvent.clientX) - rect.left)),
+        y: Math.max(0, Math.min(rect.height, uiPixels(moveEvent.clientY) - rect.top)),
       };
       const box = boxFromPoints(origin, current);
       setMarquee(box);
@@ -233,6 +246,7 @@ export function Desktop() {
       surface.removeEventListener('pointermove', onMove);
       surface.removeEventListener('pointerup', finish);
       surface.removeEventListener('pointercancel', finish);
+      if (surface.hasPointerCapture(event.pointerId)) surface.releasePointerCapture(event.pointerId);
       setMarquee(null);
     };
 
@@ -325,24 +339,6 @@ export function Desktop() {
   const desktopMenu = (): MenuEntry[] => [
     {
       kind: 'submenu',
-      id: 'new',
-      label: t('desktop.new'),
-      items: [
-        { kind: 'item', id: 'new-folder', label: t('desktop.newFolder'), onSelect: () => void createFolder() },
-        { kind: 'item', id: 'new-doc', label: t('desktop.newDocument'), onSelect: () => void createDocument() },
-      ],
-    },
-    { kind: 'item', id: 'import', label: t('menu.import'), onSelect: () => fileInputRef.current?.click() },
-    {
-      kind: 'item',
-      id: 'paste',
-      label: t('desktop.paste'),
-      disabled: !clipboard || !desktopFolderId,
-      onSelect: () => desktopFolderId && void paste(desktopFolderId),
-    },
-    menuSeparator('sep-new'),
-    {
-      kind: 'submenu',
       id: 'arrange',
       label: t('desktop.arrangeIcons'),
       items: [
@@ -353,31 +349,45 @@ export function Desktop() {
           checked: preferences.autoArrangeIcons,
           onSelect: () => update({ autoArrangeIcons: !preferences.autoArrangeIcons }),
         },
-        {
-          kind: 'item',
-          id: 'lineup',
-          label: t('desktop.lineUpIcons'),
-          onSelect: () => setStored((current) => resolveLayout(items.map((item) => item.id), current, grid)),
-        },
       ],
+    },
+    {
+      kind: 'item',
+      id: 'lineup',
+      label: t('desktop.lineUpIcons'),
+      disabled: preferences.autoArrangeIcons,
+      onSelect: () => setStored((current) => resolveLayout(items.map((item) => item.id), current, grid)),
     },
     menuSeparator('sep'),
     {
       kind: 'item',
-      id: 'refresh',
-      label: t('desktop.refresh'),
-      onSelect: () => setStored(readIconLayout()),
+      id: 'paste',
+      label: t('desktop.paste'),
+      disabled: !clipboard || !desktopFolderId,
+      onSelect: () => desktopFolderId && void paste(desktopFolderId),
+    },
+    {
+      kind: 'submenu',
+      id: 'new',
+      label: t('desktop.new'),
+      items: [
+        { kind: 'item', id: 'new-folder', label: t('desktop.newFolder'), onSelect: () => void createFolder() },
+        { kind: 'item', id: 'new-doc', label: t('desktop.newDocument'), onSelect: () => void createDocument() },
+        menuSeparator('sep-import'),
+        { kind: 'item', id: 'import', label: t('menu.import'), onSelect: () => fileInputRef.current?.click() },
+      ],
+    },
+    menuSeparator('sep-properties'),
+    {
+      kind: 'item',
+      id: 'properties',
+      label: t('desktop.properties'),
+      onSelect: () => launch({ appId: 'controlpanel' }),
     },
   ];
 
   const wallpaper = findWallpaper(preferences.wallpaperId);
-  const backgroundStyle = wallpaper.kind === 'pattern'
-    ? {
-        backgroundColor: wallpaper.color,
-        backgroundImage: patternBackground(wallpaper.patternId ?? wallpaper.id),
-        backgroundSize: 'auto',
-      }
-    : { backgroundColor: wallpaper.color };
+  const backgroundStyle = wallpaperStyle(wallpaper);
 
   return (
     <div
@@ -488,7 +498,12 @@ export function Desktop() {
                 openMenu({ entries: item.menu(), x: event.clientX, y: event.clientY });
               }}
             >
-              <Icon id={item.icon} size={32} className="desktop-icon-image" />
+              <Icon
+                id={item.icon}
+                size={32}
+                className="desktop-icon-image"
+                shortcut={Boolean(item.node?.shortcut)}
+              />
               <span
                 className={
                   preferences.highContrastLabels

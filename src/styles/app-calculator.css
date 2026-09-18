@@ -43,12 +43,14 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  min-height: 26px;
+  min-height: 30px;
   padding: 2px 6px;
   background: var(--w95-window-bg);
   color: var(--w95-window-text);
-  font-family: 'Lucida Console', 'Courier New', monospace;
+  /* The original display used the system UI font, not a monospaced one. */
+  font-family: var(--w95-font);
   font-size: 15px;
+  font-variant-numeric: tabular-nums;
   line-height: 1;
   text-align: right;
   white-space: nowrap;
@@ -61,7 +63,12 @@
 }
 
 .app-calculator .calc-grid--basic {
+  /* Five rows against the two of the scientific pad: equal share per row. */
+  flex: 5 1 0;
+  min-height: 0;
   grid-template-columns: repeat(6, 1fr);
+  /* Rows share the free height so the keypad fills the window. */
+  grid-auto-rows: minmax(24px, 1fr);
   grid-template-areas:
     'back   ce     c     mc     mr    ms'
     'k7     k8     k9    div    sqrt  mplus'
@@ -71,7 +78,11 @@
 }
 
 .app-calculator .calc-grid--scientific {
+  /* Two rows against the five of the basic pad: equal share per row. */
+  flex: 2 1 0;
+  min-height: 0;
   grid-template-columns: repeat(6, 1fr);
+  grid-auto-rows: minmax(20px, 1fr);
   grid-template-areas:
     's1 s2 s3 s4 s5 s6'
     's7 s8 s9 s10 s11 s12';
@@ -80,12 +91,14 @@
 /* Beats the min-width of .btn without touching the shared control kit. */
 .app-calculator .btn.calc-key {
   min-width: 0;
-  height: 24px;
+  min-height: 24px;
+  height: auto;
   padding: 0 2px;
   font-weight: var(--w95-font-weight-bold);
 }
 
 .app-calculator .btn.calc-key--small {
-  height: 20px;
+  height: auto;
+  min-height: 20px;
   font-weight: normal;
 }

@@ -59,7 +59,7 @@ export function SystemInfoApp({ windowId }: AppRenderProps) {
     <div className="app-sysinfo">
       <Tabs tabs={tabs} activeId={tab} onChange={(id) => setTab(id as TabId)} ariaLabel={t('app.systemProperties')} />
 
-      <div className="tab-panel w95-scroll app-sysinfo-panel">
+      <div key={tab} className={`tab-panel w95-scroll app-sysinfo-panel${tab === 'devices' ? ' app-sysinfo-panel--devices' : ''}`}>
         {tab === 'general' && (
           <>
             <div className="sysinfo-brand">
@@ -92,27 +92,29 @@ export function SystemInfoApp({ windowId }: AppRenderProps) {
         )}
 
         {tab === 'devices' && (
-          <table className="explorer-details sysinfo-devices">
-            <thead>
-              <tr>
-                <th scope="col">{t('sys.device')}</th>
-                <th scope="col">{t('sys.status')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {installed.map((appId) => (
-                <tr key={appId}>
-                  <td>
-                    <span className="sysinfo-device">
-                      <Icon id={APP_CATALOG[appId].icon} size={16} />
-                      {t(APP_CATALOG[appId].nameKey)}
-                    </span>
-                  </td>
-                  <td>{t('sys.working')}</td>
+          <div className="sysinfo-device-list w95-scroll" tabIndex={0} role="region" aria-label={t('sys.devices')}>
+            <table className="explorer-details sysinfo-devices">
+              <thead>
+                <tr>
+                  <th scope="col">{t('sys.device')}</th>
+                  <th scope="col">{t('sys.status')}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {installed.map((appId) => (
+                  <tr key={appId}>
+                    <td>
+                      <span className="sysinfo-device">
+                        <Icon id={APP_CATALOG[appId].icon} size={16} />
+                        {t(APP_CATALOG[appId].nameKey)}
+                      </span>
+                    </td>
+                    <td>{t('sys.working')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {tab === 'performance' && (

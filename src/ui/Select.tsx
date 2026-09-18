@@ -2,11 +2,13 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useId,
   useRef,
   useState,
   type ReactNode,
 } from 'react';
 import { ComboArrow } from './glyphs';
+import { uiRect, uiViewport } from './scale';
 
 export interface SelectOption {
   value: string;
@@ -40,9 +42,11 @@ export function Select({
 }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [highlighted, setHighlighted] = useState(0);
-  const [position, setPosition] = useState<{ left: number; top: number; width: number } | null>(null);
+  const [position, setPosition] = useState<{ left: number; top: number; width: number; maxHeight: number } | null>(null);
   const rootRef = useRef<HTMLSpanElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
   const listRef = useRef<HTMLUListElement | null>(null);
+  const listId = useId();
   const selected = options.find((option) => option.value === value);
 
   const close = useCallback(() => {
@@ -52,18 +56,21 @@ export function Select({
 
   useLayoutEffect(() => {
     if (!isOpen) return;
-    const trigger = rootRef.current?.getBoundingClientRect();
-    const list = listRef.current?.getBoundingClientRect();
-    if (!trigger) return;
-    const width = Math.max(trigger.width, list?.width ?? trigger.width);
-    let left = trigger.left;
-    let top = trigger.bottom;
-    if (left + width > window.innerWidth - 2) left = window.innerWidth - width - 2;
-    if (top + (list?.height ?? 0) > window.innerHeight - 2) {
-      top = Math.max(2, trigger.top - (list?.height ?? 0) - 1);
-    }
-    setPosition({ left: Math.round(left), top: Math.round(top), width: Math.round(width) });
-  }, [isOpen]);
+    const trigger = triggerRef.current ? uiRect(triggerRef.current) : undefined;
+    const list = listRef.current;
+    if (!trigger || !list) return;
+    // A fixed popup's percentage width is relative to the viewport, not the field.
+    const viewport = uiViewport();
+    const width = Math.min(Math.max(trigger.width, list.scrollWidth + 2), viewport.width - 4);
+    const below = Math.max(0, viewport.height - trigger.bottom - 2);
+    const above = Math.max(0, trigger.top - 2);
+    const height = Math.min(220, list.scrollHeight + 2);
+    const openAbove = below < height && above > below;
+    const maxHeight = Math.min(220, openAbove ? above : below);
+    const top = openAbove ? trigger.top - Math.min(height, maxHeight) : trigger.bottom;
+    const left = Math.max(2, Math.min(trigger.left, viewport.width - width - 2));
+    setPosition({ left: Math.round(left), top: Math.round(top), width: Math.ceil(width), maxHeight });
+  }, [isOpen, options]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -77,24 +84,49 @@ export function Select({
       }
     };
     document.addEventListener('pointerdown', onPointerDown, true);
-    return () => document.removeEventListener('pointerdown', onPointerDown, true);
+    const onScroll = (event: Event) => {
+      if (event.target instanceof Node && listRef.current?.contains(event.target)) return;
+      close();
+    };
+    window.addEventListener('resize', close);
+    document.addEventListener('scroll', onScroll, true);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown, true);
+      window.removeEventListener('resize', close);
+      document.removeEventListener('scroll', onScroll, true);
+    };
   }, [isOpen, options, value, close]);
+
+  useEffect(() => {
+    if (isOpen) listRef.current?.children[highlighted]?.scrollIntoView?.({ block: 'nearest' });
+  }, [highlighted, isOpen]);
+
+  const moveHighlight = (direction: number, from = highlighted) => {
+    for (let index = from + direction; index >= 0 && index < options.length; index += direction) {
+      if (!options[index].disabled) {
+        setHighlighted(index);
+        return;
+      }
+    }
+  };
 
   const commit = (index: number) => {
     const option = options[index];
     if (!option || option.disabled) return;
     onChange(option.value);
     close();
-    rootRef.current?.focus();
+    triggerRef.current?.focus();
   };
 
   return (
     <span ref={rootRef} className={className ? `select-wrap ${className}` : 'select-wrap'}>
       <button
+        ref={triggerRef}
         type="button"
         className="select"
         aria-haspopup="listbox"
         aria-expanded={isOpen}
+        aria-controls={isOpen ? listId : undefined}
         aria-label={ariaLabel}
         disabled={disabled}
         onClick={() => (isOpen ? close() : setIsOpen(true))}
@@ -114,14 +146,17 @@ export function Select({
       {isOpen && (
         <ul
           ref={listRef}
+          id={listId}
           className="select-popup"
           role="listbox"
           aria-label={ariaLabel}
           tabIndex={-1}
+          aria-activedescendant={options[highlighted] ? `${listId}-${highlighted}` : undefined}
           style={{
             left: position?.left ?? 0,
             top: position?.top ?? 0,
-            minWidth: position?.width,
+            width: position?.width,
+            maxHeight: position?.maxHeight,
             position: 'fixed',
             visibility: position ? 'visible' : 'hidden',
           }}
@@ -129,19 +164,19 @@ export function Select({
             switch (event.key) {
               case 'ArrowDown':
                 event.preventDefault();
-                setHighlighted((current) => Math.min(options.length - 1, current + 1));
+                moveHighlight(1);
                 break;
               case 'ArrowUp':
                 event.preventDefault();
-                setHighlighted((current) => Math.max(0, current - 1));
+                moveHighlight(-1);
                 break;
               case 'Home':
                 event.preventDefault();
-                setHighlighted(0);
+                moveHighlight(1, -1);
                 break;
               case 'End':
                 event.preventDefault();
-                setHighlighted(options.length - 1);
+                moveHighlight(-1, options.length);
                 break;
               case 'Enter':
               case ' ':
@@ -150,8 +185,13 @@ export function Select({
                 break;
               case 'Escape':
                 event.preventDefault();
+                event.stopPropagation();
                 close();
-                rootRef.current?.focus();
+                triggerRef.current?.focus();
+                break;
+              case 'Tab':
+                close();
+                triggerRef.current?.focus();
                 break;
               default:
                 break;
@@ -161,11 +201,13 @@ export function Select({
           {options.map((option, index) => (
             <li
               key={option.value}
+              id={`${listId}-${index}`}
               role="option"
               aria-selected={option.value === value}
+              aria-disabled={option.disabled || undefined}
               className="select-option"
               data-highlighted={index === highlighted}
-              onMouseEnter={() => setHighlighted(index)}
+              onMouseEnter={() => { if (!option.disabled) setHighlighted(index); }}
               onClick={() => commit(index)}
             >
               {option.label}

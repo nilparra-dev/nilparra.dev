@@ -60,6 +60,8 @@ src/
     window/                 gestor de ventanas: reducer, layout, arrastre, menú de sistema
     fs/                     disco virtual: IndexedDB, operaciones, semilla, portapapeles
     apps/                   catálogo de aplicaciones y lanzador
+    cards/                  baraja compartida: modelo de carta, etiquetas y reparto
+    poker/                  motor de Texas Hold'em, evaluador de manos y rivales
     i18n/                   catálogos es/ca/en y proveedor con Intl
     content/                CONTENIDO EDITABLE: perfil, proyectos, ayuda, marca, archivos
     prefs/                  preferencias (localStorage) y fondos de escritorio
@@ -125,7 +127,9 @@ traducen ni se renombran.
 - **localStorage**: solo preferencias pequeñas (idioma, fondo, sonido, accesibilidad),
   la distribución de ventanas y la posición de los iconos.
 - Los datos **no salen del navegador**: no hay servidor, no hay analítica y no se sincronizan
-  entre dispositivos. Si se borran los datos del sitio, se pierden.
+  entre dispositivos. Si se borran los datos del sitio, se pierden. La única excepción son las
+  búsquedas que escribes en la ventana de Internet: ese texto se envía al servicio de búsqueda
+  (Tavily) para obtener los resultados, y nada más.
 - Los errores de escritura y de cuota se muestran como diálogos traducidos y **nunca se
   informa de un guardado que ha fallado**. Si la escritura no se completa, el indicador de
   cambios pendientes del Bloc de notas sigue activo.
@@ -145,7 +149,7 @@ traducen ni se renombran.
 | Bloc de notas | Editor real con nuevo, abrir, guardar, guardar como, exportar, ajuste de línea, buscar, deshacer y aviso de cambios sin guardar |
 | Mis proyectos | Fichas con descripción, tecnologías, capturas y enlaces (los que existan), y atajo a la carpeta del portfolio |
 | Sobre mí y currículum | Presentación, formación, experiencia, conocimientos y descarga del CV cuando está publicado |
-| Internet | Navegador de época para páginas internas; los enlaces externos se abren en una pestaña real y la ventana lo advierte |
+| Internet | Navegador de época: páginas internas y búsqueda web real. Los resultados se muestran en la ventana y cada enlace se abre en una pestaña real del navegador |
 | Correo | Muestra la dirección, la copia al portapapeles y abre el cliente de correo con `mailto`. No envía nada |
 | Panel de control | Idioma, fondo, sonidos, accesibilidad, almacenamiento, restauración del portfolio, restablecer el disco y distribución de ventanas |
 | Papelera de reciclaje | Lista lo eliminado, lo restaura a su carpeta original o lo borra definitivamente |
@@ -154,13 +158,34 @@ traducen ni se renombran.
 | Calculadora | Operaciones, memoria, raíz, porcentaje, inverso y teclado |
 | Paint | Lápiz, borrador, línea, rectángulo, elipse, relleno, paleta, grosores, deshacer y guardado en PNG dentro del disco |
 | Buscaminas | Tres niveles, banderas, contadores, tiempo y fin de partida |
+| Solitario | Klondike completo con la baraja dibujada en código: arrastrar y soltar, doble clic a la fundación, robar una o tres cartas, deshacer, puntuación estándar, completado automático y animación de victoria |
+| Póker | Texas Hold'em sin límite contra rivales del ordenador: de 2 a 6 jugadores, ciegas, subidas con mínimo, all-in y botes laterales, showdown con el nombre de cada mano y partidas nuevas con rivales, nombres y estilos distintos |
 | Reproductor multimedia | Audio y vídeo del disco virtual con transporte, posición y volumen |
 | Ejecutar | Abre aplicaciones por nombre o alias (`notepad`, `calc`, `explorer`, `control`, `papelera`…) |
 | Símbolo del sistema | Comandos `DIR`, `CD`, `MD`, `RD`, `TYPE`, `COPY`, `MOVE`, `DEL`, `REN`, `CLS`, `VER`, `HELP`, `EXIT` sobre el disco virtual |
-| Ayuda | Temas sobre el funcionamiento, el almacenamiento, los idiomas, el teclado y los créditos |
+| Ayuda | Temas sobre el funcionamiento, el almacenamiento, los idiomas, el teclado, los juegos y los créditos |
 
 La consola **no ejecuta programas del sistema anfitrión**: solo opera sobre el disco virtual y
 lo dice en su propia ventana.
+
+### Búsqueda web real de la ventana de Internet
+
+La ventana de Internet busca **en Internet de verdad**: escribe una consulta en la barra de
+dirección (o en el cuadro de la página de inicio) y los resultados aparecen dentro de la
+ventana, con título, dirección y extracto. Cada resultado se abre en una pestaña real del
+navegador, porque las webs de terceros no se pueden incrustar.
+
+- **Sin cuentas, sin claves y sin servidor propio.** El sitio sigue siendo estático: las
+  consultas van directamente desde el navegador al modo *keyless* de **Tavily**
+  (`api.tavily.com`), que es gratuito y está limitado por visitante.
+- **Honestidad ante los fallos.** Si el servicio agota su límite o no responde, la ventana lo
+  dice en el idioma activo y ofrece reintentar o buscar en Google en el navegador real. Nunca
+  se inventa un resultado.
+- **Cambiar de buscador** es sustituir un solo archivo: `src/core/websearch/searchWeb.ts` es
+  el único módulo que conoce el servicio.
+- **Por qué no es Google directamente:** su API pública de búsqueda web está cerrada a nuevos
+  clientes y se apaga el 1 de enero de 2027, y `google.com` no se puede incrustar en un
+  `<iframe>` porque lo prohíbe con `X-Frame-Options`.
 
 ## Atajos y accesibilidad
 
@@ -184,20 +209,24 @@ lo dice en su propia ventana.
 
 | Recurso | Origen | Licencia |
 | --- | --- | --- |
-| 40 iconos de 32×32 y sus versiones de 16×16 | `scripts/art/icons.mjs` (arte original) | MIT (este repositorio) |
-| 12 cursores monocromos con hotspot | `scripts/art/cursors.mjs` | MIT |
-| Fondos de escritorio | `scripts/art/patterns.mjs`, exportados como SVG | MIT |
+| 52 iconos de 32×32 y sus versiones de 16×16 | `scripts/art/icons.mjs` (arte original) | MIT (este repositorio) |
+| 12 cursores monocromos con hotspot | `scripts/art/cursors.mjs`; flecha clásica basada en JS Paint, ver `scripts/art/THIRD_PARTY.md` | MIT |
+| Fondos originales de Windows 95 | 18 BMP archivados en `public/wallpapers/windows95/`; procedencia en su README | Derechos de sus propietarios originales |
+| Patrones adicionales de escritorio | `scripts/art/patterns.mjs`, exportados como SVG | MIT |
 | Sonidos del sistema | `src/core/sound/sounds.ts`, sintetizados con Web Audio | MIT |
-| Tipografía | Pila de fuentes del sistema (`Tahoma`, `MS Sans Serif`, `Segoe UI`…) | — (no se descarga ninguna fuente) |
+| Tipografía | MS Sans Serif normal y negrita incluidas localmente desde React95; ver `src/assets/fonts/README.md` | MIT |
 
 Sustituciones conscientes respecto a la referencia:
 
-- **Logotipo del botón Inicio**: se usa una marca propia (una «N» sobre placa biselada) en
-  lugar del logotipo de Microsoft.
-- **Franja del menú Inicio**: por defecto dice «Nil Parra 95» en lugar de la marca ajena. Se
-  puede volver al texto literal de la referencia en `src/core/content/branding.ts`.
-- **Iconos, cursores, sonidos y fondos**: recreaciones propias del estilo de la época, no
-  copias de los archivos originales.
+- **Inicio**: reproduce la bandera de cuatro colores y la franja «Windows95» de la
+  referencia. El contenido personal está en el escritorio y en Programas → Portfolio.
+- **Iconos y sonidos**: recreaciones propias del estilo de la época. La flecha
+  usa el bitmap clásico de 11×19 píxeles documentado en `scripts/art/THIRD_PARTY.md`.
+- **Fondo**: el color turquesa clásico es el predeterminado. Se conservan las preferencias
+  de fondo ya guardadas; se pueden cambiar en Propiedades del escritorio.
+- **Fondos originales**: el selector incluye 18 BMP de Windows 95 identificados con
+  el prefijo «Windows 95». Clouds se centra a 640×480; los demás se repiten en mosaico
+  a su tamaño nativo. Se incluyen localmente y la selección se guarda en el navegador.
 - **Barra superior con indicadores de CPU y disco** de la captura de referencia: no se
   reproduce, porque pertenece al emulador que aparece en la imagen y no al sistema.
 
@@ -226,7 +255,7 @@ BASE_PATH=/mi-repositorio/ npm run build && npm run preview
 ## Pruebas
 
 ```bash
-npm test     # 53 pruebas sobre reducer, disco virtual, traducciones y render de cada app
+npm test     # 152 pruebas sobre reducer, disco virtual, traducciones, búsqueda web, póker y render de cada app
 ```
 
 - `src/core/window/reducer.test.ts` — cascada de ventanas, foco, minimizar/restaurar,
@@ -244,6 +273,19 @@ npm test     # 53 pruebas sobre reducer, disco virtual, traducciones y render de
   con `Ctrl+Esc` y aplicación del idioma guardado.
 - `src/apps/apps.smoke.test.tsx` — cada aplicación se monta dentro de sus proveedores reales:
   detecta fallos de render, hooks mal usados y claves de traducción ausentes.
+- `src/apps/solitaire/klondike.test.ts` — reglas del Solitario: reparto determinista por número
+  de partida, robo y reciclado del descarte, validación de movimientos, puntuación y victoria.
+- `src/core/poker/evaluator.test.ts` — categorías y desempates de las manos, escalera de color,
+  la rueda (A-2-3-4-5) y la mejor combinación de cinco entre siete cartas.
+- `src/core/poker/engine.test.ts` — ciegas y orden de turno (incluido el heads-up), subida
+  mínima, all-in corto que no reabre la acción, botes laterales, devolución de la apuesta sin
+  igualar, reparto de botes con fichas impares y final de partida.
+- `src/core/poker/bots.test.ts` — partidas completas de bots: ninguna acción ilegal y las
+  fichas cuadran en cada movimiento hasta que un jugador se lo lleva todo.
+- `src/core/websearch/searchWeb.test.ts` — búsqueda real: normalización de resultados, fallos
+  de red, de límite y de servidor, y URL de respaldo de Google.
+- `src/apps/internet/InternetApp.test.tsx` — la ventana de Internet: resultados dentro de la
+  ventana, enlaces que se abren fuera, historial interno y aviso de límite agotado.
 
 ## Estado y limitaciones conocidas
 
@@ -259,6 +301,13 @@ npm test     # 53 pruebas sobre reducer, disco virtual, traducciones y render de
   correctamente.
 - La consola solo implementa los comandos documentados arriba; no hay `FIND`, `ATTRIB` ni
   redirecciones.
+- La búsqueda web depende de un servicio externo gratuito con límite de consultas por
+  visitante; si se agota, la ventana lo avisa y permite reintentar o abrir Google.
+- El Solitario se juega con el ratón o el dedo; con el teclado se pueden repartir cartas,
+  deshacer y enviar una carta a su fundación (Enter), pero mover cartas entre columnas
+  requiere arrastrar.
+- El Póker es de momento solo local: se juega contra rivales controlados por el ordenador,
+  con dinero ficticio y sin modo online.
 
 ## Créditos y licencia
 

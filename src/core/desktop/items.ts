@@ -48,7 +48,7 @@ export function useDesktopItems(): DesktopItem[] {
         icon: 'computer',
         protectedItem: true,
         open: () =>
-          launch({ appId: 'explorer', params: { folderId: ROOT_ID }, title: t('app.myComputer') }),
+          launch({ appId: 'explorer', params: { folderId: ROOT_ID, myComputer: true }, title: t('app.myComputer') }),
         menu: () => [
           {
             kind: 'item',
@@ -56,7 +56,7 @@ export function useDesktopItems(): DesktopItem[] {
             label: t('desktop.open'),
             iconId: 'computer',
             onSelect: () =>
-              launch({ appId: 'explorer', params: { folderId: ROOT_ID }, title: t('app.myComputer') }),
+              launch({ appId: 'explorer', params: { folderId: ROOT_ID, myComputer: true }, title: t('app.myComputer') }),
           },
           menuSeparator('sep'),
           {
@@ -95,7 +95,7 @@ export function useDesktopItems(): DesktopItem[] {
       })
       .map((node) => ({
         id: `node:${node.id}`,
-        label: node.name,
+        label: nodeDisplayName(node, t),
         icon: iconForNode(node),
         node,
         open: () => void openNode(node),

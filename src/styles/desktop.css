@@ -1,6 +1,6 @@
 /**
  * Desktop, taskbar, start menu and the full screen states (booting, shutting
- * down). Positions are absolute and snapped to the classic 75px icon grid.
+ * down). Positions are absolute and snapped to the enlarged 90px icon grid.
  */
 
 .desktop {
@@ -14,7 +14,25 @@
 .desktop-surface {
   position: absolute;
   inset: 0 0 var(--w95-taskbar-height) 0;
-  overflow: hidden;
+  overflow: auto;
+  scrollbar-width: auto;
+  scrollbar-color: var(--w95-gray) var(--w95-face);
+}
+
+.desktop-surface::-webkit-scrollbar {
+  width: var(--w95-scrollbar-size);
+  height: var(--w95-scrollbar-size);
+}
+
+.desktop-surface::-webkit-scrollbar-track {
+  background: var(--w95-face);
+}
+
+.desktop-surface::-webkit-scrollbar-thumb {
+  background: var(--w95-face);
+  border: 1px solid;
+  border-color: var(--w95-white) var(--w95-black) var(--w95-black) var(--w95-white);
+  box-shadow: inset 1px 1px 0 var(--w95-face-light), inset -1px -1px 0 var(--w95-gray);
 }
 
 /* --- Icons ---------------------------------------------------------- */
@@ -76,7 +94,7 @@
   position: absolute;
   z-index: var(--w95-z-marquee);
   border: 1px dotted #ffffff;
-  background: rgba(255, 255, 255, 0.06);
+  background: transparent;
   pointer-events: none;
 }
 
@@ -127,7 +145,7 @@
 .taskbar-divider {
   flex: 0 0 auto;
   width: 0;
-  height: 20px;
+  height: 26px;
   margin: 0 2px;
   border-left: 1px solid var(--w95-gray);
   border-right: 1px solid var(--w95-white);
@@ -144,7 +162,7 @@
 
 .task-button {
   flex: 0 1 auto;
-  min-width: 60px;
+  min-width: 75px;
   max-width: var(--w95-taskbar-button-max);
   height: var(--w95-taskbar-button-height);
   display: inline-flex;
@@ -246,7 +264,7 @@
 .start-menu-strip {
   flex: 0 0 auto;
   width: var(--w95-start-menu-strip);
-  background: linear-gradient(180deg, #c0c0c0 0%, #c0c0c0 45%, #e4e4e4 100%);
+  background: #808080;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -256,20 +274,24 @@
 .start-menu-strip-text {
   writing-mode: vertical-rl;
   transform: rotate(180deg);
-  color: var(--w95-navy);
-  font-size: 13px;
+  color: var(--w95-white);
+  font-family: Arial, sans-serif;
+  font-size: 22px;
   letter-spacing: 0;
   white-space: nowrap;
 }
 
 .start-menu-strip-brand {
   font-weight: var(--w95-font-weight-bold);
-  font-size: 17px;
+  color: var(--w95-face);
+  font-size: inherit;
 }
 
 .start-menu-items {
+  max-height: calc(100dvh / var(--w95-ui-scale) - var(--w95-taskbar-height) - 10px);
+  overflow-y: auto;
   flex: 1 1 auto;
-  min-width: 176px;
+  min-width: 158px;
   padding: 1px 0;
   margin: 0;
   list-style: none;
@@ -280,7 +302,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  height: 26px;
+  height: 32px;
   padding: 0 18px 0 4px;
   background: transparent;
   border: 0;
@@ -297,8 +319,8 @@
 
 .start-menu-item-icon {
   flex: 0 0 auto;
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
 }
 
 .start-menu-item-arrow {
@@ -326,14 +348,31 @@
 }
 
 .start-submenu {
-  position: absolute;
-  left: 100%;
-  top: -3px;
-  min-width: 150px;
+  position: fixed;
+  min-width: min(190px, calc(100vw / var(--w95-ui-scale) - 4px));
+  max-width: calc(100vw / var(--w95-ui-scale) - 4px);
+  max-height: calc(100dvh / var(--w95-ui-scale) - 4px);
+  overflow-y: auto;
 }
 
 .start-submenu-item {
-  height: 22px;
+  height: 26px;
+}
+
+.start-submenu-item .start-menu-item-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.start-menu-item-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.start-menu-item:disabled {
+  color: var(--w95-disabled-text);
+  text-shadow: 1px 1px var(--w95-white);
 }
 
 .w95--busy,
@@ -405,7 +444,7 @@
 
 @media (pointer: coarse), (max-width: 720px) {
   .desktop-icon {
-    width: 84px;
+    width: var(--w95-icon-cell);
     padding: 6px 4px;
   }
 

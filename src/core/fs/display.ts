@@ -7,7 +7,7 @@ import type { IconId } from '../../assets/generated/icons';
 import { APP_CATALOG } from '../apps/catalog';
 import type { I18nValue } from '../i18n/I18nProvider';
 import { ROOT_ID, type FsNode } from './types';
-import { iconForName, isTextExtension, extensionOf } from './vfsUtils';
+import { baseNameOf, iconForName, isTextExtension, extensionOf } from './vfsUtils';
 
 type Translate = I18nValue['t'];
 
@@ -19,9 +19,33 @@ const SYSTEM_ICONS: Record<string, IconId> = {
   recycleBin: 'recycle-full',
 };
 
+/** Labels of the app shortcuts the disk seed puts on the desktop. */
+const SYSTEM_SHORTCUT_LABELS: Record<string, Parameters<Translate>[0]> = {
+  projects: 'app.projects',
+  about: 'app.about',
+  welcome: 'app.welcome',
+};
+
+/**
+ * A seeded system shortcut shows the name of the app it opens, so the desktop
+ * follows the interface language. Renaming or moving it bumps `updatedAt`, and
+ * from then on the visitor's own name wins.
+ */
+function systemShortcutLabel(node: FsNode): Parameters<Translate>[0] | null {
+  if (node.origin !== 'system' || node.deletedAt !== null) return null;
+  if (node.createdAt !== node.updatedAt) return null;
+  if (node.shortcut?.type !== 'app') return null;
+  return SYSTEM_SHORTCUT_LABELS[node.shortcut.appId] ?? null;
+}
+
 export function nodeDisplayName(node: FsNode, t: Translate): string {
   if (node.id === ROOT_ID || node.parentId === null) return t('folder.drive');
   if (node.systemKey) return t(`folder.${node.systemKey}` as Parameters<Translate>[0]);
+  const shortcutLabel = systemShortcutLabel(node);
+  if (shortcutLabel) return t(shortcutLabel);
+  if (node.shortcut && (extensionOf(node.name) === '.lnk' || extensionOf(node.name) === '.url')) {
+    return baseNameOf(node.name);
+  }
   return node.name;
 }
 
@@ -58,7 +82,7 @@ export function iconForNode(node: FsNode): IconId {
   if (node.shortcut) {
     if (node.shortcut.type === 'app') return APP_CATALOG[node.shortcut.appId]?.icon ?? 'doc-web';
     if (node.shortcut.type === 'url') return 'doc-web';
-    return 'shortcut' in node && node.shortcut.type === 'node' ? 'folder' : 'doc-web';
+    return node.shortcut.type === 'node' ? 'folder' : 'doc-web';
   }
   return iconForName(node.name);
 }

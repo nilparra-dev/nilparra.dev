@@ -4,7 +4,7 @@
  * Nothing here is invented. Values marked with PLACEHOLDER are waiting for the
  * owner to fill them in and are rendered as clearly marked placeholders.
  */
-import { PLACEHOLDER, type Localized } from './types';
+import type { Localized } from './types';
 import type { IconId } from '../../assets/generated/icons';
 
 export interface ProfileLink {
@@ -18,17 +18,21 @@ export interface ProfileLink {
 }
 
 export interface StudyEntry {
+  centreId: string;
+  status: 'current' | 'completed';
   /** Free text, for example "2024 — 2026". */
   period: string;
   title: Localized<string>;
   centre: Localized<string>;
+  centreLogo: string;
   description: Localized<string>;
 }
 
 export interface ExperienceEntry {
-  period: string;
+  period: Localized<string>;
   role: Localized<string>;
   company: string;
+  companyLogo: string;
   description: Localized<string>;
 }
 
@@ -40,6 +44,8 @@ export interface SkillEntry {
 
 export interface ProfileContent {
   displayName: string;
+  photoUrl: string;
+  location: string;
   /** Short name used by the title bars of single-instance windows. */
   shortName: string;
   email: string;
@@ -59,6 +65,8 @@ export interface ProfileContent {
 
 export const PROFILE: ProfileContent = {
   displayName: 'Nil Parra Luna',
+  photoUrl: 'profile/nil-parra.jpg',
+  location: 'Blanes, Girona',
   shortName: 'Nil Parra',
   email: 'nilparra@nilparra.dev',
   // Set these two when the PDF is published inside `public/`:
@@ -91,40 +99,115 @@ export const PROFILE: ProfileContent = {
   ],
 
   tagline: {
-    es: 'Estoy ahora mismo estudiando 2n de ASIX',
-    ca: 'Ara mateix estic estudiant 2n d’ASIX',
-    en: 'I am currently studying the second year of ASIX',
+    es: 'Estudiante de ASIX',
+    ca: 'Estudiant d’ASIX',
+    en: 'ASIX student',
   },
 
   bio: {
     es: [
-      'Estoy ahora mismo estudiando 2n de ASIX.',
-      `${PLACEHOLDER} Escribe aquí dos o tres frases sobre ti: qué te interesa, con qué tecnologías te sientes cómodo y qué buscas ahora mismo.`,
+      'Me interesa especialmente la administración de redes, la ciberseguridad y la inteligencia artificial. Estudio segundo de ASIX y tengo claro que quiero desarrollar mi carrera en el sector informático.',
+      'Me gusta entender cómo funcionan los sistemas y analizar el origen de los problemas antes de buscar una solución. Los proyectos que desarrollo me permiten poner en práctica lo que aprendo y explorar distintas tecnologías.',
+      'Mi siguiente paso es realizar las prácticas profesionales y continuar mi formación con el curso de especialización en Inteligencia Artificial y Big Data.',
     ],
     ca: [
-      'Ara mateix estic estudiant 2n d’ASIX.',
-      `${PLACEHOLDER} Escriu aquí dues o tres frases sobre tu: què t’interessa, amb quines tecnologies et sents còmode i què busques ara mateix.`,
+      'M’interessen especialment l’administració de xarxes, la ciberseguretat i la intel·ligència artificial. Estudio segon d’ASIX i tinc clar que vull desenvolupar la meva carrera en el sector informàtic.',
+      'M’agrada entendre com funcionen els sistemes i analitzar l’origen dels problemes abans de buscar una solució. Els projectes que desenvolupo em permeten posar en pràctica el que aprenc i explorar diferents tecnologies.',
+      'El meu següent pas és fer les pràctiques professionals i continuar la meva formació amb el curs d’especialització en Intel·ligència Artificial i Big Data.',
     ],
     en: [
-      'I am currently studying the second year of ASIX.',
-      `${PLACEHOLDER} Write two or three sentences about yourself here: what you are into, which technologies you feel comfortable with and what you are looking for.`,
+      'I am particularly interested in network administration, cybersecurity and artificial intelligence. I am in my second year of ASIX, a vocational programme in networked computer systems administration, and I know I want to build my career in IT.',
+      'I like understanding how systems work and identifying the cause of a problem before looking for a solution. The projects I develop let me put what I learn into practice and explore different technologies.',
+      'My next step is to complete my work placement and continue my studies with the specialisation course in Artificial Intelligence and Big Data.',
     ],
   },
 
-  /**
-   * Studies, experience and skills are empty on purpose: the owner of the site
-   * has to add the real ones. The About window explains where to do it.
-   *
-   * Template:
-   * {
-   *   period: '2025 — 2027',
-   *   title: { es: 'Ciclo formativo de grado superior', ca: '...', en: '...' },
-   *   centre: { es: 'Nombre del centro', ca: '...', en: '...' },
-   *   description: { es: '...', ca: '...', en: '...' },
-   * }
-   */
-  studies: [],
-  experience: [],
+  studies: [
+    {
+      period: '2025–2027',
+      centreId: 'sa-palomera',
+      status: 'current',
+      centreLogo: 'education/sa-palomera.png',
+      title: {
+        es: 'Grado superior en Administración de Sistemas Informáticos en Red (ASIX)',
+        ca: 'Grau superior en Administració de Sistemes Informàtics en Xarxa (ASIX)',
+        en: 'Higher vocational qualification in Networked Computer Systems Administration (ASIX)',
+      },
+      centre: {
+        es: 'Institut Sa Palomera, Blanes',
+        ca: 'Institut Sa Palomera, Blanes',
+        en: 'Institut Sa Palomera, Blanes',
+      },
+      description: {
+        es: 'Actualmente curso segundo. Finalización prevista en 2027.',
+        ca: 'Actualment curso segon. Finalització prevista el 2027.',
+        en: 'Currently in my second year. Expected completion in 2027.',
+      },
+    },
+    {
+      period: '2023–2025',
+      centreId: 'sa-palomera',
+      status: 'completed',
+      centreLogo: 'education/sa-palomera.png',
+      title: {
+        es: 'Grado medio en Sistemas Microinformáticos y Redes (SMX)',
+        ca: 'Grau mitjà en Sistemes Microinformàtics i Xarxes (SMX)',
+        en: 'Intermediate vocational qualification in Microcomputer Systems and Networks (SMX)',
+      },
+      centre: {
+        es: 'Institut Sa Palomera, Blanes',
+        ca: 'Institut Sa Palomera, Blanes',
+        en: 'Institut Sa Palomera, Blanes',
+      },
+      description: {
+        es: 'Completé el ciclo en 2025 y continué mi formación con ASIX.',
+        ca: 'Vaig completar el cicle el 2025 i vaig continuar la meva formació amb ASIX.',
+        en: 'I completed the programme in 2025 and continued my studies with ASIX.',
+      },
+    },
+    {
+      period: '2019–2023',
+      centreId: 'cor-de-maria',
+      status: 'completed',
+      centreLogo: 'education/cor-de-maria.png',
+      title: {
+        es: 'Educación Secundaria Obligatoria (ESO)',
+        ca: 'Educació Secundària Obligatòria (ESO)',
+        en: 'Compulsory Secondary Education (ESO)',
+      },
+      centre: {
+        es: 'Cor de Maria, Blanes',
+        ca: 'Cor de Maria, Blanes',
+        en: 'Cor de Maria, Blanes',
+      },
+      description: {
+        es: 'Finalicé la ESO en 2023.',
+        ca: 'Vaig acabar l’ESO el 2023.',
+        en: 'I completed secondary education in 2023.',
+      },
+    },
+  ],
+  experience: [
+    {
+      period: {
+        es: 'Oct. 2025 a mar. 2026 · 6 meses',
+        ca: 'Oct. 2025 a març 2026 · 6 mesos',
+        en: 'Oct. 2025 to Mar. 2026 · 6 months',
+      },
+      role: {
+        es: 'Técnico',
+        ca: 'Tècnic',
+        en: 'Technician',
+      },
+      company: 'iDiomund, SL',
+      companyLogo: 'experience/idiomund.png',
+      description: {
+        es: 'Contrato de prácticas · Blanes, Cataluña, España · Presencial',
+        ca: 'Contracte de pràctiques · Blanes, Catalunya, Espanya · Presencial',
+        en: 'Internship · Blanes, Catalonia, Spain · On-site',
+      },
+    },
+  ],
   skills: [],
   extras: {
     es: [],

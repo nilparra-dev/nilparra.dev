@@ -35,7 +35,7 @@ export function PropertiesDialog({ node, onClose }: { node: FsNode; onClose: () 
     >
       <div className="dialog-message properties-dialog">
         <div className="properties-head">
-          <Icon id={iconForNode(node)} size={32} />
+          <Icon id={iconForNode(node)} size={32} shortcut={Boolean(node.shortcut)} />
           <div className="u-grow">
             <p className="u-selectable properties-name">{node.name}</p>
             <p className="u-muted u-selectable">{t('desktop.properties')}</p>

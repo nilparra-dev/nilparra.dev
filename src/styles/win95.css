@@ -6,7 +6,7 @@
  * an inner highlight/shadow pair. No border radius, no blur, no gradients.
  */
 
-.w95 {
+:root {
   --arrow-up: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' shape-rendering='crispEdges'%3E%3Cpath d='M8 4L12 9H4Z' fill='%23000'/%3E%3C/svg%3E");
   --arrow-down: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' shape-rendering='crispEdges'%3E%3Cpath d='M4 7L12 7L8 12Z' fill='%23000'/%3E%3C/svg%3E");
   --arrow-left: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' shape-rendering='crispEdges'%3E%3Cpath d='M9 4L9 12L4 8Z' fill='%23000'/%3E%3C/svg%3E");
@@ -18,6 +18,28 @@
 /* ------------------------------------------------------------------ *
  * Bevels
  * ------------------------------------------------------------------ */
+
+.icon-with-shortcut {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.icon-with-shortcut .icon-art {
+  width: 100%;
+  height: 100%;
+}
+
+.icon-shortcut-overlay {
+  position: absolute;
+  left: -1px;
+  bottom: -1px;
+  width: 50%;
+  height: 50%;
+  max-width: none;
+}
 
 .bevel-up {
   border: 1px solid;
@@ -117,13 +139,14 @@
   padding: 0 4px;
 }
 
-/* Caption buttons of a window: square, 16x14, no focus ring unless keyboard. */
+/* Caption buttons of a window: square, no focus ring unless keyboard. */
 .caption-btn {
+  color: var(--w95-window-text);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
   padding: 0;
   background: var(--w95-face);
   border: 1px solid;
@@ -148,6 +171,22 @@
 .caption-btn:focus-visible {
   outline: 1px dotted var(--w95-black);
   outline-offset: -3px;
+}
+
+/* The left caption icon is a menu affordance, not a raised command button. */
+.caption-btn--system {
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.caption-btn--system:active:not(:disabled) {
+  border: 0;
+  box-shadow: none;
+}
+
+.caption-btn--system:active:not(:disabled) > * {
+  transform: none;
 }
 
 /* ------------------------------------------------------------------ *
@@ -192,6 +231,8 @@ textarea.field {
 /* Custom dropdown: a sunken field plus a raised arrow button. */
 .select {
   display: inline-flex;
+  width: 100%;
+  min-width: 0;
   align-items: stretch;
   height: var(--w95-field-height);
   background: var(--w95-window-bg);
@@ -227,7 +268,9 @@ textarea.field {
 .select-popup {
   position: absolute;
   z-index: var(--w95-z-menus);
-  min-width: 100%;
+  width: max-content;
+  min-width: 0;
+  max-width: calc(100vw / var(--w95-ui-scale) - 4px);
   max-height: 220px;
   overflow: auto;
   padding: 2px;
@@ -243,6 +286,13 @@ textarea.field {
   padding: 3px 6px;
   cursor: var(--cursor-arrow);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.select-option[aria-disabled='true'] {
+  color: var(--w95-disabled-text);
+  text-shadow: 1px 1px var(--w95-white);
 }
 
 .select-option[data-highlighted='true'] {
@@ -412,8 +462,8 @@ textarea.field {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  height: 22px;
-  padding: 0 5px;
+  height: 26px;
+  padding: 0 6px;
   background: transparent;
   border: 1px solid transparent;
   cursor: var(--cursor-arrow);
@@ -442,7 +492,7 @@ textarea.field {
 
 .tool-sep {
   width: 0;
-  height: 18px;
+  height: 22px;
   margin: 0 3px;
   border-left: 1px solid var(--w95-gray);
   border-right: 1px solid var(--w95-white);
@@ -461,8 +511,8 @@ textarea.field {
 }
 
 .menu-bar-item {
-  height: 18px;
-  padding: 0 7px;
+  height: 22px;
+  padding: 0 8px;
   background: transparent;
   border: 0;
   font: inherit;
@@ -488,6 +538,8 @@ textarea.field {
 }
 
 .menu-popup {
+  font: var(--w95-font-size)/1 var(--w95-font);
+  color: var(--w95-window-text);
   position: fixed;
   z-index: var(--w95-z-menus);
   min-width: 130px;
@@ -507,8 +559,9 @@ textarea.field {
   align-items: center;
   gap: 8px;
   height: var(--w95-menuitem-height);
-  padding: 0 20px 0 22px;
+  padding: var(--w95-menuitem-padding);
   white-space: nowrap;
+  font: inherit;
   cursor: var(--cursor-arrow);
 }
 
@@ -546,6 +599,7 @@ textarea.field {
 
 .menu-item-label {
   flex: 1 1 auto;
+  white-space: nowrap;
 }
 
 .menu-item-accel {
@@ -610,6 +664,7 @@ textarea.field {
 }
 
 .title-bar-text {
+  font: inherit;
   flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
@@ -787,7 +842,13 @@ textarea.field {
 
 .w95-scroll {
   overflow: auto;
-  scrollbar-color: var(--w95-face) var(--w95-face-light);
+}
+
+/* Chromium's standard scrollbar-color overrides the classic pseudo-elements. */
+@supports not selector(::-webkit-scrollbar) {
+  .w95-scroll {
+    scrollbar-color: var(--w95-face) var(--w95-face-light);
+  }
 }
 
 .w95-scroll::-webkit-scrollbar {
@@ -975,6 +1036,7 @@ textarea.field {
 .select-wrap {
   position: relative;
   display: inline-flex;
+  min-width: 0;
 }
 
 .slider {

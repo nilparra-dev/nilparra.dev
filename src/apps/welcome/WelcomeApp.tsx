@@ -1,7 +1,7 @@
 import { PROFILE, pick } from '../../core/content';
 import type { AppRenderProps } from '../../core/apps/launcher';
 import { useAppLauncher } from '../../core/apps/launcher';
-import { LOCALE_LABELS, LOCALES, useI18n } from '../../core/i18n/I18nProvider';
+import { isLocale, LOCALE_LABELS, LOCALES, useI18n } from '../../core/i18n/I18nProvider';
 import { usePreferences } from '../../core/prefs/PreferencesProvider';
 import { Button } from '../../ui/Button';
 import { Checkbox } from '../../ui/Checkbox';
@@ -38,9 +38,10 @@ export function WelcomeApp({ windowId }: AppRenderProps) {
           <div className="u-row">
             <Select
               ariaLabel={t('welcome.languageLabel')}
+              className="welcome-language-select"
               value={locale}
               options={LOCALES.map((code) => ({ value: code, label: LOCALE_LABELS[code] }))}
-              onChange={(value) => update({ locale: value as typeof locale })}
+              onChange={(value) => { if (isLocale(value)) update({ locale: value }); }}
             />
           </div>
         </GroupBox>

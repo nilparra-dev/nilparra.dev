@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { useT } from '../i18n/I18nProvider';
+import { uiPixels } from '../../ui/scale';
 import { clampRect } from './layout';
 import type { WindowInstance, WindowRect } from './types';
 import { useWindowManager } from './WindowManagerProvider';
@@ -31,6 +32,7 @@ export function WindowFrame({ instance, active, children }: WindowFrameProps) {
   const [interaction, setInteraction] = useState<'move' | 'size' | null>(null);
   const rootRef = useRef<HTMLElement | null>(null);
   const draftRef = useRef<WindowRect | null>(null);
+  const keyboardOriginRef = useRef<WindowRect | null>(null);
 
   const compact = wm.compact;
   const maximized = instance.state === 'maximized' || compact;
@@ -44,25 +46,39 @@ export function WindowFrame({ instance, active, children }: WindowFrameProps) {
     if (interaction !== 'move' && interaction !== 'size') return;
     const onKeyDown = (event: KeyboardEvent) => {
       const step = event.shiftKey ? 1 : 8;
-      const current = instance.state === 'maximized' ? instance.rect : instance.rect;
+      const current = instance.rect;
       let next: WindowRect | null = null;
       switch (event.key) {
         case 'ArrowLeft':
-          next = { ...current, x: current.x - step };
+          next = interaction === 'move'
+            ? { ...current, x: current.x - step }
+            : { ...current, width: current.width - step };
           break;
         case 'ArrowRight':
-          next = { ...current, x: current.x + step };
+          next = interaction === 'move'
+            ? { ...current, x: current.x + step }
+            : { ...current, width: current.width + step };
           break;
         case 'ArrowUp':
-          next = { ...current, y: current.y - step };
+          next = interaction === 'move'
+            ? { ...current, y: current.y - step }
+            : { ...current, height: current.height - step };
           break;
         case 'ArrowDown':
-          next = { ...current, y: current.y + step };
+          next = interaction === 'move'
+            ? { ...current, y: current.y + step }
+            : { ...current, height: current.height + step };
           break;
         case 'Enter':
+          keyboardOriginRef.current = null;
           setInteraction(null);
           return;
         case 'Escape':
+          if (keyboardOriginRef.current) {
+            if (interaction === 'move') wm.move(instance.id, keyboardOriginRef.current);
+            else wm.resize(instance.id, keyboardOriginRef.current);
+          }
+          keyboardOriginRef.current = null;
           setInteraction(null);
           return;
         default:
@@ -97,8 +113,8 @@ export function WindowFrame({ instance, active, children }: WindowFrameProps) {
       target.setPointerCapture(event.pointerId);
 
       const onMove = (moveEvent: PointerEvent) => {
-        const dx = moveEvent.clientX - origin.x;
-        const dy = moveEvent.clientY - origin.y;
+        const dx = uiPixels(moveEvent.clientX - origin.x);
+        const dy = uiPixels(moveEvent.clientY - origin.y);
         let next: WindowRect = { ...startRect };
         if (kind === 'move') {
           next = { ...startRect, x: startRect.x + dx, y: startRect.y + dy };
@@ -152,14 +168,20 @@ export function WindowFrame({ instance, active, children }: WindowFrameProps) {
         id: 'move',
         label: t('window.move'),
         disabled: instance.state !== 'normal',
-        onSelect: () => setInteraction('move'),
+        onSelect: () => {
+          keyboardOriginRef.current = instance.rect;
+          setInteraction('move');
+        },
       },
       {
         kind: 'item',
         id: 'size',
         label: t('window.size'),
         disabled: instance.state !== 'normal' || !instance.resizable,
-        onSelect: () => setInteraction('size'),
+        onSelect: () => {
+          keyboardOriginRef.current = instance.rect;
+          setInteraction('size');
+        },
       },
       {
         kind: 'item',
@@ -258,8 +280,8 @@ export function WindowFrame({ instance, active, children }: WindowFrameProps) {
       >
         <button
           type="button"
-          className="caption-btn"
-          style={{ width: 16, height: 16 }}
+          className="caption-btn caption-btn--system"
+          style={{ width: 18, height: 18 }}
           aria-label={t('window.systemMenu')}
           aria-haspopup="menu"
           onClick={(event) => {
@@ -296,20 +318,9 @@ export function WindowFrame({ instance, active, children }: WindowFrameProps) {
                 wm.toggleMaximize(instance.id);
               }}
             >
-              {instance.state === 'maximized' ? <RestoreGlyph size={9} /> : <MaximizeGlyph size={9} />}
+              {instance.state === 'maximized' ? <RestoreGlyph /> : <MaximizeGlyph />}
             </button>
           )}
-          <button
-            type="button"
-            className="caption-btn"
-            aria-label={t('window.close')}
-            onClick={() => {
-              closeMenu();
-              wm.close(instance.id);
-            }}
-          >
-            <CloseGlyph size={8} />
-          </button>
           {instance.helpTopicId && (
             <button
               type="button"
@@ -324,6 +335,17 @@ export function WindowFrame({ instance, active, children }: WindowFrameProps) {
               <HelpGlyph size={9} />
             </button>
           )}
+          <button
+            type="button"
+            className="caption-btn"
+            aria-label={t('window.close')}
+            onClick={() => {
+              closeMenu();
+              wm.close(instance.id);
+            }}
+          >
+            <CloseGlyph />
+          </button>
         </div>
       </header>
 

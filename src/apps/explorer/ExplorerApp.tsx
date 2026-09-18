@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { AppRenderProps } from '../../core/apps/launcher';
+import { uiPixels, uiRect } from '../../ui/scale';
 import { useMenuLayer } from '../../ui/menu/MenuLayer';
 import { menuSeparator, type MenuEntry } from '../../ui/menu/types';
 import { MenuBar, type MenuBarMenu } from '../../ui/menu/MenuBar';
@@ -16,8 +17,9 @@ import { useWindowManager } from '../../core/window/WindowManagerProvider';
 import { ROOT_ID, type FsNode } from '../../core/fs/types';
 import { TriangleDown } from '../../ui/glyphs';
 
-type ViewMode = 'large' | 'small' | 'details';
+type ViewMode = 'large' | 'small' | 'list' | 'details';
 type SortKey = 'name' | 'type' | 'size' | 'date';
+const VIEW_MODES: ViewMode[] = ['large', 'small', 'list', 'details'];
 
 interface SortState {
   key: SortKey;
@@ -54,17 +56,26 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
   const [marquee, setMarquee] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const [dragging, setDragging] = useState<{ ids: string[]; x: number; y: number } | null>(null);
   const [dropTargetId, setDropTargetId] = useState<string | null>(null);
+  const [treeWidth, setTreeWidth] = useState(190);
+  const [expandedTree, setExpandedTree] = useState<Set<string>>(() => new Set([ROOT_ID]));
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+  const [renameError, setRenameError] = useState<string | null>(null);
   const surfaceRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const dropTargetRef = useRef<string | null>(null);
+  const renameInputRef = useRef<HTMLInputElement | null>(null);
+  const treeResizeRef = useRef<{ startX: number; startWidth: number } | null>(null);
 
   const folder = vfs.nodeById(folderId);
+  const isMyComputer = folderId === ROOT_ID;
   const isBin = folder?.systemKey === 'recycleBin';
   const collator = useMemo(() => new Intl.Collator(locale, { sensitivity: 'base', numeric: true }), [locale]);
 
   /* Keep the window title in sync with the folder being browsed. */
   useEffect(() => {
-    if (folder) wm.setTitle(windowId, nodeDisplayName(folder, t));
-  }, [folder, t, windowId, wm]);
+    if (folder) wm.setTitle(windowId, isMyComputer ? t('app.myComputer') : nodeDisplayName(folder, t));
+  }, [folder, isMyComputer, t, windowId, wm]);
 
   useEffect(() => {
     if (!vfs.nodeById(folderId)) {
@@ -182,36 +193,63 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
     setSelected([created.id]);
   }, [dialogs, folderId, t, vfs]);
 
-  const renameSelected = useCallback(async () => {
-    const node = selectedNodes[0];
-    if (!node || node.readonly) return;
-    const name = await dialogs.prompt({
-      title: t('desktop.rename'),
-      label: t('common.name'),
-      initialValue: node.name,
-      validate: (value) => {
-        if (!value.trim()) return t('dialog.nameRequired');
-        if (!isValidName(value)) return t('dialog.invalidName');
-        const problem = vfs.validateName(node.parentId ?? folderId, value, node.id);
-        if (problem === 'taken') return t('dialog.nameInUse', { name: value });
-        return null;
-      },
-    });
-    if (name && name !== node.name) await vfs.rename(node.id, name);
-  }, [dialogs, folderId, selectedNodes, t, vfs]);
+  const beginRename = useCallback((node: FsNode | undefined) => {
+    if (!node || node.readonly || node.origin === 'system') return;
+    setRenamingId(node.id);
+    setRenameValue(node.name);
+    setRenameError(null);
+  }, []);
 
-  const destroySelected = useCallback(async () => {
-    if (!selectedNodes.length) return;
+  const finishRename = useCallback(
+    async (commit: boolean) => {
+      const node = renamingId ? vfs.nodeById(renamingId) : undefined;
+      if (!node) {
+        setRenamingId(null);
+        return;
+      }
+      if (!commit) {
+        setRenamingId(null);
+        setRenameError(null);
+        return;
+      }
+      const name = renameValue.trim();
+      if (!name) {
+        setRenameError(t('dialog.nameRequired'));
+        return;
+      }
+      if (!isValidName(name)) {
+        setRenameError(t('dialog.invalidName'));
+        return;
+      }
+      if (vfs.validateName(node.parentId ?? folderId, name, node.id) === 'taken') {
+        setRenameError(t('dialog.nameInUse', { name }));
+        return;
+      }
+      if (name !== node.name) await vfs.rename(node.id, name);
+      setRenamingId(null);
+      setRenameError(null);
+    },
+    [folderId, renameValue, renamingId, t, vfs],
+  );
+
+  useEffect(() => {
+    if (!renamingId) return;
+    renameInputRef.current?.focus({ preventScroll: true });
+    renameInputRef.current?.select();
+  }, [renamingId]);
+
+  const destroySelected = useCallback(async (nodes = selectedNodes) => {
+    if (!nodes.length) return;
     const confirmed = await dialogs.confirm({
       title: t('desktop.delete'),
       kind: 'warning',
       message:
-        selectedNodes.length === 1
-          ? t('dialog.confirmDelete', { name: selectedNodes[0].name })
-          : t('dialog.confirmDeleteMany', { count: selectedNodes.length }),
+        nodes.length === 1
+          ? t('dialog.confirmDelete', { name: nodes[0].name })
+          : t('dialog.confirmDeleteMany', { count: nodes.length }),
     });
     if (!confirmed) return;
-    await vfs.destroy(selectedNodes.map((node) => node.id));
+    await vfs.destroy(nodes.map((node) => node.id));
     setSelected([]);
   }, [dialogs, selectedNodes, t, vfs]);
 
@@ -234,10 +272,24 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
     [folderId, vfs],
   );
 
-  const deleteAction = useCallback(async () => {
-    if (isBin) await destroySelected();
-    else await trash(selectedNodes);
+  const deleteAction = useCallback(async (nodes = selectedNodes) => {
+    if (isBin) await destroySelected(nodes);
+    else await trash(nodes);
   }, [destroySelected, isBin, selectedNodes, trash]);
+
+  const createShortcutFor = useCallback(
+    async (node: FsNode) => {
+      const desktopId = vfs.folders.desktop;
+      if (!desktopId) return;
+      await vfs.createShortcut(
+        desktopId,
+        node.name,
+        { type: 'node', nodeId: node.id },
+        node.kind === 'folder' ? 'folder' : iconForNode(node),
+      );
+    },
+    [vfs],
+  );
 
   /* --- menus -------------------------------------------------------- */
 
@@ -277,7 +329,7 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
             onSelect: () => single && void vfs.exportNode(single.id),
           },
           menuSeparator('sep2'),
-          { kind: 'item', id: 'rename', label: t('desktop.rename'), disabled: !single || single.readonly, onSelect: () => void renameSelected() },
+          { kind: 'item', id: 'rename', label: t('desktop.rename'), disabled: !single || single.readonly || single.origin === 'system', onSelect: () => beginRename(single ?? undefined) },
           { kind: 'item', id: 'delete', label: t('desktop.delete'), disabled: selectionEmpty, onSelect: () => void deleteAction() },
           { kind: 'item', id: 'properties', label: t('desktop.properties'), disabled: !single, onSelect: () => single && void dialogs.properties(single) },
           menuSeparator('sep3'),
@@ -303,6 +355,7 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
         entries: [
           { kind: 'item', id: 'large', label: t('desktop.viewLargeIcons'), checked: view === 'large', radio: true, onSelect: () => setView('large') },
           { kind: 'item', id: 'small', label: t('desktop.viewSmallIcons'), checked: view === 'small', radio: true, onSelect: () => setView('small') },
+          { kind: 'item', id: 'list', label: t('desktop.viewList'), checked: view === 'list', radio: true, onSelect: () => setView('list') },
           { kind: 'item', id: 'details', label: t('desktop.viewDetails'), checked: view === 'details', radio: true, onSelect: () => setView('details') },
           menuSeparator('sep1'),
           {
@@ -368,7 +421,7 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
     navigate,
     openItems,
     paste,
-    renameSelected,
+    beginRename,
     selected,
     selectedNodes,
     sort.key,
@@ -390,7 +443,7 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
         entries.push(
           menuSeparator('sep'),
           { kind: 'item', id: 'restore', label: t('window.restore'), onSelect: () => void vfs.restore(nodes.map((item) => item.id)) },
-          { kind: 'item', id: 'destroy', label: t('desktop.delete'), onSelect: () => void destroySelected() },
+          { kind: 'item', id: 'destroy', label: t('desktop.delete'), onSelect: () => void destroySelected(nodes) },
         );
         entries.push(menuSeparator('sep2'));
         entries.push({ kind: 'item', id: 'properties', label: t('desktop.properties'), disabled: !single, onSelect: () => single && void dialogs.properties(single) });
@@ -402,29 +455,15 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
         { kind: 'item', id: 'copy', label: t('desktop.copy'), onSelect: () => copy(nodes) },
         menuSeparator('sep2'),
         { kind: 'item', id: 'shortcut', label: t('desktop.createShortcut'), disabled: !single, onSelect: () => single && void createShortcutFor(single) },
-        { kind: 'item', id: 'export', label: 'Exportar a mi equipo', disabled: !single || single.kind !== 'file', onSelect: () => single && void vfs.exportNode(single.id) },
+        { kind: 'item', id: 'export', label: t('menu.export'), disabled: !single || single.kind !== 'file', onSelect: () => single && void vfs.exportNode(single.id) },
         menuSeparator('sep3'),
-        { kind: 'item', id: 'delete', label: t('desktop.delete'), disabled: nodes.some((item) => item.readonly), onSelect: () => void deleteAction() },
-        { kind: 'item', id: 'rename', label: t('desktop.rename'), disabled: !single || single.readonly, onSelect: () => void renameSelected() },
+        { kind: 'item', id: 'delete', label: t('desktop.delete'), disabled: nodes.some((item) => item.readonly), onSelect: () => void deleteAction(nodes) },
+        { kind: 'item', id: 'rename', label: t('desktop.rename'), disabled: !single || single.readonly || single.origin === 'system', onSelect: () => beginRename(single ?? undefined) },
         { kind: 'item', id: 'properties', label: t('desktop.properties'), disabled: !single, onSelect: () => single && void dialogs.properties(single) },
       );
       return entries;
     },
-    [copy, cut, deleteAction, destroySelected, dialogs, isBin, openItems, renameSelected, selected, selectedNodes, t, vfs],
-  );
-
-  const createShortcutFor = useCallback(
-    async (node: FsNode) => {
-      const desktopId = vfs.folders.desktop;
-      if (!desktopId) return;
-      await vfs.createShortcut(
-        desktopId,
-        `${node.name}`,
-        { type: 'node', nodeId: node.id },
-        node.kind === 'folder' ? 'folder' : iconForNode(node),
-      );
-    },
-    [vfs],
+    [beginRename, copy, createShortcutFor, cut, deleteAction, destroySelected, dialogs, isBin, openItems, selected, selectedNodes, t, vfs],
   );
 
   /* --- selection and pointer input ---------------------------------- */
@@ -450,51 +489,67 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
   };
 
   const beginItemDrag = (
-    event: React.PointerEvent<HTMLButtonElement>,
+    event: React.PointerEvent<HTMLElement>,
     node: FsNode,
   ) => {
-    if (event.button !== 0 || isBin) return;
+    if (event.button !== 0 || isBin || renamingId) return;
     const nodes = selected.includes(node.id) ? selectedNodes : [node];
     const origin = { x: event.clientX, y: event.clientY };
     let moved = false;
+    const updateDropTarget = (clientX: number, clientY: number) => {
+      const target = document.elementFromPoint(clientX, clientY);
+      const folderElement = target?.closest<HTMLElement>('[data-folder-id]');
+      const nextTarget = folderElement?.dataset.folderId ?? null;
+      dropTargetRef.current = nextTarget;
+      setDropTargetId(nextTarget);
+    };
     const onMove = (moveEvent: PointerEvent) => {
-      if (moved) {
-        setDragging((current) => (current ? { ...current, x: moveEvent.clientX, y: moveEvent.clientY } : current));
-        const target = document.elementFromPoint(moveEvent.clientX, moveEvent.clientY);
-        const folderElement = target?.closest<HTMLElement>('[data-folder-id]');
-        setDropTargetId(folderElement?.dataset.folderId ?? null);
-        return;
+      if (!moved && Math.abs(moveEvent.clientX - origin.x) + Math.abs(moveEvent.clientY - origin.y) < 5) return;
+      if (!moved) {
+        moved = true;
+        setDragging({ ids: nodes.map((item) => item.id), x: uiPixels(moveEvent.clientX), y: uiPixels(moveEvent.clientY) });
+      } else {
+        setDragging((current) =>
+          current ? { ...current, x: uiPixels(moveEvent.clientX), y: uiPixels(moveEvent.clientY) } : current,
+        );
       }
-      if (Math.abs(moveEvent.clientX - origin.x) + Math.abs(moveEvent.clientY - origin.y) < 5) return;
-      moved = true;
-      setDragging({ ids: nodes.map((item) => item.id), x: moveEvent.clientX, y: moveEvent.clientY });
+      updateDropTarget(moveEvent.clientX, moveEvent.clientY);
     };
     const finish = async () => {
       document.removeEventListener('pointermove', onMove);
       document.removeEventListener('pointerup', finish);
-      const targetId = dropTargetId;
+      document.removeEventListener('pointercancel', finish);
+      const targetId = dropTargetRef.current;
+      dropTargetRef.current = null;
       setDragging(null);
       setDropTargetId(null);
       if (!moved || !targetId || targetId === folderId) return;
-      await vfs.move(nodes.map((item) => item.id), targetId);
-      setSelected([]);
+      const target = vfs.nodeById(targetId);
+      if (!target || target.kind !== 'folder') return;
+      if (target.systemKey === 'recycleBin') {
+        if (await trash(nodes)) setSelected([]);
+        return;
+      }
+      if (await vfs.move(nodes.map((item) => item.id), targetId)) setSelected([]);
     };
     document.addEventListener('pointermove', onMove);
     document.addEventListener('pointerup', finish);
+    document.addEventListener('pointercancel', finish);
   };
 
   const beginMarquee = (event: React.PointerEvent<HTMLDivElement>) => {
     if (event.button !== 0 || view === 'details') return;
     const surface = surfaceRef.current;
     if (!surface || event.target !== surface) return;
-    const rect = surface.getBoundingClientRect();
-    const origin = { x: event.clientX - rect.left + surface.scrollLeft, y: event.clientY - rect.top + surface.scrollTop };
+    surface.setPointerCapture(event.pointerId);
+    const rect = uiRect(surface);
+    const origin = { x: uiPixels(event.clientX) - rect.left + surface.scrollLeft, y: uiPixels(event.clientY) - rect.top + surface.scrollTop };
     const base = event.ctrlKey || event.shiftKey ? selected : [];
     if (!base.length) setSelected([]);
     const onMove = (moveEvent: PointerEvent) => {
       const current = {
-        x: moveEvent.clientX - rect.left + surface.scrollLeft,
-        y: moveEvent.clientY - rect.top + surface.scrollTop,
+        x: uiPixels(moveEvent.clientX) - rect.left + surface.scrollLeft,
+        y: uiPixels(moveEvent.clientY) - rect.top + surface.scrollTop,
       };
       const box = {
         x: Math.min(origin.x, current.x),
@@ -521,10 +576,13 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
     const finish = () => {
       surface.removeEventListener('pointermove', onMove);
       surface.removeEventListener('pointerup', finish);
+      surface.removeEventListener('pointercancel', finish);
+      if (surface.hasPointerCapture(event.pointerId)) surface.releasePointerCapture(event.pointerId);
       setMarquee(null);
     };
     surface.addEventListener('pointermove', onMove);
     surface.addEventListener('pointerup', finish);
+    surface.addEventListener('pointercancel', finish);
   };
 
   /* --- keyboard ----------------------------------------------------- */
@@ -532,6 +590,44 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
   useEffect(() => {
     const surface = surfaceRef.current;
     if (!surface) return;
+    const focusItem = (id: string, extend: boolean) => {
+      setFocusedId(id);
+      setSelected((current) => (extend ? [...new Set([...current, id])] : [id]));
+      surface.querySelector<HTMLElement>(`[data-node-id="${id}"]`)?.focus({ preventScroll: true });
+    };
+    const spatialNeighbor = (currentId: string, direction: 'up' | 'down' | 'left' | 'right'): FsNode | undefined => {
+      const currentElement = surface.querySelector<HTMLElement>(`[data-node-id="${currentId}"]`);
+      if (!currentElement || view !== 'large') return undefined;
+      const currentRect = currentElement.getBoundingClientRect();
+      const currentCenter = {
+        x: currentRect.left + currentRect.width / 2,
+        y: currentRect.top + currentRect.height / 2,
+      };
+      let best: { node: FsNode; score: number } | null = null;
+      for (const candidate of items) {
+        if (candidate.id === currentId) continue;
+        const element = surface.querySelector<HTMLElement>(`[data-node-id="${candidate.id}"]`);
+        if (!element) continue;
+        const rect = element.getBoundingClientRect();
+        const center = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+        const primary =
+          direction === 'left'
+            ? currentCenter.x - center.x
+            : direction === 'right'
+              ? center.x - currentCenter.x
+              : direction === 'up'
+                ? currentCenter.y - center.y
+                : center.y - currentCenter.y;
+        if (primary <= 0) continue;
+        const cross =
+          direction === 'left' || direction === 'right'
+            ? Math.abs(center.y - currentCenter.y)
+            : Math.abs(center.x - currentCenter.x);
+        const score = primary * 1000 + cross;
+        if (!best || score < best.score) best = { node: candidate, score };
+      }
+      return best?.node;
+    };
     const onKeyDown = (event: KeyboardEvent) => {
       const index = focusedId ? items.findIndex((item) => item.id === focusedId) : -1;
       switch (event.key) {
@@ -539,18 +635,18 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
         case 'ArrowRight':
           event.preventDefault();
           if (items.length) {
-            const next = items[Math.min(items.length - 1, index + 1)] ?? items[0];
-            setFocusedId(next.id);
-            setSelected([next.id]);
+            const direction = event.key === 'ArrowDown' ? 'down' : 'right';
+            const next = (focusedId ? spatialNeighbor(focusedId, direction) : undefined) ?? items[Math.min(items.length - 1, index + 1)] ?? items[0];
+            focusItem(next.id, event.shiftKey);
           }
           break;
         case 'ArrowUp':
         case 'ArrowLeft':
           event.preventDefault();
           if (items.length) {
-            const next = items[Math.max(0, index - 1)] ?? items[0];
-            setFocusedId(next.id);
-            setSelected([next.id]);
+            const direction = event.key === 'ArrowUp' ? 'up' : 'left';
+            const next = (focusedId ? spatialNeighbor(focusedId, direction) : undefined) ?? items[Math.max(0, index - 1)] ?? items[0];
+            focusItem(next.id, event.shiftKey);
           }
           break;
         case 'Enter':
@@ -563,7 +659,7 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
           break;
         case 'F2':
           event.preventDefault();
-          void renameSelected();
+          beginRename(selectedNodes[0]);
           break;
         case 'Delete':
           event.preventDefault();
@@ -603,7 +699,7 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
     };
     surface.addEventListener('keydown', onKeyDown);
     return () => surface.removeEventListener('keydown', onKeyDown);
-  }, [copy, cut, deleteAction, focusedId, folderId, goUp, items, openItems, paste, renameSelected, selectedNodes, vfs]);
+  }, [beginRename, copy, cut, deleteAction, focusedId, folderId, goUp, items, openItems, paste, selectedNodes, vfs, view]);
 
   /* --- rendering ---------------------------------------------------- */
 
@@ -619,10 +715,44 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
     return result;
   }, [folder, vfs]);
 
+  useEffect(() => {
+    setExpandedTree((current) => {
+      const next = new Set(current);
+      ancestors.forEach((node) => next.add(node.id));
+      return next;
+    });
+  }, [ancestors]);
+
+  const beginTreeResize = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (isMyComputer || event.button !== 0) return;
+    event.preventDefault();
+    treeResizeRef.current = { startX: event.clientX, startWidth: treeWidth };
+    const onMove = (moveEvent: PointerEvent) => {
+      const current = treeResizeRef.current;
+      if (!current) return;
+      setTreeWidth(Math.max(140, Math.min(320, current.startWidth + uiPixels(moveEvent.clientX - current.startX))));
+    };
+    const finish = () => {
+      treeResizeRef.current = null;
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', finish);
+      document.removeEventListener('pointercancel', finish);
+    };
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', finish);
+    document.addEventListener('pointercancel', finish);
+  };
+
   const totalSize = selectedNodes.reduce(
     (sum, node) => sum + (node.kind === 'folder' ? folderSize(vfs.nodes, node.id) : node.size),
     0,
   );
+  const detailColumns: Array<[SortKey, string]> = [
+    ['name', t('common.name')],
+    ['size', t('common.size')],
+    ['type', t('common.type')],
+    ['date', t('common.date')],
+  ];
 
   return (
     <div className="app-explorer">
@@ -630,43 +760,61 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
 
       <div className="toolbar">
         <button type="button" className="tool-btn" onClick={goBack} disabled={historyIndex <= 0}>
-          <Icon id="folder-open" size={16} />
+          <Icon id="nav-back" size={16} />
           <span>{t('menu.back')}</span>
         </button>
         <button type="button" className="tool-btn" onClick={goUp} disabled={!folder?.parentId}>
-          <Icon id="drive" size={16} />
+          <Icon id="nav-up" size={16} />
           <span>{t('menu.up')}</span>
         </button>
         <span className="tool-sep" />
         <button type="button" className="tool-btn" onClick={() => cut(selectedNodes)} disabled={!selectedNodes.length}>
+          <Icon id="cut" size={16} />
           <span>{t('desktop.cut')}</span>
         </button>
         <button type="button" className="tool-btn" onClick={() => copy(selectedNodes)} disabled={!selectedNodes.length}>
+          <Icon id="copy" size={16} />
           <span>{t('desktop.copy')}</span>
         </button>
         <button type="button" className="tool-btn" onClick={() => void paste(folderId)} disabled={!clipboard}>
+          <Icon id="paste" size={16} />
           <span>{t('desktop.paste')}</span>
         </button>
         <button type="button" className="tool-btn" onClick={() => void deleteAction()} disabled={!selectedNodes.length}>
+          <Icon id="delete" size={16} />
           <span>{t('desktop.delete')}</span>
         </button>
         <span className="tool-sep" />
-        {(['large', 'small', 'details'] as ViewMode[]).map((mode) => (
+        {VIEW_MODES.map((mode) => (
           <button
             key={mode}
             type="button"
             className="tool-btn"
             aria-pressed={view === mode}
+            aria-label={
+              mode === 'large'
+                ? t('desktop.viewLargeIcons')
+                : mode === 'small'
+                  ? t('desktop.viewSmallIcons')
+                  : mode === 'list'
+                    ? t('desktop.viewList')
+                    : t('desktop.viewDetails')
+            }
             onClick={() => setView(mode)}
             title={
               mode === 'large'
                 ? t('desktop.viewLargeIcons')
                 : mode === 'small'
                   ? t('desktop.viewSmallIcons')
-                  : t('desktop.viewDetails')
+                  : mode === 'list'
+                    ? t('desktop.viewList')
+                    : t('desktop.viewDetails')
             }
           >
-            <Icon id={mode === 'details' ? 'doc-text' : 'folder'} size={16} />
+            <Icon
+              id={mode === 'large' ? 'view-large' : mode === 'small' ? 'view-small' : mode === 'list' ? 'view-list' : 'view-details'}
+              size={16}
+            />
           </button>
         ))}
       </div>
@@ -686,6 +834,32 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
       </div>
 
       <div className="explorer-body">
+        {!isMyComputer && (
+          <>
+            <ExplorerTree
+              folderId={folderId}
+              width={treeWidth}
+              expanded={expandedTree}
+              dropTargetId={dropTargetId}
+              onToggle={(id) =>
+                setExpandedTree((current) => {
+                  const next = new Set(current);
+                  if (next.has(id)) next.delete(id);
+                  else next.add(id);
+                  return next;
+                })
+              }
+              onNavigate={navigate}
+            />
+            <div
+              className="explorer-splitter"
+              role="separator"
+              aria-orientation="vertical"
+              aria-label={t('common.location')}
+              onPointerDown={beginTreeResize}
+            />
+          </>
+        )}
         <div
           ref={surfaceRef}
           className={`explorer-surface client w95-scroll explorer-surface--${view}`}
@@ -727,14 +901,7 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
             <table className="explorer-details">
               <thead>
                 <tr>
-                  {(
-                    [
-                      ['name', t('common.name')],
-                      ['size', t('common.size')],
-                      ['type', t('common.type')],
-                      ['date', t('common.date')],
-                    ] as Array<[SortKey, string]>
-                  ).map(([key, label]) => (
+                  {detailColumns.map(([key, label]) => (
                     <th key={key} scope="col">
                       <button
                         type="button"
@@ -764,22 +931,51 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
                     key={node.id}
                     className="explorer-details-row"
                     data-selected={selected.includes(node.id) || undefined}
+                    data-folder-id={node.kind === 'folder' ? node.id : undefined}
+                    data-drop-target={dropTargetId === node.id || undefined}
+                    style={dragging ? { opacity: dragging.ids.includes(node.id) ? 0.6 : 1 } : undefined}
                   >
                     <td>
-                      <button
-                        type="button"
-                        className="explorer-details-name"
-                        onClick={(event) => select(node.id, event)}
-                        onDoubleClick={() => void openItems([node])}
-                        onContextMenu={(event) => {
-                          event.preventDefault();
-                          if (!selected.includes(node.id)) select(node.id, { ctrlKey: false, shiftKey: false });
-                          openMenu({ entries: itemMenu(node), x: event.clientX, y: event.clientY });
-                        }}
-                      >
-                        <Icon id={iconForNode(node)} size={16} />
-                        <span>{nodeDisplayName(node, t)}</span>
-                      </button>
+                      {renamingId === node.id ? (
+                        <input
+                          ref={renameInputRef}
+                          className="field explorer-inline-rename"
+                          value={renameValue}
+                          onChange={(event) => {
+                            setRenameValue(event.target.value);
+                            setRenameError(null);
+                          }}
+                          onBlur={() => void finishRename(true)}
+                          onKeyDown={(event) => {
+                            event.stopPropagation();
+                            if (event.key === 'Enter') {
+                              event.preventDefault();
+                              void finishRename(true);
+                            }
+                            if (event.key === 'Escape') {
+                              event.preventDefault();
+                              void finishRename(false);
+                            }
+                          }}
+                        />
+                      ) : (
+                        <button
+                          type="button"
+                          className="explorer-details-name"
+                          data-node-id={node.id}
+                          onPointerDown={(event) => beginItemDrag(event, node)}
+                          onClick={(event) => select(node.id, event)}
+                          onDoubleClick={() => void openItems([node])}
+                          onContextMenu={(event) => {
+                            event.preventDefault();
+                            if (!selected.includes(node.id)) select(node.id, { ctrlKey: false, shiftKey: false });
+                            openMenu({ entries: itemMenu(node), x: event.clientX, y: event.clientY });
+                          }}
+                        >
+                          <Icon id={iconForNode(node)} size={16} shortcut={Boolean(node.shortcut)} />
+                          <span>{nodeDisplayName(node, t)}</span>
+                        </button>
+                      )}
                     </td>
                     <td>{node.kind === 'folder' ? '' : formatBytes(node.size)}</td>
                     <td>{nodeTypeLabel(node, t)}</td>
@@ -789,32 +985,71 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
               </tbody>
             </table>
           ) : (
-            items.map((node) => (
-              <button
-                key={node.id}
-                type="button"
-                role="option"
-                aria-selected={selected.includes(node.id)}
-                data-node-id={node.id}
-                data-folder-id={node.kind === 'folder' && !isBin ? node.id : undefined}
-                className={`explorer-item explorer-item--${view}`}
-                data-selected={selected.includes(node.id) || undefined}
-                data-drop-target={dropTargetId === node.id || undefined}
-                style={dragging ? { opacity: dragging.ids.includes(node.id) ? 0.6 : 1 } : undefined}
-                onPointerDown={(event) => beginItemDrag(event, node)}
-                onClick={(event) => select(node.id, event)}
-                onDoubleClick={() => void openItems([node])}
-                onContextMenu={(event) => {
-                  event.preventDefault();
-                  if (!selected.includes(node.id)) select(node.id, { ctrlKey: false, shiftKey: false });
-                  openMenu({ entries: itemMenu(node), x: event.clientX, y: event.clientY });
-                }}
-              >
-                <Icon id={iconForNode(node)} size={view === 'large' ? 32 : 16} />
-                <span className="explorer-item-label">{nodeDisplayName(node, t)}</span>
-                {view === 'small' && <span className="u-muted explorer-item-type">{nodeTypeLabel(node, t)}</span>}
-              </button>
-            ))
+            items.map((node) =>
+              renamingId === node.id ? (
+                <div
+                  key={node.id}
+                  role="option"
+                  aria-selected={selected.includes(node.id)}
+                  data-node-id={node.id}
+                  data-folder-id={node.kind === 'folder' ? node.id : undefined}
+                  className={`explorer-item explorer-item--${view}`}
+                  data-selected={selected.includes(node.id) || undefined}
+                  data-drop-target={dropTargetId === node.id || undefined}
+                  style={dragging ? { opacity: dragging.ids.includes(node.id) ? 0.6 : 1 } : undefined}
+                >
+                  <Icon id={iconForNode(node)} size={view === 'large' ? 32 : 16} shortcut={Boolean(node.shortcut)} />
+                  <input
+                    ref={renameInputRef}
+                    className="field explorer-inline-rename"
+                    value={renameValue}
+                    onChange={(event) => {
+                      setRenameValue(event.target.value);
+                      setRenameError(null);
+                    }}
+                    onPointerDown={(event) => event.stopPropagation()}
+                    onBlur={() => void finishRename(true)}
+                    onKeyDown={(event) => {
+                      event.stopPropagation();
+                      if (event.key === 'Enter') {
+                        event.preventDefault();
+                        void finishRename(true);
+                      }
+                      if (event.key === 'Escape') {
+                        event.preventDefault();
+                        void finishRename(false);
+                      }
+                    }}
+                  />
+                  {view === 'small' && <span className="u-muted explorer-item-type">{nodeTypeLabel(node, t)}</span>}
+                </div>
+              ) : (
+                <button
+                  key={node.id}
+                  type="button"
+                  role="option"
+                  aria-selected={selected.includes(node.id)}
+                  data-node-id={node.id}
+                  data-folder-id={node.kind === 'folder' ? node.id : undefined}
+                  className={`explorer-item explorer-item--${view}`}
+                  data-selected={selected.includes(node.id) || undefined}
+                  data-drop-target={dropTargetId === node.id || undefined}
+                  style={dragging ? { opacity: dragging.ids.includes(node.id) ? 0.6 : 1 } : undefined}
+                  onPointerDown={(event) => beginItemDrag(event, node)}
+                  onClick={(event) => select(node.id, event)}
+                  onDoubleClick={() => void openItems([node])}
+                  onContextMenu={(event) => {
+                    event.preventDefault();
+                    if (!selected.includes(node.id)) select(node.id, { ctrlKey: false, shiftKey: false });
+                    openMenu({ entries: itemMenu(node), x: event.clientX, y: event.clientY });
+                  }}
+                >
+                  <Icon id={iconForNode(node)} size={view === 'large' ? 32 : 16} shortcut={Boolean(node.shortcut)} />
+                  <span className="explorer-item-label">{nodeDisplayName(node, t)}</span>
+                  {view === 'small' && <span className="u-muted explorer-item-type">{nodeTypeLabel(node, t)}</span>}
+                </button>
+              ),
+            )
           )}
 
           {marquee && (
@@ -827,6 +1062,8 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
           {items.length === 0 && <p className="explorer-empty">{t('explorer.empty')}</p>}
         </div>
       </div>
+
+      {renameError && <p className="explorer-rename-error dialog-error">{renameError}</p>}
 
       <StatusBar
         grip
@@ -860,5 +1097,78 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
         }}
       />
     </div>
+  );
+}
+
+interface ExplorerTreeProps {
+  folderId: string;
+  width: number;
+  expanded: Set<string>;
+  dropTargetId: string | null;
+  onToggle: (id: string) => void;
+  onNavigate: (id: string) => void;
+}
+
+/** Classic left-hand folder tree used while browsing, not in My Computer. */
+function ExplorerTree({ folderId, width, expanded, dropTargetId, onToggle, onNavigate }: ExplorerTreeProps) {
+  const { t, locale } = useI18n();
+  const vfs = useVfs();
+  const collator = useMemo(() => new Intl.Collator(locale, { sensitivity: 'base', numeric: true }), [locale]);
+
+  const childrenOf = (parentId: string) =>
+    vfs
+      .liveChildren(parentId)
+      .filter((node) => node.kind === 'folder')
+      .sort((a, b) => collator.compare(nodeDisplayName(a, t), nodeDisplayName(b, t)));
+
+  const renderNode = (node: FsNode, depth: number): React.ReactNode => {
+    const children = childrenOf(node.id);
+    const isExpanded = expanded.has(node.id);
+    const isCurrent = folderId === node.id;
+    return (
+      <li key={node.id} className="explorer-tree-node">
+        <div
+          className="explorer-tree-row"
+          data-folder-id={node.id}
+          data-drop-target={dropTargetId === node.id || undefined}
+          style={{ paddingLeft: depth * 14 }}
+        >
+          <button
+            type="button"
+            className="explorer-tree-toggle"
+            aria-label={isExpanded ? t('window.restore') : t('desktop.explore')}
+            aria-expanded={children.length ? isExpanded : undefined}
+            disabled={!children.length}
+            onClick={() => onToggle(node.id)}
+          >
+            {children.length ? (isExpanded ? '−' : '+') : ''}
+          </button>
+          <button
+            type="button"
+            className="explorer-tree-item"
+            data-current={isCurrent || undefined}
+            onClick={() => onNavigate(node.id)}
+          >
+            <Icon id={iconForNode(node)} size={16} />
+            <span>{nodeDisplayName(node, t)}</span>
+          </button>
+        </div>
+        {isExpanded && children.length > 0 && (
+          <ul className="explorer-tree-children">
+            {children.map((child) => renderNode(child, depth + 1))}
+          </ul>
+        )}
+      </li>
+    );
+  };
+
+  const root = vfs.nodeById(ROOT_ID);
+  if (!root) return null;
+  return (
+    <aside className="explorer-tree w95-scroll" style={{ flexBasis: width, width }} aria-label={t('menu.go')}>
+      <ul className="explorer-tree-list">
+        {renderNode(root, 0)}
+      </ul>
+    </aside>
   );
 }

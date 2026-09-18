@@ -4,9 +4,36 @@ import { useAppLauncher } from '../apps/launcher';
 import { appNameKey } from '../apps/catalog';
 import { useVfs } from './VfsProvider';
 import { appForNode, nodeDisplayName } from './display';
+import { parseWebUrl } from '../websearch/embed';
 import { getClipboard, setClipboard } from './clipboard';
-import type { FsNode } from './types';
+import { ROOT_ID, type FsNode } from './types';
 import { useDialogs } from '../dialogs/DialogProvider';
+
+export type OpenTarget =
+  | { kind: 'node'; node: FsNode }
+  | { kind: 'app'; appId: string }
+  | { kind: 'url'; url: string }
+  | { kind: 'missing'; node: FsNode }
+  | { kind: 'cycle'; node: FsNode };
+
+/** Resolves a shortcut chain without opening anything or recursing forever. */
+export function resolveShortcutNode(
+  start: FsNode,
+  lookup: (id: string) => FsNode | undefined,
+): OpenTarget {
+  const visited = new Set<string>();
+  let current = start;
+  while (true) {
+    if (visited.has(current.id)) return { kind: 'cycle', node: current };
+    visited.add(current.id);
+    if (current.kind === 'folder' || !current.shortcut) return { kind: 'node', node: current };
+    if (current.shortcut.type === 'app') return { kind: 'app', appId: current.shortcut.appId };
+    if (current.shortcut.type === 'url') return { kind: 'url', url: current.shortcut.url };
+    const linked = lookup(current.shortcut.nodeId);
+    if (!linked) return { kind: 'missing', node: current };
+    current = linked;
+  }
+}
 
 /**
  * Opens a node with the application associated with its type (folders open in
@@ -21,61 +48,72 @@ export function useFileOpener() {
 
   return useCallback(
     async (node: FsNode) => {
-      if (node.kind === 'folder') {
-        launch({
-          appId: 'explorer',
-          params: { folderId: node.id },
-          title: nodeDisplayName(node, t),
-          docKey: `explorer:${node.id}`,
-        });
-        return;
-      }
-
-      if (node.shortcut) {
-        const target = node.shortcut;
-        if (target.type === 'app') {
-          launch({ appId: target.appId });
-          return;
-        }
-        if (target.type === 'url') {
-          window.open(target.url, '_blank', 'noopener,noreferrer');
-          return;
-        }
-        const linked = vfs.nodeById(target.nodeId);
-        if (linked) {
-          launch({
-            appId: 'explorer',
-            params: { folderId: linked.id },
-            title: nodeDisplayName(linked, t),
-            docKey: `explorer:${linked.id}`,
-          });
-          return;
-        }
+      const resolution = resolveShortcutNode(node, vfs.nodeById);
+      if (resolution.kind === 'cycle') {
         await dialogs.alert({
           title: t('dialog.errorTitle'),
           kind: 'error',
-          message: t('dialog.fileNotFound', { name: node.name }),
+          message: t('dialog.shortcutLoop', { name: nodeDisplayName(resolution.node, t) }),
+        });
+        return;
+      }
+      if (resolution.kind === 'missing') {
+        await dialogs.alert({
+          title: t('dialog.errorTitle'),
+          kind: 'error',
+          message: t('dialog.fileNotFound', { name: nodeDisplayName(resolution.node, t) }),
+        });
+        return;
+      }
+      if (resolution.kind === 'app') {
+        launch({ appId: resolution.appId });
+        return;
+      }
+      if (resolution.kind === 'url') {
+        // Web addresses open inside the Internet window; mailto: and other
+        // schemes keep going to the real browser or the mail client.
+        const url = parseWebUrl(resolution.url);
+        if (url) {
+          launch({
+            appId: 'internet',
+            params: { url: url.href },
+            title: nodeDisplayName(node, t),
+            docKey: `internet:${url.href}`,
+          });
+          return;
+        }
+        window.open(resolution.url, '_blank', 'noopener,noreferrer');
+        return;
+      }
+
+      const current = resolution.node;
+      if (current.kind === 'folder') {
+        launch({
+          appId: 'explorer',
+          params: { folderId: current.id, myComputer: current.id === ROOT_ID },
+          title: current.id === ROOT_ID ? t('app.myComputer') : nodeDisplayName(current, t),
+          docKey: `explorer:${current.id}`,
         });
         return;
       }
 
-      const appId = appForNode(node);
+      const appId = appForNode(current);
       if (!appId) {
         const exportIt = await dialogs.confirm({
           title: t('desktop.openWith'),
           kind: 'question',
-          message: t('file.unknown'),
-          detail: node.name,
+          message: t('dialog.noAssociation'),
+          detail: current.name,
         });
-        if (exportIt) await vfs.exportNode(node.id);
+        if (exportIt) await vfs.exportNode(current.id);
         return;
       }
 
       launch({
         appId,
-        params: { fileId: node.id },
-        title: `${node.name} - ${t(appNameKey(appId) ?? 'app.explorer')}`,
-        docKey: `${appId}:${node.id}`,
+        params: { fileId: current.id },
+        title: `${current.name} - ${t(appNameKey(appId) ?? 'app.explorer')}`,
+        docKey: `${appId}:${current.id}`,
       });
     },
     [dialogs, launch, t, vfs],

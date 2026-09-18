@@ -295,6 +295,51 @@ const minesweeper = (c) => {
   frame(c, 22, 18, 6, 2, 'K');
 };
 
+/** Small pixel heart used by the Solitaire icon. */
+function drawHeart(c, cx, cy) {
+  fillEllipse(c, cx - 2, cy - 2, 3, 3, 'R');
+  fillEllipse(c, cx + 2, cy - 2, 3, 3, 'R');
+  for (let i = 0; i <= 4; i += 1) {
+    hLine(c, cx - 4 + i, cy - 1 + i, 9 - i * 2, 'R');
+  }
+  setPixel(c, cx - 3, cy - 3, 'W');
+  setPixel(c, cx - 2, cy - 3, 'W');
+}
+
+const solitaire = (c) => {
+  // Patterned back card, peeking behind the front one.
+  bevel(c, 2, 2, 15, 21, { fill: 'N', light: 'B', dark: 'K', outline: 'K' });
+  for (let y = 5; y <= 20; y += 3) {
+    for (let x = 4; x <= 14; x += 3) {
+      setPixel(c, x + (y % 2), y, 'C');
+    }
+  }
+  // Front card: an ace of hearts.
+  bevel(c, 12, 8, 17, 22, { fill: 'W', light: 'W', dark: 'D', outline: 'K' });
+  text(c, 'A', 14, 10, 'R');
+  drawHeart(c, 20, 21);
+};
+
+const poker = (c) => {
+  // Two chips: a blue one behind, a red one in front.
+  bevelEllipse(c, 20, 12, 11, 11, { fill: 'B', light: 'C', dark: 'N', outline: 'K' });
+  ellipseRing(c, 20, 12, 6, 6, 'W');
+  bevelEllipse(c, 12, 20, 11, 11, { fill: 'R', light: 'F', dark: 'M', outline: 'K' });
+  ellipseRing(c, 12, 20, 6, 6, 'W');
+  // Dashed rim of the front chip.
+  const dashes = [
+    [12, 9],
+    [12, 31],
+    [1, 20],
+    [23, 20],
+    [4, 12],
+    [20, 12],
+    [4, 28],
+    [20, 28],
+  ];
+  dashes.forEach(([x, y]) => setPixel(c, x, y, 'W'));
+};
+
 const mediaPlayer = (c) => {
   bevel(c, 2, 3, 28, 26, { fill: 'L', light: 'W', dark: 'G', outline: 'K' });
   hLine(c, 3, 4, 26, 'N');
@@ -527,6 +572,96 @@ const docUnknown = (c) => {
   text(c, '?', 14, 19, 'K', { scale: 2 });
 };
 
+/* Toolbar glyphs. They are drawn at 32px and downscaled by the asset
+ * generator, so the 16px controls use the same pixel source as the desktop. */
+const navBack = (c) => {
+  folderOpen(c);
+  hLine(c, 3, 27, 14, 'N');
+  setPixel(c, 3, 27, 'K');
+  setPixel(c, 4, 26, 'N');
+  setPixel(c, 4, 28, 'N');
+};
+
+const navUp = (c) => {
+  folder(c);
+  vLine(c, 16, 17, 11, 'N');
+  hLine(c, 11, 18, 11, 'N');
+  setPixel(c, 15, 16, 'N');
+  setPixel(c, 14, 17, 'N');
+  setPixel(c, 17, 16, 'N');
+  setPixel(c, 18, 17, 'N');
+};
+
+const cut = (c) => {
+  bevelEllipse(c, 8, 10, 5, 5, { fill: 'L', light: 'W', dark: 'G', outline: 'K' });
+  bevelEllipse(c, 8, 22, 5, 5, { fill: 'L', light: 'W', dark: 'G', outline: 'K' });
+  for (let i = 0; i < 12; i += 1) {
+    setPixel(c, 12 + i, 13 + Math.round(i * 0.45), 'K');
+    setPixel(c, 12 + i, 19 - Math.round(i * 0.45), 'K');
+  }
+  rect(c, 24, 14, 5, 4, 'R');
+  frame(c, 24, 14, 5, 4, 'K');
+};
+
+const copy = (c) => {
+  rect(c, 8, 3, 17, 22, 'W');
+  frame(c, 8, 3, 17, 22, 'K');
+  rect(c, 4, 8, 17, 21, 'W');
+  frame(c, 4, 8, 17, 21, 'K');
+  hLine(c, 7, 14, 10, 'A');
+  hLine(c, 7, 17, 8, 'A');
+  hLine(c, 7, 20, 10, 'A');
+};
+
+const paste = (c) => {
+  rect(c, 7, 5, 19, 24, 'W');
+  frame(c, 7, 5, 19, 24, 'K');
+  bevel(c, 12, 2, 9, 6, { fill: 'Y', light: 'W', dark: 'O', outline: 'K' });
+  hLine(c, 11, 13, 11, 'A');
+  hLine(c, 11, 17, 8, 'A');
+  hLine(c, 11, 21, 10, 'A');
+};
+
+const deleteIcon = (c) => recycleBin(c, { full: true });
+
+const viewLarge = (c) => {
+  rect(c, 3, 3, 11, 11, 'Y');
+  frame(c, 3, 3, 11, 11, 'K');
+  rect(c, 18, 3, 11, 11, 'Y');
+  frame(c, 18, 3, 11, 11, 'K');
+  rect(c, 3, 18, 11, 11, 'Y');
+  frame(c, 3, 18, 11, 11, 'K');
+  rect(c, 18, 18, 11, 11, 'Y');
+  frame(c, 18, 18, 11, 11, 'K');
+};
+
+const viewSmall = (c) => {
+  for (let row = 0; row < 3; row += 1) {
+    for (let col = 0; col < 4; col += 1) {
+      rect(c, 3 + col * 7, 3 + row * 9, 5, 6, 'Y');
+      frame(c, 3 + col * 7, 3 + row * 9, 5, 6, 'K');
+    }
+  }
+};
+
+const viewList = (c) => {
+  for (let row = 0; row < 4; row += 1) {
+    rect(c, 3, 3 + row * 7, 4, 4, 'Y');
+    frame(c, 3, 3 + row * 7, 4, 4, 'K');
+    hLine(c, 10, 4 + row * 7, 19, 'A');
+  }
+};
+
+const viewDetails = (c) => {
+  rect(c, 3, 3, 26, 6, 'D');
+  frame(c, 3, 3, 26, 6, 'K');
+  for (let row = 0; row < 3; row += 1) {
+    hLine(c, 3, 12 + row * 6, 26, 'A');
+    vLine(c, 3, 12 + row * 6, 5, 'K');
+  }
+  vLine(c, 18, 9, 20, 'G');
+};
+
 const floppy = (c) => {
   bevel(c, 2, 2, 28, 28, { fill: 'A', light: 'D', dark: 'G', outline: 'K' });
   bevelIn(c, 8, 3, 16, 10, { fill: 'D', dark: 'G', light: 'W', outline: 'K' });
@@ -588,11 +723,23 @@ const dialogError = (c) => {
  * ------------------------------------------------------------------ */
 
 const startMark = (c) => {
-  bevel(c, 0, 0, 16, 16, { fill: 'L', light: 'W', dark: 'G', outline: 'K' });
-  text(c, 'N', 4, 1, 'N', { scale: 2 });
-  text(c, 'N', 4, 10, 'N', { scale: 2 });
-  hLine(c, 2, 7, 12, 'A');
-  hLine(c, 2, 8, 12, 'A');
+  // Four panes on a flag that tilts up to the right, like the original mark:
+  // the right column sits two rows higher and the cross steps with it.
+  stamp(c, [
+    '........KKKKKKK.',
+    '........KEEEEEK.',
+    '..KKKKKKKEEEEEK.',
+    '..KRRRRRKEEEEEK.',
+    '..KRRRRRKEEEEEK.',
+    '..KRRRRRKKKKKKK.',
+    '..KRRRRRKYYYYYK.',
+    '..KKKKKKKYYYYYK.',
+    '..KBBBBBKYYYYYK.',
+    '..KBBBBBKYYYYYK.',
+    '..KBBBBBKKKKKKK.',
+    '..KBBBBBK.......',
+    '..KKKKKKK.......',
+  ], 0, 2);
 };
 
 const speaker = (c) => {
@@ -653,6 +800,8 @@ export const ICONS = {
   calculator,
   paint,
   minesweeper,
+  solitaire,
+  poker,
   'media-player': mediaPlayer,
   find,
   run,
@@ -671,6 +820,16 @@ export const ICONS = {
   'doc-web': docWeb,
   'doc-pdf': docPdf,
   'doc-unknown': docUnknown,
+  'nav-back': navBack,
+  'nav-up': navUp,
+  cut,
+  copy,
+  paste,
+  delete: deleteIcon,
+  'view-large': viewLarge,
+  'view-small': viewSmall,
+  'view-list': viewList,
+  'view-details': viewDetails,
   floppy,
   'dialog-info': dialogInfo,
   'dialog-question': dialogQuestion,

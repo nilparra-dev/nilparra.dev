@@ -1,14 +1,11 @@
 /**
  * Brand shown on the vertical strip of the Start menu and in the boot screen.
  *
- * Deliberate substitution: the reference screenshot shows the Microsoft
- * word mark there, which is a trademark and is not ours to use as our own
- * brand, so the default is the owner's name with the same typographic shape.
- * Set it back to `Windows` / `95` if you prefer the literal reference; the
- * README explains the trade off.
+ * The shell reproduces the reference wordmark; personal branding lives in
+ * the portfolio applications rather than replacing system interface labels.
  */
 export const DESKTOP_BRAND = {
-  name: 'Nil Parra',
+  name: 'Windows',
   version: '95',
 };
 

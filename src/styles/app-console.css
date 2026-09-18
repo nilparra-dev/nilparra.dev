@@ -20,10 +20,10 @@
   border: 1px solid;
   border-color: var(--w95-gray) var(--w95-white) var(--w95-white) var(--w95-gray);
   box-shadow: inset 1px 1px 0 var(--w95-black);
-  font-family: 'Lucida Console', 'Courier New', monospace;
+  font-family: var(--w95-mono-font);
   font-size: 12px;
   line-height: 1.35;
-  cursor: var(--cursor-text);
+  cursor: var(--cursor-arrow);
   user-select: text;
 }
 
@@ -54,7 +54,7 @@
   border: 1px solid;
   border-top: 0;
   border-color: var(--w95-gray) var(--w95-white) var(--w95-white) var(--w95-gray);
-  font-family: 'Lucida Console', 'Courier New', monospace;
+  font-family: var(--w95-mono-font);
   font-size: 12px;
 }
 
@@ -66,6 +66,7 @@
   border: 0;
   color: var(--w95-white);
   font: inherit;
+  cursor: var(--cursor-arrow);
 }
 
 .app-console .console-input:focus-visible {

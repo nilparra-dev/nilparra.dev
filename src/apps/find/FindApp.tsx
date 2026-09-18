@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { AppRenderProps } from '../../core/apps/launcher';
 import { useDialogs } from '../../core/dialogs/DialogProvider';
-import { iconForNode, nodeTypeLabel } from '../../core/fs/display';
+import { iconForNode, nodeDisplayName, nodeTypeLabel } from '../../core/fs/display';
 import type { FsNode } from '../../core/fs/types';
 import { formatBytes } from '../../core/fs/vfsUtils';
 import { useFileOpener } from '../../core/fs/useFileOpener';
@@ -191,8 +191,8 @@ export function FindApp({ windowId, params }: AppRenderProps) {
   /* --- results ------------------------------------------------------ */
 
   const ordered = useMemo(
-    () => [...results].sort((a, b) => collator.compare(a.name, b.name)),
-    [collator, results],
+    () => [...results].sort((a, b) => collator.compare(nodeDisplayName(a, t), nodeDisplayName(b, t))),
+    [collator, results, t],
   );
 
   const itemMenu = useCallback(
@@ -375,8 +375,8 @@ export function FindApp({ windowId, params }: AppRenderProps) {
                 }}
               >
                 <span className="find-result-name">
-                  <Icon id={iconForNode(node)} size={16} />
-                  <span className="find-result-text">{node.name}</span>
+                  <Icon id={iconForNode(node)} size={16} shortcut={Boolean(node.shortcut)} />
+                  <span className="find-result-text">{nodeDisplayName(node, t)}</span>
                 </span>
                 <span className="find-result-text">{nodeTypeLabel(node, t)}</span>
                 <span className="find-result-text">{formatBytes(node.size)}</span>

@@ -1,7 +1,7 @@
 /**
  * Desktop icon positions.
  *
- * Icons live on a 75x75 pixel grid (the classic cell size) and only their slot
+ * Icons live on a 90x90 pixel grid (a slightly enlarged classic cell) and only their slot
  * is stored, so the layout survives a resolution change: the grid is
  * recalculated and every icon keeps a valid position.
  */
@@ -12,7 +12,7 @@ export interface IconSlot {
   row: number;
 }
 
-export const ICON_CELL = 75;
+export const ICON_CELL = 90;
 /** Distance from the top-left corner of the desktop, as in the reference. */
 export const ICON_MARGIN = 8;
 
@@ -45,8 +45,8 @@ export function writeIconLayout(layout: IconLayout): void {
 
 export function gridSize(area: { width: number; height: number }): { cols: number; rows: number } {
   return {
-    cols: Math.max(1, Math.floor((area.width - ICON_MARGIN) / ICON_CELL)),
-    rows: Math.max(1, Math.floor((area.height - ICON_MARGIN) / ICON_CELL)),
+    cols: Math.max(1, Math.floor((Math.max(0, area.width) - ICON_MARGIN) / ICON_CELL)),
+    rows: Math.max(1, Math.floor((Math.max(0, area.height) - ICON_MARGIN) / ICON_CELL)),
   };
 }
 
@@ -64,7 +64,10 @@ export function slotKey(slot: IconSlot): string {
 /**
  * Ensures every icon of `ids` has a slot: stored positions are respected and
  * the rest fill the free cells column by column, exactly like the original
- * desktop filled the left side first.
+ * desktop filled the left side first. When a small viewport has more icons
+ * than visible cells, the logical grid continues into extra columns. The
+ * desktop surface can scroll in that exceptional case, so an icon is never
+ * dropped just because the viewport became smaller.
  */
 export function resolveLayout(
   ids: string[],
@@ -73,7 +76,6 @@ export function resolveLayout(
 ): IconLayout {
   const result: IconLayout = {};
   const taken = new Set<string>();
-  const wanted = new Set(ids);
 
   for (const id of ids) {
     const slot = stored[id];
@@ -87,11 +89,11 @@ export function resolveLayout(
   for (const id of ids) {
     if (result[id]) continue;
     let placed = false;
-    // Column by column, and never lose an icon: if the grid runs out of rows
-    // the extra icons keep filling downwards (they become reachable again as
-    // soon as the window is resized or the icons are rearranged).
-    for (let col = 0; col < grid.cols && !placed; col += 1) {
-      for (let row = 0; row < 400 && !placed; row += 1) {
+    // The row limit is the measured grid height. The old implementation used
+    // a hard-coded 400 here, which put every icon below the taskbar instead of
+    // moving to the next column once the visible rows were exhausted.
+    for (let col = 0; col < grid.cols + ids.length && !placed; col += 1) {
+      for (let row = 0; row < grid.rows && !placed; row += 1) {
         const candidate = { col, row };
         if (taken.has(slotKey(candidate))) continue;
         result[id] = candidate;
@@ -99,11 +101,6 @@ export function resolveLayout(
         placed = true;
       }
     }
-  }
-
-  // Drop positions of items that no longer exist.
-  for (const id of Object.keys(result)) {
-    if (!wanted.has(id)) delete result[id];
   }
 
   return result;
@@ -130,7 +127,14 @@ export function nearestFreeSlot(
 
   let best: IconSlot | null = null;
   let bestDistance = Number.POSITIVE_INFINITY;
-  for (let col = 0; col < grid.cols; col += 1) {
+  // Search the visible grid first, then enough overflow columns to guarantee
+  // a free destination even when every visible cell is occupied.
+  const largestExistingColumn = Object.values(layout).reduce(
+    (largest, slot) => Math.max(largest, slot.col),
+    grid.cols - 1,
+  );
+  const searchColumns = Math.max(grid.cols, largestExistingColumn + 2) + movingIds.length;
+  for (let col = 0; col < searchColumns; col += 1) {
     for (let row = 0; row < grid.rows; row += 1) {
       const candidate = { col, row };
       if (taken.has(slotKey(candidate))) continue;

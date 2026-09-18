@@ -22,6 +22,52 @@ export async function loadNodes(): Promise<FsNode[]> {
   return raw.map((entry) => normalizeNode(entry)).filter((node): node is FsNode => node !== null);
 }
 
+/** Checking and seeding share a transaction, including across tabs and StrictMode mounts. */
+export async function initializeNodes(createSeed: () => FsNode[]): Promise<FsNode[]> {
+  await write([STORE_NODES], (tx) => {
+    const store = tx.objectStore(STORE_NODES);
+    const count = store.count();
+    count.onsuccess = () => {
+      if (count.result === 0) createSeed().forEach((node) => store.put(node));
+    };
+  });
+  return loadNodes();
+}
+
+/** Repair untouched system shortcuts produced by the old non-atomic initialisation. */
+export async function repairDuplicateDesktopShortcuts(nodes: FsNode[]): Promise<FsNode[]> {
+  const desktop = nodes.find((node) => node.systemKey === 'desktop');
+  if (!desktop) return nodes;
+  const seen = new Map<string, string>();
+  const replacements = new Map<string, string>();
+  for (const node of nodes) {
+    if (node.parentId !== desktop.id || node.origin !== 'system' || !node.shortcut ||
+        node.deletedAt !== null || node.createdAt !== node.updatedAt) continue;
+    const target = node.shortcut;
+    const key = JSON.stringify([node.name, node.icon, target.type,
+      target.type === 'app' ? target.appId : target.type === 'url' ? target.url : target.nodeId]);
+    const existing = seen.get(key);
+    if (existing) replacements.set(node.id, existing);
+    else seen.set(key, node.id);
+  }
+  if (!replacements.size) return nodes;
+  const changes: FsNode[] = [];
+  const repaired = nodes.filter((node) => !replacements.has(node.id)).map((node) => {
+    if (node.shortcut?.type !== 'node') return node;
+    const targetId = replacements.get(node.shortcut.nodeId);
+    if (!targetId) return node;
+    const updated: FsNode = { ...node, shortcut: { type: 'node', nodeId: targetId } };
+    changes.push(updated);
+    return updated;
+  });
+  await write([STORE_NODES], (tx) => {
+    const store = tx.objectStore(STORE_NODES);
+    changes.forEach((node) => store.put(node));
+    replacements.forEach((_, id) => store.delete(id));
+  });
+  return repaired;
+}
+
 /** Defensive: a stored record could come from an older or tampered schema. */
 export function normalizeNode(input: unknown): FsNode | null {
   if (!input || typeof input !== 'object') return null;

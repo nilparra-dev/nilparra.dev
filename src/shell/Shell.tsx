@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAppLauncher } from '../core/apps/launcher';
 import { DESKTOP_PRODUCT_NAME } from '../core/content/branding';
-import { useDialogs } from '../core/dialogs/DialogProvider';
 import { useVfs } from '../core/fs/VfsProvider';
 import { useI18n } from '../core/i18n/I18nProvider';
 import { usePreferences } from '../core/prefs/PreferencesProvider';
@@ -29,7 +28,6 @@ export function Shell() {
   const { preferences } = usePreferences();
   const { t } = useI18n();
   const vfs = useVfs();
-  const dialogs = useDialogs();
 
   const [startOpen, setStartOpen] = useState(false);
   const [power, setPower] = useState<PowerState>('running');
@@ -153,7 +151,7 @@ export function Shell() {
     );
   }
 
-  const busy = vfs.busy || dialogs.open;
+  const busy = vfs.busy;
   return (
     <div
       className={[
@@ -170,7 +168,6 @@ export function Shell() {
       {startOpen && (
         <StartMenu
           onClose={() => setStartOpen(false)}
-          onSuspend={suspendSession}
           onShutdown={() => {
             setStartOpen(false);
             setShutdownDialog(true);

@@ -5,7 +5,7 @@ import { useVfs } from '../../core/fs/VfsProvider';
 import { formatBytes } from '../../core/fs/vfsUtils';
 import { LOCALE_LABELS, LOCALES, useI18n } from '../../core/i18n/I18nProvider';
 import { usePreferences } from '../../core/prefs/PreferencesProvider';
-import { WALLPAPERS } from '../../core/prefs/wallpapers';
+import { WALLPAPERS, wallpaperStyle } from '../../core/prefs/wallpapers';
 import { playSound } from '../../core/sound/sounds';
 import { useWindowManager } from '../../core/window/WindowManagerProvider';
 import { Button } from '../../ui/Button';
@@ -14,7 +14,6 @@ import { GroupBox } from '../../ui/GroupBox';
 import { Select } from '../../ui/Select';
 import { Slider } from '../../ui/Slider';
 import { Tabs } from '../../ui/Tabs';
-import { patternBackground } from '../../theme/patterns.generated';
 
 type TabId = 'appearance' | 'language' | 'sounds' | 'accessibility' | 'storage' | 'data';
 
@@ -74,7 +73,7 @@ export function ControlPanelApp({ windowId }: AppRenderProps) {
                   value={preferences.wallpaperId}
                   options={WALLPAPERS.map((wallpaper) => ({
                     value: wallpaper.id,
-                    label: t(wallpaper.labelKey),
+                    label: wallpaper.kind === 'bitmap' ? `Windows 95 · ${wallpaper.name}` : t(wallpaper.labelKey),
                   }))}
                   onChange={(value) => update({ wallpaperId: value })}
                 />
@@ -84,13 +83,7 @@ export function ControlPanelApp({ windowId }: AppRenderProps) {
                   <span
                     key={wallpaper.id}
                     className="cp-swatch"
-                    style={{
-                      backgroundColor: wallpaper.color,
-                      backgroundImage:
-                        wallpaper.kind === 'pattern'
-                          ? patternBackground(wallpaper.patternId ?? wallpaper.id)
-                          : undefined,
-                    }}
+                    style={wallpaperStyle(wallpaper, true)}
                   />
                 ))}
               </div>

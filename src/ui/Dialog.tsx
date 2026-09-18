@@ -110,7 +110,7 @@ export function Dialog({
               </button>
             )}
             <button type="button" className="caption-btn" aria-label={t('window.close')} onClick={onClose}>
-              <CloseGlyph size={8} />
+              <CloseGlyph />
             </button>
           </div>
         </header>

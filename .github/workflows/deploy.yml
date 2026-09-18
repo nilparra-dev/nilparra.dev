@@ -1,6 +1,15 @@
 name: Deploy to GitHub Pages
 
-# Builds the static site and publishes it on GitHub Pages.
+# Manual publish to GitHub Pages: Actions -> Deploy to GitHub Pages -> Run
+# workflow. Nothing is published automatically while the repository stays
+# private and the site is not meant to be public yet.
+#
+#   - To deploy on every push to main again, restore this trigger:
+#
+#       on:
+#         push:
+#           branches: [main]
+#         workflow_dispatch:
 #
 #   - Project site (https://<user>.github.io/<repo>/)  -> BASE_PATH is set to
 #     "/<repo>/" automatically.
@@ -10,8 +19,6 @@ name: Deploy to GitHub Pages
 # The site is fully static: no backend, no secrets, no server side rendering.
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -29,9 +36,9 @@ jobs:
     env:
       BASE_PATH: ${{ vars.BASE_PATH || format('/{0}/', github.event.repository.name) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -57,9 +64,9 @@ jobs:
           cp dist/index.html dist/404.html
           touch dist/.nojekyll
 
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
 
@@ -71,4 +78,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

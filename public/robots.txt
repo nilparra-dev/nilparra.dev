@@ -1,0 +1,6 @@
+# The site is a single page: everything is reachable from the root URL.
+# The domain here must match VITE_SITE_URL (see vite.config.ts).
+User-agent: *
+Allow: /
+
+Sitemap: https://nilparra.dev/sitemap.xml

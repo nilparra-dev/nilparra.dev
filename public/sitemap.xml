@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The site has no router: every section lives behind this single URL.
+     The domain here must match VITE_SITE_URL (see vite.config.ts). -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://nilparra.dev/</loc>
+    <lastmod>2026-09-20</lastmod>
+  </url>
+</urlset>

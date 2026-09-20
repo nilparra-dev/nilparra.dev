@@ -75,6 +75,26 @@ primitives; `scripts/art/` draws the icons, the cursors and the wallpaper patter
 assets` writes to `src/assets/generated/`, `src/styles/cursors.generated.css` and the review
 sheets under `qa/` (ignored by git). `predev` and `prebuild` run it automatically.
 
+## SEO and metadata
+
+There is no router, so the site has exactly one address and the landing document has to carry all
+of the metadata itself. `index.html` holds the prose (title, description, Open Graph, X card,
+canonical, robots) and the seo plugin of `vite.config.ts` fills in the two things that cannot be
+written by hand:
+
+- `%SITE_URL%`, the canonical domain. `%BASE_URL%` only carries the path, and social networks and
+  search engines need the scheme and the host. The domain is written once, as `VITE_SITE_URL`,
+  and `public/CNAME`, `public/robots.txt` and `public/sitemap.xml` mirror it.
+- `%STRUCTURED_DATA%`, a `ProfilePage` with a `Person` inside, built from `PROFILE`, `studies`,
+  `links` and `skills`. Generating it means the description a crawler reads cannot drift from the
+  one the desktop shows, and optional sections simply do not appear while their content is empty.
+
+The plugin fails the build when a marker is missing or duplicated: a literal `%STRUCTURED_DATA%`
+would be visible text to the visitor, and silent structured data is worse than a broken build.
+
+The `404.html` that the Pages workflow copies from `index.html` is marked `noindex`, since Pages
+answers unknown paths with a 404 status and the copy must never compete with the landing page.
+
 ## Tests and CI
 
 Vitest with jsdom and `fake-indexeddb`. Unit tests cover the window reducer, layout persistence,

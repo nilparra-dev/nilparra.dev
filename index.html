@@ -4,20 +4,56 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="light" />
-    <title>Nil Parra Luna — Escritorio</title>
+    <!-- `max-image-preview:large` is what allows a full-width thumbnail in Google. -->
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <title>Nil Parra Luna — ASIX · Redes, ciberseguridad e IA</title>
     <meta
       name="description"
-      content="Sitio personal de Nil Parra Luna: un escritorio interactivo inspirado en Windows 95 con su portfolio dentro del ordenador."
+      content="Portfolio de Nil Parra Luna, estudiante de ASIX en Blanes: administración de redes, ciberseguridad e inteligencia artificial en un escritorio interactivo."
     />
     <meta name="author" content="Nil Parra Luna" />
     <meta name="theme-color" content="#c0c0c0" />
+    <link rel="canonical" href="%SITE_URL%/" />
+
+    <!--
+      Absolute addresses (canonical, og:url, og:image) cannot be built from the
+      base path: search engines and social networks need the scheme and the
+      host. The site URL and the structured data are injected at build time by
+      the seo plugin of vite.config.ts, the only place where the domain lives.
+    -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Nil Parra Luna — Escritorio" />
+    <meta property="og:site_name" content="Nil Parra Luna" />
+    <meta property="og:locale" content="es_ES" />
+    <meta property="og:locale:alternate" content="ca_ES" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:url" content="%SITE_URL%/" />
+    <meta property="og:title" content="Nil Parra Luna — ASIX · Redes, ciberseguridad e IA" />
     <meta
       property="og:description"
-      content="Escritorio interactivo inspirado en Windows 95 con el portfolio de Nil Parra Luna."
+      content="Portfolio de Nil Parra Luna, estudiante de ASIX en Blanes: administración de redes, ciberseguridad e inteligencia artificial en un escritorio interactivo."
     />
-    <link rel="icon" type="image/png" href="%BASE_URL%favicon.png" />
+    <meta property="og:image" content="%SITE_URL%/social-preview.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+    <meta
+      property="og:image:alt"
+      content="Escritorio de Windows 95 con el portfolio de Nil Parra Luna: ventanas, iconos y una partida de Solitario abierta."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:image:alt"
+      content="Escritorio de Windows 95 con el portfolio de Nil Parra Luna: ventanas, iconos y una partida de Solitario abierta."
+    />
+
+    <link rel="icon" href="%BASE_URL%favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="%BASE_URL%favicon.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="%BASE_URL%apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="Nil Parra" />
+    <link rel="manifest" href="%BASE_URL%manifest.webmanifest" />
+
+    %STRUCTURED_DATA%
   </head>
   <body>
     <div id="root"></div>

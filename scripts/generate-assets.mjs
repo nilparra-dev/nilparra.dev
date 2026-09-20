@@ -12,7 +12,13 @@
  *   src/styles/cursors.generated.css      ready to use `cursor` values
  *   src/theme/patterns.generated.ts       repeating SVG wallpaper tiles
  *   src/assets/generated/*.ts             static imports typed for Vite
- *   public/favicon.png
+ *   public/favicon.png                    32x32 app icon
+ *   public/favicon.ico                    16/32/48 Windows icon
+ *   public/favicon.svg                    scalable copy of the same art
+ *   public/apple-touch-icon.png           180x180 icon for iOS
+ *   public/icon-192.png                   Android/PWA icon
+ *   public/icon-512.png                   Android/PWA icon
+ *   public/icon-maskable-512.png          Android adaptive icon
  *   qa/*.png                              contact sheets for visual review
  */
 import fs from 'node:fs';
@@ -88,6 +94,33 @@ function svgFromCanvas(canvas) {
     }
   }
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}" viewBox="0 0 ${canvas.width} ${canvas.height}" shape-rendering="crispEdges">${parts.join('')}</svg>`;
+}
+
+/**
+ * ICO container whose entries carry PNG payloads, which every shell since
+ * Windows Vista understands. Sizes are addressed by byte, so the browser can
+ * pick the closest one instead of rescaling a single bitmap.
+ */
+function encodeICO(entries) {
+  const header = Buffer.alloc(6);
+  header.writeUInt16LE(0, 0); // reserved
+  header.writeUInt16LE(1, 2); // 1 = icon
+  header.writeUInt16LE(entries.length, 4);
+  let offset = 6 + entries.length * 16;
+  const directory = entries.map(({ size, png }) => {
+    const entry = Buffer.alloc(16);
+    entry.writeUInt8(size >= 256 ? 0 : size, 0); // width, 0 means 256
+    entry.writeUInt8(size >= 256 ? 0 : size, 1); // height
+    entry.writeUInt8(0, 2); // palette size: truecolour
+    entry.writeUInt8(0, 3); // reserved
+    entry.writeUInt16LE(1, 4); // colour planes
+    entry.writeUInt16LE(32, 6); // bits per pixel
+    entry.writeUInt32LE(png.length, 8);
+    entry.writeUInt32LE(offset, 12);
+    offset += png.length;
+    return entry;
+  });
+  return Buffer.concat([header, ...directory, ...entries.map((entry) => entry.png)]);
 }
 
 /* --------------------------------------------------------------- *
@@ -236,12 +269,47 @@ export function patternBackground(id: string): string {
 );
 
 /* --------------------------------------------------------------- *
- * 4. Favicon + contact sheets
+ * 4. Favicon, application icons + contact sheets
  * --------------------------------------------------------------- */
 
-const favicon = createCanvas(32, 32);
-ICONS.computer(favicon);
-writePNG('public/favicon.png', favicon);
+const faviconArt = createCanvas(32, 32);
+ICONS.computer(faviconArt);
+writePNG('public/favicon.png', faviconArt);
+write('public/favicon.svg', svgFromCanvas(faviconArt));
+
+/* The raster helpers only scale by whole factors, so 48x48 (still requested by
+ * Windows shells) is scaled up to 96 and down again instead of interpolated. */
+write(
+  'public/favicon.ico',
+  encodeICO([
+    { size: 16, png: encodePNG(downscale(faviconArt, 2)) },
+    { size: 32, png: encodePNG(faviconArt) },
+    { size: 48, png: encodePNG(downscale(scaleUp(faviconArt, 3), 2)) },
+  ]),
+);
+
+/**
+ * Icon drawn the way the platforms want it: the art centred on the desktop
+ * teal instead of on transparency. Android and iOS paint their own mask, so
+ * the padding keeps the art inside the safe area (a 512 square masked by a
+ * circle of 80% diameter only keeps what fits in a 288px square).
+ */
+function iconTile(color, size, factor) {
+  const canvas = createCanvas(size, size);
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) canvas.pixels[y * size + x] = color;
+  }
+  const art = faviconArt.width * factor;
+  const offset = Math.floor((size - art) / 2);
+  blit(canvas, faviconArt, offset, offset, factor);
+  return canvas;
+}
+
+const ICON_COLOR = '#008080';
+writePNG('public/icon-192.png', iconTile(ICON_COLOR, 192, 5));
+writePNG('public/icon-512.png', iconTile(ICON_COLOR, 512, 15));
+writePNG('public/icon-maskable-512.png', iconTile(ICON_COLOR, 512, 9));
+writePNG('public/apple-touch-icon.png', iconTile(ICON_COLOR, 180, 5));
 
 function sheetOptions() {
   return { columns: 8, cell: 40, scale: 2, background: '#c0c0c0', pad: 6 };
@@ -300,4 +368,5 @@ console.log(`  icons:    ${iconIds.length} (plus 16x16 variants)`);
 console.log(`  chrome:   ${smallIconIds.length}`);
 console.log(`  cursors:  ${Object.keys(CURSORS).length}`);
 console.log(`  patterns: ${Object.keys(PATTERNS).length}`);
+console.log('  browsers: favicon.png, favicon.ico, favicon.svg, apple-touch-icon.png, icon-{192,512}.png');
 console.log('  review:   qa/icons-sheet@2x.png, qa/cursors-sheet@3x.png, qa/pattern-*@3x.png');

@@ -11,10 +11,14 @@ name: Deploy to GitHub Pages
 #           branches: [main]
 #         workflow_dispatch:
 #
-#   - Project site (https://<user>.github.io/<repo>/)  -> BASE_PATH is set to
-#     "/<repo>/" automatically.
-#   - User site or custom domain (https://example.com/) -> set BASE_PATH to "/"
-#     editing the env block below (or add a repository variable named BASE_PATH).
+#   - Custom domain (the current setup, https://nilparra.dev/) -> BASE_PATH and
+#     SITE_URL default to the custom domain through public/CNAME. The domain
+#     must also be configured in Settings -> Pages so GitHub can issue the
+#     certificate and enforce HTTPS.
+#   - Project site (https://<user>.github.io/<repo>/) -> set the repository
+#     variable BASE_PATH to "/<repo>/" and SITE_URL to the full project URL, so
+#     the canonical address and the structured data keep pointing at the real
+#     domain instead of the preview one.
 #
 # The site is fully static: no backend, no secrets, no server side rendering.
 
@@ -34,7 +38,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      BASE_PATH: ${{ vars.BASE_PATH || format('/{0}/', github.event.repository.name) }}
+      BASE_PATH: ${{ vars.BASE_PATH || '/' }}
+      SITE_URL: ${{ vars.SITE_URL || 'https://nilparra.dev' }}
     steps:
       - uses: actions/checkout@v7
 
@@ -54,14 +59,18 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          # Vite reads VITE_BASE; BASE_PATH keeps the workflow readable.
+          # Vite reads VITE_BASE and VITE_SITE_URL; the BASE_PATH/SITE_URL names
+          # keep the workflow readable.
           VITE_BASE: ${{ env.BASE_PATH }}
+          VITE_SITE_URL: ${{ env.SITE_URL }}
 
       # Reloading a deep link on Pages must not 404: the app is a single page,
-      # so index.html answers for unknown paths as well.
+      # so index.html answers for unknown paths as well. Pages still answers
+      # with a 404 status, so the copy is marked noindex: it must never be
+      # indexed as a second copy of the landing page.
       - name: Add the SPA fallback
         run: |
-          cp dist/index.html dist/404.html
+          node -e "const fs=require('fs');const html=fs.readFileSync('dist/index.html','utf8');fs.writeFileSync('dist/404.html',html.replace('</head>','<meta name=\"robots\" content=\"noindex\" /></head>'))"
           touch dist/.nojekyll
 
       - uses: actions/configure-pages@v6

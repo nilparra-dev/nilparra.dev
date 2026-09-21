@@ -210,6 +210,7 @@ export const en: Catalog = {
   'menu.export': 'Export to my computer…',
   'common.items': '{count} objects',
   'explorer.empty': 'This folder is empty',
+  'explorer.folderPane': 'Folder pane',
 
   'notepad.new': 'New',
   'notepad.open': 'Open…',

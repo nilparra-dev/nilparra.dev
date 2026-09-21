@@ -19,6 +19,8 @@ export interface Preferences {
   /** Draws a solid plate behind desktop icon labels for readability. */
   highContrastLabels: boolean;
   autoArrangeIcons: boolean;
+  /** Explorer windows show the folder tree on the left. */
+  showExplorerTree: boolean;
 }
 
 export const DEFAULT_PREFERENCES: Preferences = {
@@ -30,6 +32,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
   reduceMotion: false,
   highContrastLabels: false,
   autoArrangeIcons: true,
+  showExplorerTree: true,
 };
 
 /** Defensive read: stored values can come from a modified or older client. */
@@ -64,6 +67,10 @@ export function sanitizePreferences(input: unknown): Preferences {
       typeof source.autoArrangeIcons === 'boolean'
         ? source.autoArrangeIcons
         : DEFAULT_PREFERENCES.autoArrangeIcons,
+    showExplorerTree:
+      typeof source.showExplorerTree === 'boolean'
+        ? source.showExplorerTree
+        : DEFAULT_PREFERENCES.showExplorerTree,
   };
 }
 

@@ -212,6 +212,7 @@ export const ca: Catalog = {
   'menu.export': 'Exporta al meu equip…',
   'common.items': '{count} objectes',
   'explorer.empty': 'Aquesta carpeta és buida',
+  'explorer.folderPane': 'Panell de carpetes',
 
   'notepad.new': 'Nou',
   'notepad.open': 'Obre…',

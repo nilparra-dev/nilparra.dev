@@ -41,9 +41,11 @@ jobs:
       BASE_PATH: ${{ vars.BASE_PATH || '/' }}
       SITE_URL: ${{ vars.SITE_URL || 'https://nilparra.dev' }}
     steps:
-      - uses: actions/checkout@v7
+      # Pinned by commit: tags are mutable, a compromised tag would run code
+      # inside CI with pages permissions. Dependabot keeps the pins up to date.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: 22
           cache: npm
@@ -73,9 +75,9 @@ jobs:
           node -e "const fs=require('fs');const html=fs.readFileSync('dist/index.html','utf8');fs.writeFileSync('dist/404.html',html.replace('</head>','<meta name=\"robots\" content=\"noindex\" /></head>'))"
           touch dist/.nojekyll
 
-      - uses: actions/configure-pages@v6
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
 
-      - uses: actions/upload-pages-artifact@v5
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
         with:
           path: dist
 
@@ -87,4 +89,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5

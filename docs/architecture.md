@@ -97,6 +97,12 @@ would be visible text to the visitor, and silent structured data is worse than a
 The `404.html` that the Pages workflow copies from `index.html` is marked `noindex`, since Pages
 answers unknown paths with a 404 status and the copy must never compete with the landing page.
 
+## Security
+
+Security controls and the production hardening plan are documented in [security.md](security.md):
+the CSP meta and frame guard, the sandboxed embeds, the storage normalisation and the pipeline
+rules (pinned actions, audit gate, least-privilege deployment).
+
 ## Tests and CI
 
 Vitest with jsdom and `fake-indexeddb`. Unit tests cover the window reducer, layout persistence,

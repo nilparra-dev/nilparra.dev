@@ -1147,6 +1147,9 @@ function ExplorerTree({ folderId, width, expanded, dropTargetId, onToggle, onNav
       .sort((a, b) => collator.compare(nodeDisplayName(a, t), nodeDisplayName(b, t)));
 
   const renderNode = (node: FsNode, depth: number): React.ReactNode => {
+    // A tampered store can hold a parent cycle; the depth cap turns it into a
+    // truncated branch instead of a stack overflow.
+    if (depth > 32) return null;
     const children = childrenOf(node.id);
     const isExpanded = expanded.has(node.id);
     const isCurrent = folderId === node.id;

@@ -149,6 +149,7 @@ export const es = {
   'dialog.fileNotFound': 'No se encuentra el archivo {name}.',
   'dialog.noAssociation': 'No hay ningún programa asociado a este tipo de archivo. ¿Quieres exportarlo a tu equipo?',
   'dialog.shortcutLoop': 'El acceso directo «{name}» forma un ciclo y no se puede abrir.',
+  'dialog.shortcutUnsafe': 'El destino del acceso directo «{name}» no es una dirección web válida, así que no se abre.',
   'dialog.nameRequired': 'Escribe un nombre.',
   'dialog.invalidName': 'El nombre no puede contener \\ / : * ? " < > |',
   'dialog.nameInUse': 'Ya existe un elemento con el nombre «{name}» en esta carpeta.',

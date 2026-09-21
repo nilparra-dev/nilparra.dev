@@ -138,6 +138,7 @@ export const en: Catalog = {
   'dialog.fileNotFound': 'The file {name} cannot be found.',
   'dialog.noAssociation': 'No program is associated with this file type. Do you want to export it to your computer?',
   'dialog.shortcutLoop': 'The shortcut “{name}” forms a loop and cannot be opened.',
+  'dialog.shortcutUnsafe': 'The target of the shortcut “{name}” is not a valid web address, so it will not be opened.',
   'dialog.nameRequired': 'Type a name.',
   'dialog.invalidName': 'The name cannot contain \\ / : * ? " < > |',
   'dialog.nameInUse': 'An item named “{name}” already exists in this folder.',

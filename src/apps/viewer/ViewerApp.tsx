@@ -224,7 +224,17 @@ export function ViewerApp({ windowId, params }: AppRenderProps) {
             className="viewer-page-wrap"
             style={mode === 'zoom' ? { transform: `scale(${zoom})` } : undefined}
           >
-            <iframe className="viewer-page" src={source.url} title={source.name} />
+            {/*
+             * The source is a blob: URL of our own origin, so the document
+             * inside would run with the full privileges of the site. No
+             * allow-* token at all: a PDF viewer needs nothing else.
+             */}
+            <iframe
+              className="viewer-page"
+              src={source.url}
+              title={source.name}
+              sandbox=""
+            />
           </div>
         )}
       </div>

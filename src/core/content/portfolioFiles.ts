@@ -210,7 +210,7 @@ export function portfolioFiles(locale: Locale): Array<{ folder: string[]; name: 
     { folder: [], name: 'README.txt', content: README },
     { folder: [], name: 'Sobre-mi.txt', content: ABOUT },
     { folder: [], name: 'Contacto.txt', content: CONTACT },
-    { folder: [], name: 'Proyectos\\README.txt', content: PROJECTS_README },
+    { folder: ['Proyectos'], name: 'README.txt', content: PROJECTS_README },
     ...PROJECTS.map((_, index) => projectFile(index)),
   ];
   return seeds.map((seed) => ({

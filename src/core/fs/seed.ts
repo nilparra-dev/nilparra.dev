@@ -19,6 +19,9 @@ import { PROFILE } from '../content/profile';
 import { mimeForName } from './vfsUtils';
 import { ROOT_ID, type FsNode, type SystemFolderKey } from './types';
 
+/** Name of the note the seed writes in `C:\Documents`. */
+export const WELCOME_FILE_NAME = 'Bienvenida.txt';
+
 /** Internal names are English and stable; the UI translates the systemKey. */
 const SYSTEM_FOLDERS: Array<{ key: SystemFolderKey; name: string }> = [
   { key: 'desktop', name: 'Desktop' },
@@ -139,7 +142,7 @@ export function buildSeed(locale: Locale, now = Date.now()): SeedResult {
   }
 
   /* --- C:\Documents ------------------------------------------------- */
-  nodes.push(textFile(folders.documents, 'Bienvenida.txt', welcomeNote(locale), 'user', false, now));
+  nodes.push(textFile(folders.documents, WELCOME_FILE_NAME, welcomeNote(locale), 'user', false, now));
 
   /* --- C:\Portfolio (read only, restorable) ------------------------- */
   const portfolioFolders = new Map<string, string>();

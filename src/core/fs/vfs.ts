@@ -14,7 +14,16 @@ import {
   storageEstimate,
   write,
 } from './db';
+import { welcomeNote } from '../content/portfolioFiles';
+import { WELCOME_FILE_NAME } from './seed';
 import { FsError, type FsBlob, type FsNode, type SystemFolderKey } from './types';
+
+/**
+ * Texts the seed has written into the welcome note, one per language. A copy
+ * that no longer matches is one the visitor edited, and it wins over the
+ * untouched duplicates.
+ */
+const WELCOME_TEXTS = new Set([welcomeNote('es'), welcomeNote('ca'), welcomeNote('en')]);
 
 /** Reads every node (including the ones in the Recycle Bin). */
 export async function loadNodes(): Promise<FsNode[]> {
@@ -34,38 +43,143 @@ export async function initializeNodes(createSeed: () => FsNode[]): Promise<FsNod
   return loadNodes();
 }
 
-/** Repair untouched system shortcuts produced by the old non-atomic initialisation. */
-export async function repairDuplicateDesktopShortcuts(nodes: FsNode[]): Promise<FsNode[]> {
-  const desktop = nodes.find((node) => node.systemKey === 'desktop');
-  if (!desktop) return nodes;
-  const seen = new Map<string, string>();
-  const replacements = new Map<string, string>();
-  for (const node of nodes) {
-    if (node.parentId !== desktop.id || node.origin !== 'system' || !node.shortcut ||
-        node.deletedAt !== null || node.createdAt !== node.updatedAt) continue;
-    const target = node.shortcut;
-    const key = JSON.stringify([node.name, node.icon, target.type,
-      target.type === 'app' ? target.appId : target.type === 'url' ? target.url : target.nodeId]);
-    const existing = seen.get(key);
-    if (existing) replacements.set(node.id, existing);
-    else seen.set(key, node.id);
-  }
-  if (!replacements.size) return nodes;
+/** Deepest folder chain the repair walks; deeper chains are treated as corrupt. */
+const MAX_REPAIR_DEPTH = 32;
+
+/** Written once and never edited, renamed or moved since. */
+function isUntouched(node: FsNode): boolean {
+  return node.createdAt === node.updatedAt;
+}
+
+/**
+ * Duplicates left behind by the old non-atomic initialisation: two mounts
+ * could seed an empty disk at the same time, and every node the seed creates
+ * with a random id (desktop shortcuts, the note in Documents and the whole
+ * portfolio subtree) ended up written twice.
+ *
+ * Only untouched copies are removed. Visitor files, and any copy that was
+ * edited, renamed or moved, keep their place; a shortcut that points to a
+ * removed copy is redirected to the one that stays.
+ */
+export async function repairDuplicateSeedNodes(nodes: FsNode[]): Promise<FsNode[]> {
+  const removals = planDuplicateRemovals(nodes);
+  if (!removals.size) return nodes;
   const changes: FsNode[] = [];
-  const repaired = nodes.filter((node) => !replacements.has(node.id)).map((node) => {
-    if (node.shortcut?.type !== 'node') return node;
-    const targetId = replacements.get(node.shortcut.nodeId);
-    if (!targetId) return node;
-    const updated: FsNode = { ...node, shortcut: { type: 'node', nodeId: targetId } };
-    changes.push(updated);
-    return updated;
-  });
+  const repaired = nodes
+    .filter((node) => !removals.has(node.id))
+    .map((node) => {
+      if (node.shortcut?.type !== 'node') return node;
+      const replacement = removals.get(node.shortcut.nodeId);
+      if (!replacement) return node;
+      const updated: FsNode = { ...node, shortcut: { type: 'node', nodeId: replacement } };
+      changes.push(updated);
+      return updated;
+    });
   await write([STORE_NODES], (tx) => {
     const store = tx.objectStore(STORE_NODES);
     changes.forEach((node) => store.put(node));
-    replacements.forEach((_, id) => store.delete(id));
+    removals.forEach((_, id) => store.delete(id));
   });
   return repaired;
+}
+
+/** Removal plan of the duplicated nodes: id to remove -> id that takes its place. */
+function planDuplicateRemovals(nodes: FsNode[]): Map<string, string | null> {
+  const byId = new Map(nodes.map((node) => [node.id, node]));
+  const live = nodes.filter((node) => node.deletedAt === null);
+  const removals = new Map<string, string | null>();
+
+  const childrenOf = (parentId: string): FsNode[] =>
+    live.filter((node) => node.parentId === parentId);
+
+  /** Removes a node and, when it is a folder, adds its whole subtree to the plan. */
+  const planRemoval = (node: FsNode, replacement: string | null, depth = 0): void => {
+    removals.set(node.id, replacement);
+    if (node.kind !== 'folder' || !replacement || depth >= MAX_REPAIR_DEPTH) return;
+    const kept = byId.get(replacement);
+    if (!kept) return;
+    for (const child of childrenOf(node.id)) {
+      const counterpart = childrenOf(kept.id).find(
+        (candidate) => candidate.kind === child.kind && candidate.name === child.name,
+      );
+      planRemoval(child, counterpart?.id ?? null, depth + 1);
+    }
+  };
+
+  const portfolioCopy = (node: FsNode): boolean =>
+    node.origin === 'portfolio' && node.readonly && isUntouched(node);
+
+  /** A duplicated folder only goes when everything inside is untouched portfolio content. */
+  const removableSubtree = (folder: FsNode, depth = 0): boolean => {
+    if (depth >= MAX_REPAIR_DEPTH) return false;
+    return childrenOf(folder.id).every(
+      (child) =>
+        portfolioCopy(child) && (child.kind !== 'folder' || removableSubtree(child, depth + 1)),
+    );
+  };
+
+  /** Keeps the first copy of every untouched duplicate group and removes the rest. */
+  const dedupe = (
+    parentId: string,
+    isCopy: (node: FsNode) => boolean,
+    subtreeAware: boolean,
+  ): void => {
+    const groups = new Map<string, FsNode[]>();
+    for (const child of childrenOf(parentId)) {
+      if (removals.has(child.id)) continue;
+      const key = `${child.kind}\u0000${child.name}`;
+      const group = groups.get(key);
+      if (group) group.push(child);
+      else groups.set(key, [child]);
+    }
+    for (const group of groups.values()) {
+      const copies = group.filter(isCopy);
+      if (copies.length < 2) continue;
+      const [kept, ...duplicates] = copies;
+      for (const duplicate of duplicates) {
+        if (duplicate.kind === 'folder' && (!subtreeAware || !removableSubtree(duplicate))) continue;
+        planRemoval(duplicate, kept.id);
+      }
+    }
+  };
+
+  const desktopId = live.find((node) => node.systemKey === 'desktop')?.id;
+  if (desktopId) {
+    dedupe(
+      desktopId,
+      (node) => node.origin === 'system' && node.shortcut !== null && isUntouched(node),
+      false,
+    );
+  }
+
+  const portfolioId = live.find((node) => node.systemKey === 'portfolio')?.id;
+  if (portfolioId) {
+    const walk = (parentId: string, depth: number): void => {
+      if (depth >= MAX_REPAIR_DEPTH) return;
+      dedupe(parentId, portfolioCopy, true);
+      for (const child of childrenOf(parentId)) {
+        if (child.kind === 'folder' && !removals.has(child.id)) walk(child.id, depth + 1);
+      }
+    };
+    walk(portfolioId, 0);
+  }
+
+  const documentsId = live.find((node) => node.systemKey === 'documents')?.id;
+  if (documentsId) {
+    const group = childrenOf(documentsId).filter((node) => node.name === WELCOME_FILE_NAME);
+    const copies = group.filter(
+      (node) => isUntouched(node) && node.content !== undefined && WELCOME_TEXTS.has(node.content),
+    );
+    if (group.length > 1 && copies.length > 0) {
+      const edited = group.filter((node) => !copies.includes(node));
+      const kept = edited[0] ?? copies[0];
+      for (const copy of copies) {
+        if (copy.id !== kept.id) planRemoval(copy, kept.id);
+      }
+    }
+  }
+
+  return removals;
 }
 
 /** Defensive: a stored record could come from an older or tampered schema. */

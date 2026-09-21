@@ -82,7 +82,20 @@ export function useFileOpener() {
           });
           return;
         }
-        window.open(resolution.url, '_blank', 'noopener,noreferrer');
+        // Only http(s) reaches the real browser. The stored shortcut could
+        // carry any scheme (a tampered IndexedDB record is attacker controlled
+        // data): javascript: or data: URLs must never be opened.
+        if (/^https?:\/\//i.test(resolution.url)) {
+          window.open(resolution.url, '_blank', 'noopener,noreferrer');
+          return;
+        }
+        // The shortcut is stored but points nowhere safe: say so instead of
+        // leaving the double click looking broken.
+        await dialogs.alert({
+          title: t('dialog.errorTitle'),
+          kind: 'error',
+          message: t('dialog.shortcutUnsafe', { name: nodeDisplayName(node, t) }),
+        });
         return;
       }
 

@@ -138,6 +138,7 @@ export const ca: Catalog = {
   'dialog.fileNotFound': 'No es troba el fitxer {name}.',
   'dialog.noAssociation': 'No hi ha cap programa associat a aquest tipus de fitxer. Vols exportar-lo al teu equip?',
   'dialog.shortcutLoop': 'La drecera «{name}» forma un cicle i no es pot obrir.',
+  'dialog.shortcutUnsafe': 'La destinació de la drecera «{name}» no és una adreça web vàlida, així que no s’obre.',
   'dialog.nameRequired': 'Escriu un nom.',
   'dialog.invalidName': 'El nom no pot contenir \\ / : * ? " < > |',
   'dialog.nameInUse': 'Ja existeix un element amb el nom «{name}» en aquesta carpeta.',

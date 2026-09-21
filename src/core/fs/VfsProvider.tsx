@@ -10,6 +10,7 @@ import {
 } from 'react';
 import { usePreferences } from '../prefs/PreferencesProvider';
 import type { IconId } from '../../assets/generated/icons';
+import { createId } from '../ids';
 import { buildPortfolioSeed, buildSeed } from './seed';
 import { FsError, ROOT_ID, type FsBlob, type FsNode, type NodeWithPath, type ShortcutTarget, type SystemFolderKey } from './types';
 import { diskUsage, initializeNodes, repairDuplicateSeedNodes, putBlobs, putNodes, readBlobData, removeNodes, warmUp, wipeDisk } from './vfs';
@@ -31,6 +32,9 @@ import {
 } from './vfsUtils';
 
 export type NameProblem = 'ok' | 'empty' | 'invalid' | 'taken';
+
+/** Deepest folder chain the disk walks; deeper chains are treated as corrupt. */
+const MAX_WALK_DEPTH = 32;
 
 export interface VfsValue {
   ready: boolean;
@@ -333,14 +337,17 @@ export function VfsProvider({ children }: { children: ReactNode }) {
       const blobIds: string[] = [];
       const node = nodes.get(id);
       if (node?.blobId) blobIds.push(node.blobId);
-      const walk = (parentId: string) => {
+      // Depth guard: a tampered store can hold a parent cycle, and walking it
+      // without a limit would exhaust the stack instead of stopping politely.
+      const walk = (parentId: string, depth: number) => {
+        if (depth > MAX_WALK_DEPTH) return;
         for (const child of childrenOfNodes(nodes.values(), parentId, { deleted: true })) {
           ids.push(child.id);
           if (child.blobId) blobIds.push(child.blobId);
-          walk(child.id);
+          walk(child.id, depth + 1);
         }
       };
-      walk(id);
+      walk(id, 0);
       return { ids, blobIds };
     },
     [nodes],
@@ -435,7 +442,9 @@ export function VfsProvider({ children }: { children: ReactNode }) {
           const content = await file.text();
           created.push(makeTextFile(parentId, name, content));
         } else {
-          const blobId = `blob_${Math.random().toString(36).slice(2)}_${Date.now().toString(36)}`;
+          // Crypto-strong id: the fallback Math.random path of createId is
+          // predictable and this key protects the visitor's imported files.
+          const blobId = createId('blob');
           blobs.push({ id: blobId, data: file });
           created.push(makeBinaryFile(parentId, name, blobId, file.size));
         }

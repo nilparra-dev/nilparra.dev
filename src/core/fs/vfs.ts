@@ -182,17 +182,50 @@ function planDuplicateRemovals(nodes: FsNode[]): Map<string, string | null> {
   return removals;
 }
 
+/**
+ * A stored name has to survive a round trip through the naming rules. The
+ * length cap stays looser than the writer's (`isValidName`) so records saved
+ * by older versions keep loading; only control characters, path separators
+ * and truncation are rejected here.
+ */
+function normalizeName(input: string): string | null {
+  if (!input.trim() || input.length > 200) return null;
+  // The disk root keeps its Windows-style drive name ("C:"), which is the only
+  // legal place a colon can appear: a bare letter followed by a colon.
+  if (/^[A-Za-z]:$/.test(input)) return input;
+  if (/[\\/:*?"<>|\u0000-\u001f]/.test(input)) return null;
+  return input;
+}
+
+/** Shape of a valid shortcut target: the type decides which field must exist. */
+function normalizeShortcut(input: unknown): FsNode['shortcut'] {
+  if (!input || typeof input !== 'object') return null;
+  const raw = input as Partial<NonNullable<FsNode['shortcut']>>;
+  if (raw.type === 'app') {
+    return typeof raw.appId === 'string' && raw.appId ? { type: 'app', appId: raw.appId } : null;
+  }
+  if (raw.type === 'url') {
+    return typeof raw.url === 'string' && raw.url ? { type: 'url', url: raw.url } : null;
+  }
+  if (raw.type === 'node') {
+    return typeof raw.nodeId === 'string' && raw.nodeId ? { type: 'node', nodeId: raw.nodeId } : null;
+  }
+  return null;
+}
+
 /** Defensive: a stored record could come from an older or tampered schema. */
 export function normalizeNode(input: unknown): FsNode | null {
   if (!input || typeof input !== 'object') return null;
   const raw = input as Partial<FsNode>;
   if (typeof raw.id !== 'string' || typeof raw.name !== 'string') return null;
   if (raw.kind !== 'folder' && raw.kind !== 'file') return null;
+  const name = normalizeName(raw.name);
+  if (!name) return null;
   return {
     id: raw.id,
     parentId: typeof raw.parentId === 'string' ? raw.parentId : null,
     kind: raw.kind,
-    name: raw.name,
+    name,
     systemKey: (raw.systemKey ?? null) as SystemFolderKey | null,
     origin: raw.origin === 'system' || raw.origin === 'portfolio' ? raw.origin : 'user',
     readonly: raw.readonly === true,
@@ -205,7 +238,7 @@ export function normalizeNode(input: unknown): FsNode | null {
       typeof raw.deletedFromParentId === 'string' ? raw.deletedFromParentId : null,
     content: typeof raw.content === 'string' ? raw.content : undefined,
     blobId: typeof raw.blobId === 'string' ? raw.blobId : raw.blobId === null ? null : undefined,
-    shortcut: raw.shortcut ?? null,
+    shortcut: normalizeShortcut(raw.shortcut),
     icon: raw.icon ?? null,
   };
 }

@@ -159,3 +159,16 @@ export function TriangleDown({ color = 'currentColor' }: { color?: string }) {
     </svg>
   );
 }
+
+/** Explorer folder pane: a window frame with the left column filled. */
+export function FolderPaneGlyph({ size = 16 }: GlyphProps) {
+  return (
+    <Svg size={size} viewBox="0 0 16 16">
+      <rect x="0" y="0" width="16" height="2" fill="currentColor" />
+      <rect x="0" y="14" width="16" height="2" fill="currentColor" />
+      <rect x="0" y="0" width="1" height="16" fill="currentColor" />
+      <rect x="15" y="0" width="1" height="16" fill="currentColor" />
+      <rect x="2" y="4" width="4" height="9" fill="currentColor" />
+    </Svg>
+  );
+}

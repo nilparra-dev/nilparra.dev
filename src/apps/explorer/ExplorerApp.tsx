@@ -7,6 +7,7 @@ import { MenuBar, type MenuBarMenu } from '../../ui/menu/MenuBar';
 import { StatusBar } from '../../ui/StatusBar';
 import { Icon } from '../../ui/Icon';
 import { useI18n } from '../../core/i18n/I18nProvider';
+import { usePreferences } from '../../core/prefs/PreferencesProvider';
 import { useVfs } from '../../core/fs/VfsProvider';
 import { useClipboard } from '../../core/fs/clipboard';
 import { useClipboardActions, useFileOpener } from '../../core/fs/useFileOpener';
@@ -15,7 +16,7 @@ import { formatBytes, isValidName, folderSize } from '../../core/fs/vfsUtils';
 import { useDialogs } from '../../core/dialogs/DialogProvider';
 import { useWindowManager } from '../../core/window/WindowManagerProvider';
 import { ROOT_ID, type FsNode } from '../../core/fs/types';
-import { TriangleDown } from '../../ui/glyphs';
+import { FolderPaneGlyph, TriangleDown } from '../../ui/glyphs';
 
 type ViewMode = 'large' | 'small' | 'list' | 'details';
 type SortKey = 'name' | 'type' | 'size' | 'date';
@@ -33,6 +34,7 @@ interface SortState {
  */
 export function ExplorerApp({ windowId, params }: AppRenderProps) {
   const { t, locale, formatDateTime } = useI18n();
+  const { preferences, update } = usePreferences();
   const vfs = useVfs();
   const dialogs = useDialogs();
   const wm = useWindowManager();
@@ -357,6 +359,15 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
           { kind: 'item', id: 'small', label: t('desktop.viewSmallIcons'), checked: view === 'small', radio: true, onSelect: () => setView('small') },
           { kind: 'item', id: 'list', label: t('desktop.viewList'), checked: view === 'list', radio: true, onSelect: () => setView('list') },
           { kind: 'item', id: 'details', label: t('desktop.viewDetails'), checked: view === 'details', radio: true, onSelect: () => setView('details') },
+          menuSeparator('sep-pane'),
+          {
+            kind: 'item',
+            id: 'folder-pane',
+            label: t('explorer.folderPane'),
+            checked: preferences.showExplorerTree,
+            disabled: isMyComputer,
+            onSelect: () => update({ showExplorerTree: !preferences.showExplorerTree }),
+          },
           menuSeparator('sep1'),
           {
             kind: 'submenu',
@@ -421,11 +432,13 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
     navigate,
     openItems,
     paste,
+    preferences.showExplorerTree,
     beginRename,
     selected,
     selectedNodes,
     sort.key,
     t,
+    update,
     view,
     vfs,
     windowId,
@@ -817,6 +830,18 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
             />
           </button>
         ))}
+        <span className="tool-sep" />
+        <button
+          type="button"
+          className="tool-btn"
+          aria-pressed={preferences.showExplorerTree}
+          aria-label={t('explorer.folderPane')}
+          title={t('explorer.folderPane')}
+          disabled={isMyComputer}
+          onClick={() => update({ showExplorerTree: !preferences.showExplorerTree })}
+        >
+          <FolderPaneGlyph />
+        </button>
       </div>
 
       <div className="explorer-address">
@@ -834,7 +859,7 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
       </div>
 
       <div className="explorer-body">
-        {!isMyComputer && (
+        {!isMyComputer && preferences.showExplorerTree && (
           <>
             <ExplorerTree
               folderId={folderId}

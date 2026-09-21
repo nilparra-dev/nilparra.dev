@@ -229,6 +229,7 @@ export const es = {
   'menu.export': 'Exportar a mi equipo…',
   'common.items': '{count} objetos',
   'explorer.empty': 'Esta carpeta está vacía',
+  'explorer.folderPane': 'Panel de carpetas',
 
   /* --- Notepad ------------------------------------------------------ */
   'notepad.new': 'Nuevo',

@@ -90,6 +90,20 @@ describe('applications', () => {
     expect(screen.getByRole('menubar')).toBeTruthy();
   });
 
+  it('hides and shows the explorer folder tree on demand', async () => {
+    const { container } = renderApp('explorer');
+    await waitFor(() => expect(container.querySelector('.explorer-item')).toBeTruthy(), { timeout: 4000 });
+    // My Computer never shows the tree; browsing into a folder does.
+    expect(container.querySelector('.explorer-tree')).toBeNull();
+    fireEvent.doubleClick(screen.getByRole('option', { name: 'Documentos' }));
+    await waitFor(() => expect(container.querySelector('.explorer-tree')).toBeTruthy());
+    fireEvent.click(screen.getByRole('button', { name: 'Panel de carpetas' }));
+    await waitFor(() => expect(container.querySelector('.explorer-tree')).toBeNull());
+    expect(container.querySelector('.explorer-splitter')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Panel de carpetas' }));
+    await waitFor(() => expect(container.querySelector('.explorer-tree')).toBeTruthy());
+  });
+
   it('renders the notepad with an empty buffer', async () => {
     const { container } = renderApp('notepad');
     await waitFor(() => expect(container.querySelector('textarea')).toBeTruthy());

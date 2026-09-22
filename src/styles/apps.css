@@ -4,6 +4,14 @@
  * in win95.css.
  */
 
+/* Placeholder while a split application downloads. */
+.client.app-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--w95-face);
+}
+
 /* ------------------------------------------------------------------ *
  * Welcome
  * ------------------------------------------------------------------ */

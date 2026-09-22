@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 import 'fake-indexeddb/auto';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { APP_COMPONENTS } from '../core/apps/components';
+import { APP_COMPONENTS, preloadApps } from '../core/apps/components';
 import { DialogProvider } from '../core/dialogs/DialogProvider';
 import { VfsProvider } from '../core/fs/VfsProvider';
 import { I18nProvider } from '../core/i18n/I18nProvider';
@@ -42,6 +42,9 @@ function renderApp(appId: string, params: Record<string, unknown> = {}) {
   );
   return utils;
 }
+
+/* Split applications resolve at once after this, so every test renders synchronously. */
+beforeAll(() => preloadApps());
 
 beforeEach(() => {
   class ResizeObserverStub {

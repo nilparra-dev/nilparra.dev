@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { Suspense, useEffect, useRef } from 'react';
 import { APP_COMPONENTS } from '../apps/components';
 import { useT } from '../i18n/I18nProvider';
 import { usePreferences } from '../prefs/PreferencesProvider';
@@ -66,7 +66,16 @@ export function WindowsLayer() {
             instance={instance}
             active={instance.id === wm.activeId}
           >
-            <Application windowId={instance.id} params={instance.params} />
+            {/* Split applications paint their frame at once and fill it when the chunk lands. */}
+            <Suspense
+              fallback={
+                <div className="client app-loading" role="status">
+                  {t('common.loading')}
+                </div>
+              }
+            >
+              <Application windowId={instance.id} params={instance.params} />
+            </Suspense>
           </WindowFrame>
         );
       })}

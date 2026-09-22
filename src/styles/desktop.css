@@ -61,7 +61,7 @@
   max-width: 100%;
   padding: 1px 2px;
   color: #ffffff;
-  line-height: 1.15;
+  line-height: var(--w95-line-ui);
   text-align: center;
   overflow-wrap: anywhere;
   display: -webkit-box;
@@ -396,7 +396,7 @@
 }
 
 .boot-logo {
-  font-size: 30px;
+  font-size: 33px;
   font-weight: var(--w95-font-weight-bold);
   color: #ffffff;
   letter-spacing: 1px;
@@ -408,7 +408,7 @@
 
 .boot-screen p {
   max-width: 460px;
-  line-height: 1.5;
+  line-height: var(--w95-line-read);
   color: #a0a0a0;
 }
 
@@ -428,16 +428,16 @@
 }
 
 .shutdown-title {
-  font-size: 20px;
+  font-size: var(--w95-font-size-large);
   font-weight: var(--w95-font-weight-bold);
   max-width: 420px;
-  line-height: 1.4;
+  line-height: var(--w95-line-read);
 }
 
 .shutdown-note {
   color: #a0a0a0;
   max-width: 420px;
-  line-height: 1.5;
+  line-height: var(--w95-line-read);
 }
 
 /* --- Mobile --------------------------------------------------------- */

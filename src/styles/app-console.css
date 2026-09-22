@@ -22,7 +22,7 @@
   box-shadow: inset 1px 1px 0 var(--w95-black);
   font-family: var(--w95-mono-font);
   font-size: 12px;
-  line-height: 1.35;
+  line-height: var(--w95-line-read);
   cursor: var(--cursor-arrow);
   user-select: text;
 }

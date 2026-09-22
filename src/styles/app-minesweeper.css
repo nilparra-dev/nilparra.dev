@@ -99,7 +99,7 @@
   border: 1px solid;
   border-color: var(--w95-white) var(--w95-gray) var(--w95-gray) var(--w95-white);
   font-family: var(--w95-font);
-  font-size: 11px;
+  font-size: var(--w95-font-size);
   font-weight: var(--w95-font-weight-bold);
   line-height: 1;
   cursor: var(--cursor-arrow);

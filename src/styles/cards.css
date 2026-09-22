@@ -24,13 +24,13 @@
 
 .card-rank {
   font-family: var(--w95-font);
-  font-size: 13px;
+  font-size: var(--w95-font-size);
   font-weight: var(--w95-font-weight-bold);
 }
 
 .card-court {
   font-family: var(--w95-font);
-  font-size: 26px;
+  font-size: var(--w95-font-size-large);
   font-weight: var(--w95-font-weight-bold);
 }
 

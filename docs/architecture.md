@@ -55,6 +55,21 @@ importing components, so any module can ask which application opens a file. `lau
 windows through the window manager and deduplicates `single` applications by id and document
 windows by `docKey`. `components.ts` maps catalogue ids to their React components.
 
+## Pixel scale and typography (`src/ui/pixelScale.ts`)
+
+MS Sans Serif is drawn on an 11 px grid and the icons are pixel art, so both
+only stay sharp when one interface pixel covers a whole number of screen
+pixels. Before React mounts, `installPixelScale` sets the page zoom to
+`scale / devicePixelRatio`, where `scale` is an integer chosen to keep text
+near 16.5 CSS px without leaving less than 800x520 interface pixels (320x480
+on phones). It is recomputed on resize and when the pixel ratio changes, and
+the Control Panel lets the visitor force another scale that fits.
+
+Stylesheets follow the same grid: text is 11 px (22 px for the few large
+headings), line heights are whole pixels (`--w95-line-ui`, `--w95-line-read`)
+and secondary text uses `--w95-text-muted`, which passes WCAG AA on every
+surface.
+
 ## Persistence
 
 `src/core/persist/storage.ts` wraps `localStorage` with a versioned envelope (`{version, data}`).

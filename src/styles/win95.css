@@ -210,17 +210,21 @@
   outline: none;
 }
 
+/* Read only keeps black text (as in Windows 95); only disabled goes grey. */
 .field:disabled,
 .field[readonly] {
-  color: var(--w95-disabled-text);
   background: var(--w95-face);
+}
+
+.field:disabled {
+  color: var(--w95-disabled-text);
 }
 
 textarea.field {
   height: auto;
   padding: 3px 4px;
   resize: none;
-  line-height: 1.25;
+  line-height: var(--w95-line-ui);
 }
 
 .field-label {
@@ -983,7 +987,7 @@ textarea.field {
 }
 
 .u-muted {
-  color: var(--w95-gray);
+  color: var(--w95-text-muted);
 }
 
 .u-hidden {
@@ -1093,7 +1097,7 @@ textarea.field {
 .volume-popup-note {
   margin-top: 6px;
   color: var(--w95-gray);
-  line-height: 1.3;
+  line-height: var(--w95-line-ui);
 }
 
 .w95--reduce-motion *,

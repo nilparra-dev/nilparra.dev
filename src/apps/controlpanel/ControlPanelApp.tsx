@@ -14,6 +14,7 @@ import { GroupBox } from '../../ui/GroupBox';
 import { Select } from '../../ui/Select';
 import { Slider } from '../../ui/Slider';
 import { Tabs } from '../../ui/Tabs';
+import { automaticPixelScale, availablePixelScales, currentScreen } from '../../ui/pixelScale';
 
 type TabId = 'appearance' | 'language' | 'sounds' | 'accessibility' | 'storage' | 'data';
 
@@ -28,6 +29,16 @@ export function ControlPanelApp({ windowId }: AppRenderProps) {
   const dialogs = useDialogs();
   const wm = useWindowManager();
   const [tab, setTab] = useState<TabId>('appearance');
+  /* Re-read on every render: the window manager re-renders on resize. */
+  void wm.viewport;
+  const screen = currentScreen();
+  const scaleOptions = [
+    { value: 'auto', label: t('cp.scaleAuto', { scale: automaticPixelScale(screen) }) },
+    ...availablePixelScales(screen).map((scale) => ({
+      value: String(scale),
+      label: scale === 1 ? t('cp.scaleOriginal') : t('cp.scaleOption', { scale }),
+    })),
+  ];
   const [notice, setNotice] = useState<string | null>(null);
 
   const tabs = useMemo(
@@ -87,6 +98,17 @@ export function ControlPanelApp({ windowId }: AppRenderProps) {
                   />
                 ))}
               </div>
+            </GroupBox>
+            <GroupBox title={t('cp.scaleLabel')}>
+              <div className="u-row">
+                <Select
+                  ariaLabel={t('cp.scaleLabel')}
+                  value={String(preferences.pixelScale)}
+                  options={scaleOptions}
+                  onChange={(value) => update({ pixelScale: value === 'auto' ? 'auto' : Number(value) })}
+                />
+              </div>
+              <p className="u-muted cp-hint">{t('cp.scaleHint')}</p>
             </GroupBox>
             <GroupBox title={t('desktop.arrangeIcons')}>
               <Checkbox

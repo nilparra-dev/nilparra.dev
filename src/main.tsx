@@ -1,6 +1,8 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
+import { loadPreferences } from './core/prefs/PreferencesProvider';
+import { installPixelScale } from './ui/pixelScale';
 import './styles/reset.css';
 import './styles/cursors.generated.css';
 import './styles/tokens.css';
@@ -37,6 +39,9 @@ if (!container) throw new Error('Missing #root container');
     document.documentElement.style.visibility = 'hidden';
   }
 })();
+
+/* Decided before the first render so windows are laid out at the final size. */
+installPixelScale(loadPreferences().pixelScale);
 
 createRoot(container).render(
   <StrictMode>

@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { detectLocale, isLocale, type Locale } from '../i18n/I18nProvider';
 import { readStored, writeStored } from '../persist/storage';
+import { applyPixelScale, isPixelScalePreference, type PixelScalePreference } from '../../ui/pixelScale';
 import { DEFAULT_WALLPAPER_ID, WALLPAPERS } from './wallpapers';
 
 export const PREFERENCES_VERSION = 1;
@@ -21,6 +22,8 @@ export interface Preferences {
   autoArrangeIcons: boolean;
   /** Explorer windows show the folder tree on the left. */
   showExplorerTree: boolean;
+  /** Screen pixels per interface pixel, or 'auto' to follow the screen. */
+  pixelScale: PixelScalePreference;
 }
 
 export const DEFAULT_PREFERENCES: Preferences = {
@@ -33,6 +36,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
   highContrastLabels: false,
   autoArrangeIcons: true,
   showExplorerTree: true,
+  pixelScale: 'auto',
 };
 
 /** Defensive read: stored values can come from a modified or older client. */
@@ -71,7 +75,13 @@ export function sanitizePreferences(input: unknown): Preferences {
       typeof source.showExplorerTree === 'boolean'
         ? source.showExplorerTree
         : DEFAULT_PREFERENCES.showExplorerTree,
+    pixelScale: isPixelScalePreference(source.pixelScale) ? source.pixelScale : DEFAULT_PREFERENCES.pixelScale,
   };
+}
+
+/** Stored preferences as the first render will see them; used before React mounts. */
+export function loadPreferences(): Preferences {
+  return sanitizePreferences(readStored<Preferences | null>(PREFERENCES_KEY, PREFERENCES_VERSION, null));
 }
 
 export interface PreferencesValue {
@@ -83,13 +93,15 @@ export interface PreferencesValue {
 const PreferencesContext = createContext<PreferencesValue | null>(null);
 
 export function PreferencesProvider({ children }: { children: ReactNode }) {
-  const [preferences, setPreferences] = useState<Preferences>(() =>
-    sanitizePreferences(readStored<Preferences | null>(PREFERENCES_KEY, PREFERENCES_VERSION, null)),
-  );
+  const [preferences, setPreferences] = useState<Preferences>(loadPreferences);
 
   useEffect(() => {
     writeStored(PREFERENCES_KEY, PREFERENCES_VERSION, preferences);
   }, [preferences]);
+
+  useEffect(() => {
+    applyPixelScale(preferences.pixelScale);
+  }, [preferences.pixelScale]);
 
   const update = useCallback((patch: Partial<Preferences>) => {
     setPreferences((current) => sanitizePreferences({ ...current, ...patch }));

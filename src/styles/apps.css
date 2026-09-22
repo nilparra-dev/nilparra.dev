@@ -8,6 +8,16 @@
  * Welcome
  * ------------------------------------------------------------------ */
 
+/* Reading text keeps a comfortable measure however wide the window gets. */
+.app-welcome-intro,
+.about-paragraph,
+.project-summary,
+.project-description p,
+.app-help-article p,
+.mail-invite {
+  max-width: 68ch;
+}
+
 .client.app-welcome {
   background: var(--w95-face);
   border: 0;
@@ -28,7 +38,7 @@
 }
 
 .app-welcome-tagline {
-  line-height: 1.35;
+  line-height: var(--w95-line-read);
 }
 
 .app-welcome-body {
@@ -42,7 +52,7 @@
 }
 
 .app-welcome-intro {
-  line-height: 1.45;
+  line-height: var(--w95-line-read);
 }
 
 .app-welcome-group {
@@ -62,14 +72,14 @@
 /* The language switch reads as a quiet row below the actions. */
 .app-welcome-language {
   gap: 8px;
-  font-size: 12px;
+  font-size: var(--w95-font-size);
 }
 
 /* How the desktop works and where the data lives stay secondary to the
  * presentation and the shortcuts. */
 .app-welcome-note {
-  font-size: 12px;
-  line-height: 1.45;
+  font-size: var(--w95-font-size);
+  line-height: var(--w95-line-read);
 }
 
 .app-welcome-footer {
@@ -156,7 +166,7 @@
 
 .app-help-article p {
   margin-bottom: 8px;
-  line-height: 1.45;
+  line-height: var(--w95-line-read);
 }
 
 /* ------------------------------------------------------------------ *
@@ -500,7 +510,7 @@
 .explorer-empty {
   flex: 1 0 100%;
   padding: 12px;
-  color: var(--w95-gray);
+  color: var(--w95-text-muted);
 }
 
 .explorer-rename-error {
@@ -522,7 +532,7 @@
 .notepad-text {
   font-family: var(--w95-mono-font);
   font-size: 12px;
-  line-height: 1.35;
+  line-height: var(--w95-line-read);
   background: var(--w95-window-bg);
   border: 1px solid;
   border-color: var(--w95-gray) var(--w95-white) var(--w95-white) var(--w95-gray);
@@ -562,7 +572,7 @@
 
 .bin-hint {
   padding: 0 6px;
-  color: var(--w95-gray);
+  color: var(--w95-text-muted);
 }
 
 .bin-list {
@@ -603,7 +613,7 @@
 
 .bin-empty {
   padding: 12px;
-  color: var(--w95-gray);
+  color: var(--w95-text-muted);
 }
 
 /* ------------------------------------------------------------------ *
@@ -732,7 +742,7 @@
 
 .properties-row dt {
   flex: 0 0 110px;
-  color: var(--w95-gray);
+  color: var(--w95-text-muted);
 }
 
 .properties-row dd {
@@ -755,7 +765,7 @@
 
 .dialog-detail {
   margin-top: 6px;
-  color: var(--w95-gray);
+  color: var(--w95-text-muted);
   overflow-wrap: anywhere;
 }
 
@@ -769,7 +779,7 @@
   padding: 0 4px;
   background: var(--w95-yellow);
   border: 1px solid var(--w95-black);
-  font-size: 10px;
+  font-size: var(--w95-font-size);
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
@@ -855,13 +865,13 @@
 }
 
 .project-detail-head h2 {
-  font-size: 13px;
+  font-size: var(--w95-font-size);
   margin-bottom: 3px;
 }
 
 .project-detail-year {
   flex: 0 0 auto;
-  color: var(--w95-gray);
+  color: var(--w95-text-muted);
 }
 
 @container (max-width: 460px) {
@@ -896,7 +906,7 @@
 }
 
 .project-description {
-  line-height: 1.45;
+  line-height: var(--w95-line-read);
 }
 
 .project-description p {
@@ -911,7 +921,7 @@
   margin: 0;
   padding-left: 18px;
   list-style: square;
-  line-height: 1.5;
+  line-height: var(--w95-line-read);
 }
 
 .project-more {
@@ -932,8 +942,8 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 12px;
-  line-height: 1.4;
+  font-size: var(--w95-font-size);
+  line-height: var(--w95-line-read);
 }
 
 .project-tech-item img {
@@ -948,7 +958,7 @@
   background: var(--w95-face);
   border: 1px solid;
   border-color: var(--w95-gray) var(--w95-white) var(--w95-white) var(--w95-gray);
-  font-size: 10px;
+  font-size: var(--w95-font-size);
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
@@ -959,7 +969,7 @@
 
 .project-shots-empty {
   padding: 10px;
-  color: var(--w95-gray);
+  color: var(--w95-text-muted);
   border: 1px dashed var(--w95-gray);
 }
 
@@ -1002,7 +1012,7 @@
 
 .about-paragraph {
   margin-bottom: 6px;
-  line-height: 1.45;
+  line-height: var(--w95-line-read);
 }
 
 .about-profile-head {
@@ -1016,12 +1026,12 @@
 .about-profile-details {
   flex: 1 1 150px;
   min-width: 0;
-  line-height: 1.5;
+  line-height: var(--w95-line-read);
 }
 
 .about-profile-location {
   margin-top: 8px;
-  color: var(--w95-gray);
+  color: var(--w95-text-muted);
 }
 
 .about-profile-photo {
@@ -1036,7 +1046,7 @@
 .about-list {
   margin: 0;
   padding-left: 16px;
-  line-height: 1.45;
+  line-height: var(--w95-line-read);
 }
 
 .about-list li {
@@ -1046,7 +1056,7 @@
 .about-period {
   display: block;
   min-width: 96px;
-  color: var(--w95-gray);
+  color: var(--w95-text-muted);
 }
 
 .about-study-logo {
@@ -1066,7 +1076,7 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  line-height: 1.45;
+  line-height: var(--w95-line-read);
 }
 
 .about-company-logo {
@@ -1180,7 +1190,7 @@
 .internet-page {
   margin: 0 4px 4px;
   padding: 12px 14px;
-  line-height: 1.5;
+  line-height: var(--w95-line-read);
   background: var(--w95-window-bg);
 }
 
@@ -1267,7 +1277,7 @@
 
 .internet-result-snippet {
   margin-top: 4px;
-  line-height: 1.45;
+  line-height: var(--w95-line-read);
 }
 
 .internet-search-state {
@@ -1286,7 +1296,7 @@
   padding-top: 8px;
   border-top: 1px solid var(--w95-gray);
   font-size: var(--w95-font-size-sm);
-  line-height: 1.4;
+  line-height: var(--w95-line-read);
 }
 
 /* ------------------------------------------------------------------ *
@@ -1319,7 +1329,7 @@
   height: 32px;
   background: var(--w95-navy);
   color: #ffffff;
-  font-size: 18px;
+  font-size: var(--w95-font-size-large);
 }
 
 .mail-actions {
@@ -1328,7 +1338,7 @@
 
 .mail-note {
   margin-top: 8px;
-  line-height: 1.4;
+  line-height: var(--w95-line-read);
 }
 
 a.btn {
@@ -1364,7 +1374,7 @@ a.btn {
 
 .cp-hint {
   margin-top: 6px;
-  line-height: 1.4;
+  line-height: var(--w95-line-read);
 }
 
 .cp-slider-row {
@@ -1418,7 +1428,7 @@ a.btn {
 }
 
 .sysinfo-grid dt {
-  color: var(--w95-gray);
+  color: var(--w95-text-muted);
 }
 
 .sysinfo-grid dd {

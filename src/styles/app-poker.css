@@ -155,7 +155,7 @@
   width: 15px;
   height: 15px;
   color: var(--w95-black);
-  font-size: 10px;
+  font-size: var(--w95-font-size);
   background: var(--w95-white);
   border: 1px solid var(--w95-black);
   border-radius: 50%;
@@ -164,7 +164,7 @@
 .poker-seat-status {
   min-height: 15px;
   color: var(--w95-white);
-  font-size: 11px;
+  font-size: var(--w95-font-size);
   text-align: center;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.55);
 }
@@ -177,7 +177,7 @@
   gap: 4px;
   padding: 1px 7px 1px 4px;
   color: var(--w95-white);
-  font-size: 12px;
+  font-size: var(--w95-font-size);
   background: rgba(0, 0, 0, 0.32);
   border-radius: 9px;
   transform: translate(-50%, -50%);
@@ -264,12 +264,12 @@
 }
 
 .poker-setup-title {
-  font-size: 15px;
+  font-size: var(--w95-font-size);
 }
 
 .poker-setup-intro {
   max-width: 56ch;
-  line-height: 1.35;
+  line-height: var(--w95-line-read);
 }
 
 .poker-setup-field {
@@ -289,8 +289,8 @@
 
 .poker-setup-hint {
   max-width: 56ch;
-  color: var(--w95-gray);
-  line-height: 1.35;
+  color: var(--w95-text-muted);
+  line-height: var(--w95-line-read);
 }
 
 .poker-setup-actions {

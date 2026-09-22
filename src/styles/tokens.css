@@ -6,8 +6,9 @@
  * retuned (or a different scheme plugged in) without touching components.
  */
 :root {
-  --w95-ui-scale: 1.25;
-  zoom: var(--w95-ui-scale);
+  /* The page zoom is set by src/ui/pixelScale.ts: a whole number of screen
+   * pixels per interface pixel keeps the bitmap font and the icons sharp. */
+  --w95-ui-scale: 1;
   /* --- Surfaces ------------------------------------------------------ */
   --w95-face: #c0c0c0;
   --w95-face-light: #dfdfdf;
@@ -15,6 +16,9 @@
   --w95-black: #000000;
   --w95-gray: #808080;
   --w95-gray-mid: #a0a0a0;
+  /* Secondary text. Darker than the palette grey (#808080), which only reaches
+   * 2.2:1 on the window face; this one passes WCAG AA on every surface. */
+  --w95-text-muted: #444444;
   --w95-window-bg: #ffffff;
   --w95-window-text: #000000;
 
@@ -44,32 +48,37 @@
 
   /* --- Fonts --------------------------------------------------------- */
   --w95-font: 'W95 MS Sans Serif', 'MS Sans Serif', Tahoma, 'Segoe UI', Verdana, Geneva, 'DejaVu Sans', sans-serif;
-  --w95-font-size: 13px;
-  --w95-font-size-sm: 13px;
+  /* The font is drawn on an 11 px grid: every size is 11 px or a multiple. */
+  --w95-font-size: 11px;
+  --w95-font-size-sm: 11px;
+  --w95-font-size-large: 22px;
+  /* Line heights in whole pixels keep every baseline on the pixel grid. */
+  --w95-line-ui: 13px;
+  --w95-line-read: 16px;
   --w95-font-weight-bold: 700;
   --w95-mono-font: Fixedsys, 'Fixedsys Excelsior 3.01', 'Lucida Console', 'Courier New', monospace;
 
-  /* --- Metrics (96 dpi) ---------------------------------------------- */
-  --w95-title-height: 22px;
-  --w95-menubar-height: 24px;
-  --w95-menuitem-height: 22px;
-  --w95-menuitem-padding: 0 24px 0 26px;
-  --w95-taskbar-height: 34px;
-  --w95-taskbar-button-height: 28px;
-  --w95-taskbar-button-max: 200px;
-  --w95-statusbar-height: 24px;
-  --w95-button-height: 29px;
-  --w95-button-min-width: 94px;
-  --w95-field-height: 26px;
-  --w95-icon-cell: 90px;
-  --w95-start-menu-strip: 26px;
+  /* --- Metrics (96 dpi, small fonts) --------------------------------- */
+  --w95-title-height: 18px;
+  --w95-menubar-height: 20px;
+  --w95-menuitem-height: 18px;
+  --w95-menuitem-padding: 0 20px 0 22px;
+  --w95-taskbar-height: 28px;
+  --w95-taskbar-button-height: 22px;
+  --w95-taskbar-button-max: 160px;
+  --w95-statusbar-height: 20px;
+  --w95-button-height: 23px;
+  --w95-button-min-width: 75px;
+  --w95-field-height: 21px;
+  --w95-icon-cell: 75px;
+  --w95-start-menu-strip: 21px;
   --w95-window-frame: 3px;
 
   /* --- Wallpaper ----------------------------------------------------- */
   --w95-desktop-color: #00005e;
 
   /* --- Scrollbars ---------------------------------------------------- */
-  --w95-scrollbar-size: 19px;
+  --w95-scrollbar-size: 16px;
 
   /* --- Stacking ------------------------------------------------------ */
   --w95-z-desktop: 0;
@@ -106,6 +115,7 @@ body,
 .w95 {
   font-family: var(--w95-font);
   font-size: var(--w95-font-size);
+  line-height: var(--w95-line-ui);
   color: var(--w95-window-text);
   -webkit-font-smoothing: none;
   -moz-osx-font-smoothing: grayscale;

@@ -28,7 +28,7 @@
 
 .app-run .run-text {
   padding-top: 6px;
-  line-height: 1.4;
+  line-height: var(--w95-line-read);
 }
 
 .app-run .run-input {
@@ -46,7 +46,7 @@
 }
 
 .app-run .run-hint {
-  line-height: 1.4;
+  line-height: var(--w95-line-read);
 }
 
 .app-run .run-buttons {

@@ -187,6 +187,15 @@ export function buildSeed(locale: Locale, now = Date.now()): SeedResult {
   nodes.push(
     shortcut(
       desktopId,
+      'Contacto.lnk',
+      { type: 'app', appId: 'mail' },
+      APP_CATALOG.mail?.icon ?? 'mail',
+      now,
+    ),
+  );
+  nodes.push(
+    shortcut(
+      desktopId,
       'Bienvenida.lnk',
       { type: 'app', appId: 'welcome' },
       APP_CATALOG.welcome?.icon ?? 'welcome',

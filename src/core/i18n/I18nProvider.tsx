@@ -41,11 +41,17 @@ export function detectLocale(candidates?: readonly string[]): Locale {
   return DEFAULT_LOCALE;
 }
 
+/**
+ * Replaces `{name}` with a parameter and `{name|one|other}` with the singular
+ * or plural form by that number; es, ca and en only need the two forms.
+ */
 export function formatTemplate(template: string, params?: Record<string, string | number>): string {
   if (!params) return template;
-  return template.replace(/\{(\w+)\}/g, (match, key: string) =>
-    Object.prototype.hasOwnProperty.call(params, key) ? String(params[key]) : match,
-  );
+  return template.replace(/\{(\w+)(?:\|([^|{}]*)\|([^|{}]*))?\}/g, (match, key: string, one?: string, other?: string) => {
+    if (!Object.prototype.hasOwnProperty.call(params, key)) return match;
+    if (one === undefined || other === undefined) return String(params[key]);
+    return Number(params[key]) === 1 ? one : other;
+  });
 }
 
 export function translate(

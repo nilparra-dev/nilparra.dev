@@ -72,7 +72,7 @@ describe('applications', () => {
   it('renders the welcome window with its shortcuts', async () => {
     renderApp('welcome');
     expect(await screen.findByRole('button', { name: 'Ver mis proyectos' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Sobre mí y currículum' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Sobre mí' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Contacto' })).toBeTruthy();
   });
 
@@ -127,12 +127,12 @@ describe('applications', () => {
       'https://github.com/nilparra-dev/wooster',
     );
     expect(container.querySelectorAll('.project-tech-item img')).toHaveLength(8);
-    expect(screen.getByText('Lista streams que Twitch no muestra')).toBeTruthy();
+    expect(screen.getByText('Descarga reanudable en un único archivo, con tres motores de descarga')).toBeTruthy();
 
     // The long description stays hidden until the visitor asks for it.
-    expect(screen.queryByText(/Wooster convierte un ID/)).toBeNull();
+    expect(screen.queryByText(/Wooster es una herramienta/)).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Ver detalles técnicos' }));
-    expect(screen.getByText(/Wooster convierte un ID/)).toBeTruthy();
+    expect(screen.getByText(/Wooster es una herramienta/)).toBeTruthy();
 
     // Selecting the closed-source project moves the pane to it, states that
     // the code is private and offers the demo through the contact window.
@@ -144,15 +144,16 @@ describe('applications', () => {
     expect(screen.queryAllByRole('link', { name: 'Abrir en GitHub' })).toHaveLength(0);
   });
 
-  it('renders the about window with education grouped by school and hides unpublished sections', async () => {
+  it('renders the about window with education grouped by school and hides the unpublished CV', async () => {
     renderApp('about');
     expect(await screen.findByRole('heading', { name: 'Nil Parra Luna' })).toBeTruthy();
-    expect(screen.getByText('Estudiante de ASIX')).toBeTruthy();
+    expect(screen.getByText('Estudiante de Administración de Sistemas Informáticos en Red (ASIX)')).toBeTruthy();
     expect(screen.getAllByRole('heading', { name: 'Institut Sa Palomera, Blanes' })).toHaveLength(1);
     expect(screen.getByText('En curso')).toBeTruthy();
     expect(screen.getByText('Experiencia')).toBeTruthy();
     expect(screen.getByText(/iDiomund, SL/)).toBeTruthy();
-    expect(screen.queryByText('Conocimientos')).toBeNull();
+    expect(screen.getByText('Conocimientos')).toBeTruthy();
+    expect(screen.getByText('Odoo')).toBeTruthy();
     expect(screen.queryByText('Currículum')).toBeNull();
   });
 

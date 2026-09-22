@@ -64,7 +64,7 @@ export function Shell() {
   useEffect(() => {
     const onHelp = (event: Event) => {
       const detail = (event as CustomEvent<unknown>).detail;
-      launch({ appId: 'help', params: { topicId: typeof detail === 'string' ? detail : 'intro' } });
+      launch({ appId: 'help', params: { topicId: typeof detail === 'string' ? detail : 'welcome' } });
     };
     window.addEventListener('w95:open-help', onHelp);
     return () => window.removeEventListener('w95:open-help', onHelp);

@@ -165,57 +165,27 @@ export function buildSeed(locale: Locale, now = Date.now()): SeedResult {
   }
 
   /* --- Desktop shortcuts ------------------------------------------- */
-  const desktopId = folders.desktop;
-  nodes.push(
-    shortcut(
-      desktopId,
-      'Mis proyectos.lnk',
-      { type: 'app', appId: 'projects' },
-      APP_CATALOG.projects?.icon ?? 'projects',
-      now,
-    ),
-  );
-  nodes.push(
-    shortcut(
-      desktopId,
-      'Sobre mí y CV.lnk',
-      { type: 'app', appId: 'about' },
-      APP_CATALOG.about?.icon ?? 'about-me',
-      now,
-    ),
-  );
-  nodes.push(
-    shortcut(
-      desktopId,
-      'Contacto.lnk',
-      { type: 'app', appId: 'mail' },
-      APP_CATALOG.mail?.icon ?? 'mail',
-      now,
-    ),
-  );
-  nodes.push(
-    shortcut(
-      desktopId,
-      'Bienvenida.lnk',
-      { type: 'app', appId: 'welcome' },
-      APP_CATALOG.welcome?.icon ?? 'welcome',
-      now,
-    ),
+  nodes.push(...seedShortcuts(folders.desktop, now));
+
+  return { nodes, folders };
+}
+
+/** Shortcuts the seed puts on the desktop: the personal apps, then the profile links. */
+export function seedShortcuts(desktopId: string, now = Date.now()): FsNode[] {
+  const apps: Array<{ name: string; appId: string; icon: FsNode['icon'] }> = [
+    { name: 'Mis proyectos.lnk', appId: 'projects', icon: APP_CATALOG.projects?.icon ?? 'projects' },
+    { name: 'Sobre mí y CV.lnk', appId: 'about', icon: APP_CATALOG.about?.icon ?? 'about-me' },
+    { name: 'Contacto.lnk', appId: 'mail', icon: APP_CATALOG.mail?.icon ?? 'mail' },
+    { name: 'Bienvenida.lnk', appId: 'welcome', icon: APP_CATALOG.welcome?.icon ?? 'welcome' },
+  ];
+  const nodes = apps.map((app) =>
+    shortcut(desktopId, app.name, { type: 'app', appId: app.appId }, app.icon, now),
   );
   for (const link of PROFILE.links) {
     if (!link.url.startsWith('http')) continue;
-    nodes.push(
-      shortcut(
-        desktopId,
-        `${link.label}.url`,
-        { type: 'url', url: link.url },
-        'doc-web',
-        now,
-      ),
-    );
+    nodes.push(shortcut(desktopId, `${link.label}.url`, { type: 'url', url: link.url }, 'doc-web', now));
   }
-
-  return { nodes, folders };
+  return nodes;
 }
 
 /**

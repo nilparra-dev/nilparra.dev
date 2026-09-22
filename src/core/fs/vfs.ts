@@ -15,7 +15,10 @@ import {
   write,
 } from './db';
 import { welcomeNote } from '../content/portfolioFiles';
+import type { Locale } from '../i18n/I18nProvider';
+import { readStored, writeStored } from '../persist/storage';
 import { WELCOME_FILE_NAME } from './seed';
+import { planSeedSync } from './seedSync';
 import { FsError, type FsBlob, type FsNode, type SystemFolderKey } from './types';
 
 /**
@@ -40,6 +43,35 @@ export async function initializeNodes(createSeed: () => FsNode[]): Promise<FsNod
       if (count.result === 0) createSeed().forEach((node) => store.put(node));
     };
   });
+  return loadNodes();
+}
+
+/** localStorage entry with the shortcuts the seed has offered on this disk. */
+const SEED_OFFER_KEY = 'seed-offer';
+const SEED_OFFER_VERSION = 1;
+
+/**
+ * Brings the portfolio files and the desktop shortcuts up to the published
+ * content. Planning and writing share one transaction that re-reads the
+ * store, so a second tab booting at the same time finds the work done.
+ */
+export async function syncSeedNodes(locale: Locale, now = Date.now()): Promise<FsNode[]> {
+  const offered = readStored<string[] | null>(SEED_OFFER_KEY, SEED_OFFER_VERSION, null);
+  let nextOffer: string[] | null = null;
+  await write([STORE_NODES], (tx) => {
+    const store = tx.objectStore(STORE_NODES);
+    const all = store.getAll();
+    all.onsuccess = () => {
+      const nodes = (all.result as unknown[])
+        .map((entry) => normalizeNode(entry))
+        .filter((node): node is FsNode => node !== null);
+      const plan = planSeedSync(nodes, locale, Array.isArray(offered) ? offered : null, now);
+      plan.removals.forEach((id) => store.delete(id));
+      plan.changes.forEach((node) => store.put(node));
+      nextOffer = plan.offered;
+    };
+  });
+  if (nextOffer) writeStored(SEED_OFFER_KEY, SEED_OFFER_VERSION, nextOffer);
   return loadNodes();
 }
 

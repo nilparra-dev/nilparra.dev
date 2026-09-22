@@ -23,6 +23,7 @@ const SYSTEM_ICONS: Record<string, IconId> = {
 const SYSTEM_SHORTCUT_LABELS: Record<string, Parameters<Translate>[0]> = {
   projects: 'app.projects',
   about: 'app.about',
+  mail: 'app.mail',
   welcome: 'app.welcome',
 };
 

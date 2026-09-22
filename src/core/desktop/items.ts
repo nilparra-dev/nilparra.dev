@@ -12,6 +12,25 @@ import type { MenuEntry } from '../../ui/menu/types';
 import { menuSeparator } from '../../ui/menu/types';
 
 /**
+ * Reading order of the desktop: the personal shortcuts lead (projects, about,
+ * contact, welcome), then the external links, then whatever the visitor puts
+ * on the desktop. The system items close the list so the portfolio is what the
+ * eye lands on first.
+ */
+const PERSONAL_APPS = ['projects', 'about', 'mail', 'welcome'];
+
+function desktopRank(node: FsNode): number {
+  const target = node.shortcut;
+  if (target?.type === 'app') {
+    const index = PERSONAL_APPS.indexOf(target.appId);
+    if (index >= 0) return index;
+    return PERSONAL_APPS.length;
+  }
+  if (target?.type === 'url') return PERSONAL_APPS.length + 1;
+  return node.kind === 'folder' ? PERSONAL_APPS.length + 2 : PERSONAL_APPS.length + 3;
+}
+
+/**
  * One item shown on the desktop: the classic system items (My Computer and the
  * Recycle Bin) plus everything inside C:\Desktop, which is what makes a file
  * saved from Notepad appear on the desktop.
@@ -90,6 +109,8 @@ export function useDesktopItems(): DesktopItem[] {
 
     const fileItems: DesktopItem[] = [...vfs.liveChildren(desktopFolderId)]
       .sort((a, b) => {
+        const rank = desktopRank(a) - desktopRank(b);
+        if (rank !== 0) return rank;
         if (a.kind !== b.kind) return a.kind === 'folder' ? -1 : 1;
         return collator.compare(nodeDisplayName(a, t), nodeDisplayName(b, t));
       })
@@ -162,7 +183,7 @@ export function useDesktopItems(): DesktopItem[] {
         },
       }));
 
-    return [...systemItems, ...fileItems];
+    return [...fileItems, ...systemItems];
   }, [
     binIsEmpty,
     copy,

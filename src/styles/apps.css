@@ -62,13 +62,13 @@
 /* The language switch reads as a quiet row below the actions. */
 .app-welcome-language {
   gap: 8px;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 /* How the desktop works and where the data lives stay secondary to the
  * presentation and the shortcuts. */
 .app-welcome-note {
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.45;
 }
 
@@ -769,7 +769,7 @@
   padding: 0 4px;
   background: var(--w95-yellow);
   border: 1px solid var(--w95-black);
-  font-size: 10px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
@@ -855,7 +855,7 @@
 }
 
 .project-detail-head h2 {
-  font-size: 13px;
+  font-size: 14px;
   margin-bottom: 3px;
 }
 
@@ -932,7 +932,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.4;
 }
 
@@ -948,7 +948,7 @@
   background: var(--w95-face);
   border: 1px solid;
   border-color: var(--w95-gray) var(--w95-white) var(--w95-white) var(--w95-gray);
-  font-size: 10px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }

@@ -155,7 +155,7 @@
   width: 15px;
   height: 15px;
   color: var(--w95-black);
-  font-size: 10px;
+  font-size: 11px;
   background: var(--w95-white);
   border: 1px solid var(--w95-black);
   border-radius: 50%;
@@ -164,7 +164,7 @@
 .poker-seat-status {
   min-height: 15px;
   color: var(--w95-white);
-  font-size: 11px;
+  font-size: 12px;
   text-align: center;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.55);
 }
@@ -177,7 +177,7 @@
   gap: 4px;
   padding: 1px 7px 1px 4px;
   color: var(--w95-white);
-  font-size: 12px;
+  font-size: 13px;
   background: rgba(0, 0, 0, 0.32);
   border-radius: 9px;
   transform: translate(-50%, -50%);
@@ -264,7 +264,7 @@
 }
 
 .poker-setup-title {
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .poker-setup-intro {

@@ -120,6 +120,11 @@ DRAWN = {
     '…': (7, {10: '#.#.#'}),
 }
 
+# Characters Windows 95 did not have in this font, drawn like the ones it did.
+# The port's curly quotes sat on the first column and touched the previous
+# letter ("d’ASIX"); the straight quotes carry the original spacing.
+ALIASES = {'‘': "'", '’': "'", '“': '"', '”': '"'}
+
 # Left bearing for drawn symbols the METRICS table does not cover.
 DRAWN_LEFT = {'º': 1, 'ª': 1, '−': 1, '•': 1, '…': 1}
 
@@ -221,6 +226,9 @@ def build_regular(font: TTFont) -> dict[int, tuple[int, Pixels]]:
         advance, left = METRICS[ord(char)]
         glyphs[ord(char)] = (advance, place(rotate(glyphs[ord(source)][1], drop=2), left))
 
+    for char, source in ALIASES.items():
+        glyphs[ord(char)] = glyphs[ord(source)]
+
     for char, (advance, rows) in DRAWN.items():
         code = ord(char)
         if code in glyphs:
@@ -300,9 +308,12 @@ def write(template: TTFont, glyphs: dict[int, tuple[int, Pixels]], path: Path, n
                 if code <= 0xFFFF or table.format in (12, 13):
                     table.cmap[code] = name
 
-    # Windows 95 metrics: 11 px above the baseline and 2 below, a 13 px line.
-    # The port declared 10 above, which clipped the accents on capitals.
-    ascent, descent = to_units(BASELINE_ROW + 1), to_units(ROWS - BASELINE_ROW - 1)
+    # Windows 95 metrics: 11 px above the baseline and 2 below, a 13 px line,
+    # plus a fifth of a pixel on each side. The ink reaches both edges (the
+    # accents on capitals, the tails of g, j, p, q, y), so without that margin
+    # labels that clip their overflow lose a row when the zoom rounds.
+    ascent = to_units(BASELINE_ROW + 1 + 0.2)
+    descent = to_units(ROWS - BASELINE_ROW - 1 + 0.2)
     font['hhea'].ascent, font['hhea'].descent, font['hhea'].lineGap = ascent, -descent, 0
     os2 = font['OS/2']
     os2.sTypoAscender, os2.sTypoDescender, os2.sTypoLineGap = ascent, -descent, 0

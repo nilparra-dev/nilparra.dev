@@ -1,29 +1,187 @@
 import { useMemo, useState } from 'react';
 import type { AppRenderProps } from '../../core/apps/launcher';
 import { useAppLauncher } from '../../core/apps/launcher';
-import { PLACEHOLDER, PROFILE, PROJECTS, isPlaceholder, pick } from '../../core/content';
+import type { ProjectContent } from '../../core/content';
+import { PLACEHOLDER, PROFILE, PROJECTS, TECHNOLOGIES, isPlaceholder, pick } from '../../core/content';
 import { useVfs } from '../../core/fs/VfsProvider';
 import { useI18n } from '../../core/i18n/I18nProvider';
 import { useWindowManager } from '../../core/window/WindowManagerProvider';
+import { Button } from '../../ui/Button';
 import { Icon } from '../../ui/Icon';
 import { MenuBar, type MenuBarMenu } from '../../ui/menu/MenuBar';
 import { StatusBar } from '../../ui/StatusBar';
+import { Tabs } from '../../ui/Tabs';
 
 /** Small badge that marks content still waiting for the author. */
 function PlaceholderBadge({ text }: { text: string }) {
   return <span className="placeholder-badge">{text}</span>;
 }
 
+/** Resolve a path that lives inside `public/` for the current base path. */
+function assetUrl(path: string): string {
+  return `${import.meta.env.BASE_URL}${path}`;
+}
+
 /**
- * Portfolio window: one card per project with description, technologies,
- * screenshots and links. Entries marked as `placeholder` say so out loud.
+ * Detail page of the selected project: mark, summary and the main action on
+ * top, then the screenshot, the feature list, the technologies and finally the
+ * long technical text behind a disclosure.
+ */
+function ProjectDetail({ project }: { project: ProjectContent }) {
+  const { t, locale } = useI18n();
+  const launch = useAppLauncher();
+  const [showDetails, setShowDetails] = useState(false);
+  const title = pick(project.title, locale);
+  const summary = pick(project.summary, locale);
+  const highlights = pick(project.highlights, locale);
+  const description = pick(project.description, locale);
+  const hasActions = project.repo.kind !== 'none' || project.status === 'placeholder' || Boolean(project.demoUrl);
+
+  return (
+    <article className="project-detail" aria-label={title}>
+      <div className="project-detail-head">
+        <img
+          className="project-detail-logo"
+          src={assetUrl(project.logo)}
+          alt=""
+          width={48}
+          height={48}
+        />
+        <div className="project-detail-title">
+          <h2>
+            {title}
+            {project.status === 'placeholder' && (
+              <PlaceholderBadge text={t('projects.placeholderBadge')} />
+            )}
+          </h2>
+        </div>
+        {project.year && <span className="project-detail-year">{project.year}</span>}
+      </div>
+
+      <p className="project-summary">
+        {summary}
+        {isPlaceholder(summary) && <PlaceholderBadge text={PLACEHOLDER} />}
+      </p>
+
+      {hasActions && (
+        <div className="project-actions">
+          {project.repo.kind === 'public' && (
+            <a
+              className="btn btn--default project-cta"
+              href={project.repo.url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {t('projects.openRepo')}
+            </a>
+          )}
+          {project.repo.kind === 'closed' && (
+            <>
+              <span className="source-badge">{t('projects.closedSource')}</span>
+              <Button primary onClick={() => launch({ appId: 'mail' })}>
+                {t('projects.requestDemo')}
+              </Button>
+            </>
+          )}
+          {project.repo.kind === 'none' && (
+            <PlaceholderBadge text={PLACEHOLDER} />
+          )}
+          {project.demoUrl && (
+            <a className="btn" href={project.demoUrl} target="_blank" rel="noopener noreferrer">
+              {t('projects.openDemo')}
+            </a>
+          )}
+        </div>
+      )}
+      {project.repo.kind === 'closed' && (
+        <p className="u-muted project-source-note">{pick(project.repo.note, locale)}</p>
+      )}
+
+      <section className="project-section project-shots">
+        <h3 className="project-section-title">{t('projects.screenshots')}</h3>
+        {project.screenshots.length === 0 ? (
+          <p className="project-shots-empty">{t('projects.noScreenshots')}</p>
+        ) : (
+          <ul className="project-shots-list" role="list">
+            {project.screenshots.map((shot) => (
+              <li key={shot.src}>
+                <img src={assetUrl(shot.src)} alt={pick(shot.alt, locale)} loading="lazy" />
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {highlights.length > 0 && (
+        <section className="project-section">
+          <h3 className="project-section-title">{t('projects.features')}</h3>
+          <ul className="project-highlights" role="list">
+            {highlights.map((highlight) => (
+              <li key={highlight}>{highlight}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <section className="project-section">
+        <h3 className="project-section-title">{t('projects.technologies')}</h3>
+        {project.technologies.length > 0 ? (
+          <ul className="project-tech" role="list">
+            {project.technologies.map((id) => {
+              const technology = TECHNOLOGIES[id];
+              return (
+                <li key={id} className="project-tech-item">
+                  {technology.logo && (
+                    <img
+                      src={assetUrl(technology.logo)}
+                      alt=""
+                      width={16}
+                      height={16}
+                      loading="lazy"
+                    />
+                  )}
+                  {technology.name}
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <PlaceholderBadge text={PLACEHOLDER} />
+        )}
+      </section>
+
+      {/* The long text stays behind a disclosure so the pane opens compact. */}
+      <button
+        type="button"
+        className="btn btn--small project-more"
+        aria-expanded={showDetails}
+        onClick={() => setShowDetails((value) => !value)}
+      >
+        {showDetails ? t('projects.lessDetails') : t('projects.moreDetails')}
+      </button>
+      {showDetails && (
+        <div className="project-description u-selectable">
+          {description.map((paragraph) => (
+            <p key={paragraph}>{paragraph}</p>
+          ))}
+        </div>
+      )}
+    </article>
+  );
+}
+
+/**
+ * Portfolio window: a property sheet where the projects are tabs across the
+ * top and the selected one fills the page below. Entries marked as
+ * `placeholder` say so out loud.
  */
 export function ProjectsApp({ windowId }: AppRenderProps) {
   const { t, locale } = useI18n();
   const vfs = useVfs();
   const launch = useAppLauncher();
   const wm = useWindowManager();
-  const [view, setView] = useState<'cards' | 'details'>('cards');
+  const [selectedId, setSelectedId] = useState<string>(PROJECTS[0]?.id ?? '');
+  const selected = PROJECTS.find((project) => project.id === selectedId) ?? PROJECTS[0];
 
   const menus = useMemo<MenuBarMenu[]>(
     () => [
@@ -56,29 +214,6 @@ export function ProjectsApp({ windowId }: AppRenderProps) {
         ],
       },
       {
-        id: 'view',
-        label: t('menu.view'),
-        accessKey: 'v',
-        entries: [
-          {
-            kind: 'item',
-            id: 'cards',
-            label: t('desktop.viewLargeIcons'),
-            checked: view === 'cards',
-            radio: true,
-            onSelect: () => setView('cards'),
-          },
-          {
-            kind: 'item',
-            id: 'details',
-            label: t('desktop.viewDetails'),
-            checked: view === 'details',
-            radio: true,
-            onSelect: () => setView('details'),
-          },
-        ],
-      },
-      {
         id: 'help',
         label: t('menu.help'),
         accessKey: 'y',
@@ -92,7 +227,7 @@ export function ProjectsApp({ windowId }: AppRenderProps) {
         ],
       },
     ],
-    [launch, t, view, vfs, windowId, wm],
+    [launch, t, vfs, windowId, wm],
   );
 
   return (
@@ -103,91 +238,22 @@ export function ProjectsApp({ windowId }: AppRenderProps) {
           <Icon id="projects" size={32} />
           <div>
             <h1>{t('projects.heading')}</h1>
-            <p className="u-muted">{t('projects.intro')}</p>
           </div>
         </header>
 
-        {PROJECTS.map((project) => {
-          const title = pick(project.title, locale);
-          return (
-            <article key={project.id} className="project-card">
-              <div className="project-card-head">
-                <h2>{title}</h2>
-                {project.status === 'placeholder' && (
-                  <PlaceholderBadge text={t('projects.placeholderBadge')} />
-                )}
-                {project.year && <span className="u-muted">{project.year}</span>}
-              </div>
-
-              <p className="project-summary">
-                {pick(project.summary, locale)}
-                {isPlaceholder(pick(project.summary, locale)) && (
-                  <PlaceholderBadge text={PLACEHOLDER} />
-                )}
-              </p>
-
-              {view === 'cards' && (
-                <p className="project-description u-selectable">{pick(project.description, locale)}</p>
-              )}
-
-              <dl className="project-meta">
-                <dt>{t('projects.technologies')}</dt>
-                <dd>
-                  {project.technologies.length > 0 ? (
-                    <ul className="project-tech" role="list">
-                      {project.technologies.map((technology) => (
-                        <li key={technology} className="project-tech-item">
-                          {technology}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <PlaceholderBadge text={PLACEHOLDER} />
-                  )}
-                </dd>
-
-                <dt>{t('projects.repository')}</dt>
-                <dd>
-                  {project.repoUrl ? (
-                    <a className="link" href={project.repoUrl} target="_blank" rel="noopener noreferrer">
-                      {t('projects.openRepo')}
-                    </a>
-                  ) : (
-                    <PlaceholderBadge text={PLACEHOLDER} />
-                  )}
-                </dd>
-
-                <dt>{t('projects.demo')}</dt>
-                <dd>
-                  {project.demoUrl ? (
-                    <a className="link" href={project.demoUrl} target="_blank" rel="noopener noreferrer">
-                      {t('projects.openDemo')}
-                    </a>
-                  ) : (
-                    <PlaceholderBadge text={PLACEHOLDER} />
-                  )}
-                </dd>
-              </dl>
-
-              <div className="project-shots">
-                <span className="field-label">{t('projects.screenshots')}</span>
-                {project.screenshots.length === 0 ? (
-                  <p className="project-shots-empty">{t('projects.noScreenshots')}</p>
-                ) : (
-                  <ul className="project-shots-list" role="list">
-                    {project.screenshots.map((shot) => (
-                      <li key={shot.src}>
-                        <img src={shot.src} alt={pick(shot.alt, locale)} loading="lazy" />
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </article>
-          );
-        })}
-
-        <p className="u-muted">{t('about.addHint')}</p>
+        <Tabs
+          tabs={PROJECTS.map((project) => ({ id: project.id, label: pick(project.title, locale) }))}
+          activeId={selected?.id ?? ''}
+          onChange={setSelectedId}
+          ariaLabel={t('projects.heading')}
+        />
+        <div
+          className="tab-panel projects-panel"
+          role="tabpanel"
+          aria-label={selected ? pick(selected.title, locale) : undefined}
+        >
+          {selected && <ProjectDetail key={selected.id} project={selected} />}
+        </div>
       </div>
 
       <StatusBar

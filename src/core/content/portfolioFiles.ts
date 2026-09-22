@@ -7,7 +7,8 @@
  */
 import type { Locale } from '../i18n/I18nProvider';
 import { PROFILE } from './profile';
-import { PROJECTS } from './projects';
+import { PROJECTS, type ProjectContent } from './projects';
+import { TECHNOLOGIES } from './technologies';
 import type { Localized } from './types';
 import { pick } from './types';
 
@@ -141,26 +142,54 @@ const PROJECTS_README: Localized<string> = {
     '=========',
     '',
     'Un archivo por proyecto, generado desde src/core/content/projects.ts.',
-    'Mientras el portfolio siga sin proyectos reales verás entradas marcadas como',
-    '[PENDIENTE]: son plantillas, no trabajo inventado.',
+    'Las entradas marcadas como [PENDIENTE] son plantillas, no trabajo inventado.',
   ].join('\n'),
   ca: [
     'Projectes',
     '=========',
     '',
     'Un fitxer per projecte, generat des de src/core/content/projects.ts.',
-    'Mentre el portfolio segueixi sense projectes reals veuràs entrades marcades com',
-    '[PENDIENTE]: són plantilles, no treball inventat.',
+    'Les entrades marcades com [PENDIENTE] són plantilles, no treball inventat.',
   ].join('\n'),
   en: [
     'Projects',
     '========',
     '',
     'One file per project, generated from src/core/content/projects.ts.',
-    'While the portfolio still has no real projects you will see entries marked as',
-    '[PENDIENTE]: they are templates, not invented work.',
+    'Entries marked as [PENDIENTE] are templates, not invented work.',
   ].join('\n'),
 };
+
+/** Demo line for published projects that deliberately have no public demo. */
+const NO_PUBLIC_DEMO: Localized<string> = {
+  es: 'Sin demo pública',
+  ca: 'Sense demo pública',
+  en: 'No public demo',
+};
+
+const CLOSED_REPO: Localized<string> = {
+  es: 'Privado (código cerrado)',
+  ca: 'Privat (codi tancat)',
+  en: 'Private (closed source)',
+};
+
+const NO_REPO: Localized<string> = {
+  es: 'Sin repositorio público',
+  ca: 'Sense repositori públic',
+  en: 'No public repository',
+};
+
+/** Repository line for the generated files, with the same states as the card. */
+function repoLine(project: ProjectContent | undefined, locale: Locale): string {
+  if (project?.repo.kind === 'public') return project.repo.url;
+  if (project?.repo.kind === 'closed') return pick(CLOSED_REPO, locale);
+  return project?.status === 'published' ? pick(NO_REPO, locale) : '[PENDIENTE]';
+}
+
+/** Long description joined into a single block for the generated .txt files. */
+function descriptionText(project: ProjectContent | undefined, locale: Locale): string {
+  return pick(project?.description ?? { es: [''], ca: [''], en: [''] }, locale).join('\n\n');
+}
 
 function projectFile(index: number): PortfolioFileSeed {
   const project = PROJECTS[index];
@@ -170,31 +199,31 @@ function projectFile(index: number): PortfolioFileSeed {
       pick(label, 'es'),
       '='.repeat(pick(label, 'es').length),
       '',
-      pick(project?.description ?? { es: '', ca: '', en: '' }, 'es'),
+      descriptionText(project, 'es'),
       '',
-      `Tecnologías: ${project?.technologies.length ? project.technologies.join(', ') : '[PENDIENTE]'}`,
-      `Repositorio: ${project?.repoUrl ?? '[PENDIENTE]'}`,
-      `Demo: ${project?.demoUrl ?? '[PENDIENTE]'}`,
+      `Tecnologías: ${project?.technologies.length ? project.technologies.map((id) => TECHNOLOGIES[id].name).join(', ') : '[PENDIENTE]'}`,
+      `Repositorio: ${repoLine(project, 'es')}`,
+      `Demo: ${project?.demoUrl ?? (project?.status === 'published' ? pick(NO_PUBLIC_DEMO, 'es') : '[PENDIENTE]')}`,
     ].join('\n'),
     ca: [
       pick(label, 'ca'),
       '='.repeat(pick(label, 'ca').length),
       '',
-      pick(project?.description ?? { es: '', ca: '', en: '' }, 'ca'),
+      descriptionText(project, 'ca'),
       '',
-      `Tecnologies: ${project?.technologies.length ? project.technologies.join(', ') : '[PENDIENTE]'}`,
-      `Repositori: ${project?.repoUrl ?? '[PENDIENTE]'}`,
-      `Demo: ${project?.demoUrl ?? '[PENDIENTE]'}`,
+      `Tecnologies: ${project?.technologies.length ? project.technologies.map((id) => TECHNOLOGIES[id].name).join(', ') : '[PENDIENTE]'}`,
+      `Repositori: ${repoLine(project, 'ca')}`,
+      `Demo: ${project?.demoUrl ?? (project?.status === 'published' ? pick(NO_PUBLIC_DEMO, 'ca') : '[PENDIENTE]')}`,
     ].join('\n'),
     en: [
       pick(label, 'en'),
       '='.repeat(pick(label, 'en').length),
       '',
-      pick(project?.description ?? { es: '', ca: '', en: '' }, 'en'),
+      descriptionText(project, 'en'),
       '',
-      `Technologies: ${project?.technologies.length ? project.technologies.join(', ') : '[PENDIENTE]'}`,
-      `Repository: ${project?.repoUrl ?? '[PENDIENTE]'}`,
-      `Demo: ${project?.demoUrl ?? '[PENDIENTE]'}`,
+      `Technologies: ${project?.technologies.length ? project.technologies.map((id) => TECHNOLOGIES[id].name).join(', ') : '[PENDIENTE]'}`,
+      `Repository: ${repoLine(project, 'en')}`,
+      `Demo: ${project?.demoUrl ?? (project?.status === 'published' ? pick(NO_PUBLIC_DEMO, 'en') : '[PENDIENTE]')}`,
     ].join('\n'),
   };
   return {
@@ -248,7 +277,7 @@ export function welcomeNote(locale: Locale): string {
       '',
       'Prova de:',
       '  1. Crear una carpeta amb el botó dret > Nou > Carpeta.',
-      '  2. Obrir el Bloc de notes, escriure-hi alguna cosa i fer Serva com a.',
+      '  2. Obrir el Bloc de notes, escriure-hi alguna cosa i fer servir "Anomena i desa".',
       '  3. Recarregar la pàgina: el document seguirà allà.',
       '',
       'C:\\Portfolio és contingut de l’autor i és de només lectura.',

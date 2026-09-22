@@ -59,7 +59,16 @@
   flex-wrap: wrap;
 }
 
+/* The language switch reads as a quiet row below the actions. */
+.app-welcome-language {
+  gap: 8px;
+  font-size: 12px;
+}
+
+/* How the desktop works and where the data lives stay secondary to the
+ * presentation and the shortcuts. */
 .app-welcome-note {
+  font-size: 12px;
   line-height: 1.45;
 }
 
@@ -814,6 +823,7 @@
 }
 
 .app-projects-body {
+  container-type: inline-size;
   flex: 1 1 auto;
   min-height: 0;
   padding: 10px 12px;
@@ -821,64 +831,130 @@
   background: var(--w95-face);
 }
 
-.project-card {
-  padding: 10px 12px;
-  margin-bottom: 12px;
-  background: var(--w95-window-bg);
-  border: 1px solid;
-  border-color: var(--w95-gray) var(--w95-white) var(--w95-white) var(--w95-gray);
-  box-shadow: inset 1px 1px 0 var(--w95-black);
+/* The project tabs sit on top of the page, as in a property sheet. */
+
+/* Content of the selected project; the tab panel owns the frame. */
+.project-detail {
+  min-width: 0;
 }
 
-.project-card-head {
+.project-detail-head {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-
-.project-card-head h2 {
-  font-size: 13px;
-}
-
-.project-summary {
-  margin-bottom: 6px;
-}
-
-.project-description {
+  align-items: flex-start;
+  gap: 10px;
   margin-bottom: 8px;
-  line-height: 1.45;
 }
 
-.project-meta {
-  display: grid;
-  grid-template-columns: 110px 1fr;
-  gap: 4px 8px;
-  margin: 0 0 8px;
+.project-detail-logo {
+  flex: 0 0 auto;
 }
 
-.project-meta dt {
+.project-detail-title {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.project-detail-head h2 {
+  font-size: 13px;
+  margin-bottom: 3px;
+}
+
+.project-detail-year {
+  flex: 0 0 auto;
   color: var(--w95-gray);
 }
 
-.project-meta dd {
-  margin: 0;
+@container (max-width: 460px) {
+  .project-detail-head {
+    flex-wrap: wrap;
+  }
 }
 
+.project-summary {
+  margin-bottom: 10px;
+}
+
+/* The main action sits next to the summary, above every list. */
+.project-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.project-section {
+  margin-top: 12px;
+}
+
+/* The pixel font only stays sharp at its design size, so the weight of the
+ * same family carries the heading. */
+.project-section-title {
+  font-size: var(--w95-font-size);
+  font-weight: var(--w95-font-weight-bold);
+  margin-bottom: 5px;
+}
+
+.project-description {
+  line-height: 1.45;
+}
+
+.project-description p {
+  margin: 0 0 8px;
+}
+
+.project-description p:last-child {
+  margin-bottom: 0;
+}
+
+.project-highlights {
+  margin: 0;
+  padding-left: 18px;
+  list-style: square;
+  line-height: 1.5;
+}
+
+.project-more {
+  margin-top: 12px;
+}
+
+/* Technologies: one compact line per tool, mark and name side by side. */
 .project-tech {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 4px 14px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .project-tech-item {
-  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.project-tech-item img {
+  width: 16px;
+  height: 16px;
+}
+
+/* Closed source: a quiet chip, not the yellow placeholder warning. */
+.source-badge {
+  display: inline-block;
+  padding: 0 4px;
   background: var(--w95-face);
   border: 1px solid;
-  border-color: var(--w95-white) var(--w95-gray) var(--w95-gray) var(--w95-white);
+  border-color: var(--w95-gray) var(--w95-white) var(--w95-white) var(--w95-gray);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.project-source-note {
+  margin-top: 4px;
 }
 
 .project-shots-empty {

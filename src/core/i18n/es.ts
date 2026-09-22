@@ -258,14 +258,17 @@ export const es = {
 
   /* --- Projects ----------------------------------------------------- */
   'projects.heading': 'Mis proyectos',
-  'projects.intro': 'Estos son los proyectos que hay publicados en el portfolio. Mientras no añadas los tuyos verás tarjetas marcadas como pendientes.',
+  'projects.features': 'Funciones principales',
   'projects.technologies': 'Tecnologías',
-  'projects.repository': 'Repositorio',
   'projects.demo': 'Demo',
   'projects.screenshots': 'Capturas',
   'projects.noScreenshots': 'Sin capturas todavía',
+  'projects.moreDetails': 'Ver detalles técnicos',
+  'projects.lessDetails': 'Ocultar detalles',
   'projects.openRepo': 'Abrir en GitHub',
+  'projects.closedSource': 'Código privado',
   'projects.openDemo': 'Ver la demo',
+  'projects.requestDemo': 'Pedir una demostración',
   'projects.placeholderBadge': 'Pendiente',
   'projects.openFolder': 'Ver los archivos en el Explorador',
 
@@ -281,7 +284,6 @@ export const es = {
   'about.downloadCv': 'Descargar el CV en PDF',
   'about.cvMissing': 'El PDF todavía no está publicado. Añádelo en public/ y define cvUrl en src/core/content/profile.ts.',
   'about.noEntries': 'Todavía no has añadido nada aquí.',
-  'about.addHint': 'Edita src/core/content/profile.ts para completar esta sección.',
   'about.openPortfolio': 'Ver la carpeta del portfolio',
 
   /* --- Internet ----------------------------------------------------- */

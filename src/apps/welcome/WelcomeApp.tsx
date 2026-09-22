@@ -10,8 +10,8 @@ import { Icon } from '../../ui/Icon';
 import { Select } from '../../ui/Select';
 
 /**
- * First visit window: who the desktop belongs to, how it works, the language
- * switch and the shortcut to the rest of the portfolio.
+ * First visit window: who the desktop belongs to, the shortcut to the rest of
+ * the portfolio, and the language switch kept below the main reading.
  */
 export function WelcomeApp({ windowId }: AppRenderProps) {
   const { t, locale } = useI18n();
@@ -34,18 +34,6 @@ export function WelcomeApp({ windowId }: AppRenderProps) {
       <div className="w95-scroll app-welcome-body">
         <p className="app-welcome-intro">{t('welcome.intro')}</p>
 
-        <GroupBox title={t('welcome.languageLabel')} className="app-welcome-group">
-          <div className="u-row">
-            <Select
-              ariaLabel={t('welcome.languageLabel')}
-              className="welcome-language-select"
-              value={locale}
-              options={LOCALES.map((code) => ({ value: code, label: LOCALE_LABELS[code] }))}
-              onChange={(value) => { if (isLocale(value)) update({ locale: value }); }}
-            />
-          </div>
-        </GroupBox>
-
         <GroupBox title={t('desktop.open')} className="app-welcome-group">
           <div className="u-row app-welcome-actions">
             <Button primary onClick={() => launch({ appId: 'projects' })}>
@@ -59,7 +47,19 @@ export function WelcomeApp({ windowId }: AppRenderProps) {
           </div>
         </GroupBox>
 
-        <p className="app-welcome-note">{t('welcome.storageNote')}</p>
+        {/* The switch stays one row below the actions instead of leading them. */}
+        <div className="u-row app-welcome-language">
+          <span className="u-muted">{t('welcome.languageLabel')}</span>
+          <Select
+            ariaLabel={t('welcome.languageLabel')}
+            className="welcome-language-select"
+            value={locale}
+            options={LOCALES.map((code) => ({ value: code, label: LOCALE_LABELS[code] }))}
+            onChange={(value) => { if (isLocale(value)) update({ locale: value }); }}
+          />
+        </div>
+
+        <p className="app-welcome-note u-muted">{t('welcome.storageNote')}</p>
         <p className="app-welcome-note u-muted">{t('welcome.tip')}</p>
       </div>
 

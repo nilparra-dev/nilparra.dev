@@ -236,14 +236,17 @@ export const en: Catalog = {
   'recycle.hint': 'Items sent here can be restored to their original folder.',
 
   'projects.heading': 'My projects',
-  'projects.intro': 'These are the projects published in the portfolio. Until you add your own you will see cards marked as pending.',
+  'projects.features': 'Key features',
   'projects.technologies': 'Technologies',
-  'projects.repository': 'Repository',
   'projects.demo': 'Demo',
   'projects.screenshots': 'Screenshots',
   'projects.noScreenshots': 'No screenshots yet',
+  'projects.moreDetails': 'View technical details',
+  'projects.lessDetails': 'Hide details',
   'projects.openRepo': 'Open on GitHub',
+  'projects.closedSource': 'Closed source',
   'projects.openDemo': 'See the demo',
+  'projects.requestDemo': 'Request a demo',
   'projects.placeholderBadge': 'Pending',
   'projects.openFolder': 'See the files in Explorer',
 
@@ -258,7 +261,6 @@ export const en: Catalog = {
   'about.downloadCv': 'Download the CV as PDF',
   'about.cvMissing': 'The PDF is not published yet. Add it in public/ and set cvUrl in src/core/content/profile.ts.',
   'about.noEntries': 'Nothing has been added here yet.',
-  'about.addHint': 'Edit src/core/content/profile.ts to complete this section.',
   'about.openPortfolio': 'See the portfolio folder',
 
   'internet.heading': 'Internet',

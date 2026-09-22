@@ -238,14 +238,17 @@ export const ca: Catalog = {
   'recycle.hint': 'Els elements enviats aquí es poden restaurar a la carpeta original.',
 
   'projects.heading': 'Els meus projectes',
-  'projects.intro': 'Aquests són els projectes publicats al portfolio. Mentre no afegeixis els teus veuràs targetes marcades com a pendents.',
+  'projects.features': 'Funcions principals',
   'projects.technologies': 'Tecnologies',
-  'projects.repository': 'Repositori',
   'projects.demo': 'Demo',
   'projects.screenshots': 'Captures',
   'projects.noScreenshots': 'Encara no hi ha captures',
+  'projects.moreDetails': 'Veure detalls tècnics',
+  'projects.lessDetails': 'Amaga els detalls',
   'projects.openRepo': 'Obre a GitHub',
+  'projects.closedSource': 'Codi privat',
   'projects.openDemo': 'Veure la demo',
+  'projects.requestDemo': 'Demanar una demostració',
   'projects.placeholderBadge': 'Pendent',
   'projects.openFolder': 'Veure els fitxers a l’Explorador',
 
@@ -260,7 +263,6 @@ export const ca: Catalog = {
   'about.downloadCv': 'Descarrega el CV en PDF',
   'about.cvMissing': 'El PDF encara no està publicat. Afegeix-lo a public/ i defineix cvUrl a src/core/content/profile.ts.',
   'about.noEntries': 'Encara no has afegit res aquí.',
-  'about.addHint': 'Edita src/core/content/profile.ts per completar aquesta secció.',
   'about.openPortfolio': 'Veure la carpeta del portfolio',
 
   'internet.heading': 'Internet',

@@ -114,10 +114,34 @@ describe('applications', () => {
     expect(await screen.findByRole('listbox', { name: 'Papelera de reciclaje' })).toBeTruthy();
   });
 
-  it('renders the projects window with the placeholder badge', async () => {
-    renderApp('projects');
+  it('renders the projects window with the detail pane of the selected project', async () => {
+    const { container } = renderApp('projects');
     expect(await screen.findByRole('heading', { name: 'Mis proyectos' })).toBeTruthy();
-    expect(screen.getAllByText('Pendiente').length).toBeGreaterThan(0);
+
+    // The projects are tabs across the top; the first one is selected.
+    expect(screen.getByRole('tab', { name: 'Wooster' }).getAttribute('aria-selected')).toBe('true');
+
+    // The published project leads with its mark and its main action.
+    expect(screen.getByRole('heading', { name: 'Wooster' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Abrir en GitHub' }).getAttribute('href')).toBe(
+      'https://github.com/nilparra-dev/wooster',
+    );
+    expect(container.querySelectorAll('.project-tech-item img')).toHaveLength(8);
+    expect(screen.getByText('Lista streams que Twitch no muestra')).toBeTruthy();
+
+    // The long description stays hidden until the visitor asks for it.
+    expect(screen.queryByText(/Wooster convierte un ID/)).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Ver detalles técnicos' }));
+    expect(screen.getByText(/Wooster convierte un ID/)).toBeTruthy();
+
+    // Selecting the closed-source project moves the pane to it, states that
+    // the code is private and offers the demo through the contact window.
+    fireEvent.click(screen.getByRole('tab', { name: 'Antevue' }));
+    expect(await screen.findByRole('heading', { name: /Antevue/ })).toBeTruthy();
+    expect(screen.getByText('Código privado')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Pedir una demostración' })).toBeTruthy();
+    expect(screen.queryByText('Pendiente')).toBeNull();
+    expect(screen.queryAllByRole('link', { name: 'Abrir en GitHub' })).toHaveLength(0);
   });
 
   it('renders the about window with education grouped by school and hides unpublished sections', async () => {

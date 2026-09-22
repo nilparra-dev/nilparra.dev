@@ -7,5 +7,6 @@
 export * from './types';
 export * from './profile';
 export * from './projects';
+export * from './technologies';
 export * from './help';
 export * from './branding';

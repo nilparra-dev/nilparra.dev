@@ -86,9 +86,8 @@ describe('disk initialization', () => {
     expect(named(portfolio.id, 'Contacto.txt')).toHaveLength(1);
     expect(named(documents.id, 'Bienvenida.txt')).toHaveLength(1);
     expect(named(documents.id, 'Notas.txt')).toEqual([userFile]);
-    expect(named(projects[0].id, 'proyecto-1.txt')).toHaveLength(1);
-    expect(named(projects[0].id, 'proyecto-2.txt')).toHaveLength(1);
-    expect(named(projects[0].id, 'proyecto-3.txt')).toHaveLength(1);
+    expect(named(projects[0].id, 'wooster.txt')).toHaveLength(1);
+    expect(named(projects[0].id, 'antevue.txt')).toHaveLength(1);
     expect(repaired.find((node) => node.id === 'reference')?.shortcut).toEqual({
       type: 'node',
       nodeId: projects[0].id,

@@ -87,9 +87,10 @@ written in English.
 ## Credits and trademark notice
 
 Code, artwork and sounds by Nil Parra Luna, released under the [MIT licence](LICENSE). The
-bundled MS Sans Serif fonts come from [React95](https://github.com/react95-io/React95) and the
-classic pointer follows [JS Paint](https://github.com/1j01/jspaint), both MIT. Style references
-for everything else are the public Windows 95 documentation and screenshots.
+bundled MS Sans Serif fonts are generated from the [React95](https://github.com/react95-io/React95)
+port, with the Windows 95 metrics and the accented letters added, and the classic pointer follows
+[JS Paint](https://github.com/1j01/jspaint), both MIT. Style references for everything else are
+the public Windows 95 documentation and screenshots.
 
 Windows is a registered trademark of Microsoft Corporation. This is an unofficial tribute, not
 affiliated with Microsoft. The only Microsoft material in the repository is the archived

@@ -13,7 +13,7 @@ import type { IconId } from '../../assets/generated/icons';
 import { createId } from '../ids';
 import { buildPortfolioSeed, buildSeed } from './seed';
 import { FsError, ROOT_ID, type FsBlob, type FsNode, type NodeWithPath, type ShortcutTarget, type SystemFolderKey } from './types';
-import { diskUsage, initializeNodes, repairDuplicateSeedNodes, putBlobs, putNodes, readBlobData, removeNodes, syncSeedNodes, warmUp, wipeDisk } from './vfs';
+import { diskUsage, initializeNodes, putBlobs, putNodes, readBlobData, removeNodes, syncSeedNodes, warmUp, wipeDisk } from './vfs';
 import {
   childrenOf as childrenOfNodes,
   duplicateSubtree,
@@ -102,10 +102,9 @@ export function VfsProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     const boot = async () => {
       try {
-        const initial = await initializeNodes(() => buildSeed(localeRef.current).nodes);
+        await initializeNodes(() => buildSeed(localeRef.current).nodes);
         if (cancelled) return;
-        await repairDuplicateSeedNodes(initial);
-        if (cancelled) return;
+        /* syncSeedNodes repairs old duplicate seeds and plans from the same transaction. */
         const stored = await syncSeedNodes(localeRef.current);
         if (cancelled) return;
         setNodes(new Map(stored.map((node) => [node.id, node])));

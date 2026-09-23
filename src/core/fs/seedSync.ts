@@ -8,6 +8,7 @@
  */
 import type { Locale } from '../i18n/I18nProvider';
 import { buildPortfolioSeed, seedShortcuts } from './seed';
+import { uniqueName } from './vfsUtils';
 import type { FsNode, ShortcutTarget } from './types';
 
 export interface SeedSyncPlan {
@@ -19,10 +20,16 @@ export interface SeedSyncPlan {
 }
 
 /**
- * Shortcuts the seed placed before the offer list was recorded. On a disk with
- * no list, a missing one of these was removed by the visitor, not never given.
+ * Shortcuts placed before the offer list was recorded. The Contact shortcut was
+ * added later, so it must still be offered to existing disks.
  */
-const LEGACY_OFFER = ['app:projects', 'app:about', 'app:welcome'];
+const LEGACY_OFFER = [
+  'app:projects',
+  'app:about',
+  'app:welcome',
+  'url:https://github.com/nilparra-dev',
+  'url:https://www.linkedin.com/in/nilparra1/',
+];
 
 export function shortcutKey(target: ShortcutTarget): string {
   if (target.type === 'app') return `app:${target.appId}`;
@@ -80,21 +87,53 @@ export function planSeedSync(
     const freshPaths = portfolioPaths(fresh, portfolioId);
     if (signature(current, currentPaths) !== signature(fresh, freshPaths)) {
       const idByPath = new Map([...freshPaths].map(([id, path]) => [path, id]));
+      const movedParents = new Map<string, string>();
       for (const node of current) {
         removals.push(node.id);
         replaced.set(node.id, idByPath.get(currentPaths.get(node.id) ?? '') ?? portfolioId);
       }
+      for (const node of nodes) {
+        if (node.parentId === null || !replaced.has(node.parentId)) continue;
+        movedParents.set(node.id, replaced.get(node.parentId) ?? portfolioId);
+      }
       changes.push(...fresh);
+
+      /* Reserve names before moving visitor nodes so a fresh file cannot collide with them. */
+      const reservedNames = new Map<string, Set<string>>();
+      const reserve = (parentId: string | null, name: string) => {
+        if (parentId === null) return;
+        const names = reservedNames.get(parentId) ?? new Set<string>();
+        names.add(name.toLowerCase());
+        reservedNames.set(parentId, names);
+      };
+      fresh.forEach((node) => reserve(node.parentId, node.name));
+      nodes.forEach((node) => {
+        if (!replaced.has(node.id) && !movedParents.has(node.id)) reserve(node.parentId, node.name);
+      });
+
       for (const node of nodes) {
         if (replaced.has(node.id)) continue;
-        /* A visitor file left inside a folder that goes away moves up to the portfolio root. */
-        const orphan = node.parentId !== null && replaced.has(node.parentId);
+        const movedParent = movedParents.get(node.id);
         const target = node.shortcut?.type === 'node' ? replaced.get(node.shortcut.nodeId) : undefined;
-        if (!orphan && !target) continue;
+        const deletedParent =
+          node.deletedFromParentId === null
+            ? undefined
+            : replaced.get(node.deletedFromParentId);
+        if (movedParent === undefined && target === undefined && deletedParent === undefined) continue;
+
+        let name = node.name;
+        if (movedParent !== undefined) {
+          const names = reservedNames.get(movedParent) ?? new Set<string>();
+          name = uniqueName([...names], node.name);
+          names.add(name.toLowerCase());
+          reservedNames.set(movedParent, names);
+        }
         changes.push({
           ...node,
-          parentId: orphan ? portfolioId : node.parentId,
-          shortcut: target ? { type: 'node', nodeId: target } : node.shortcut,
+          name,
+          parentId: movedParent ?? node.parentId,
+          deletedFromParentId: deletedParent ?? node.deletedFromParentId,
+          shortcut: target === undefined ? node.shortcut : { type: 'node', nodeId: target },
         });
       }
     }

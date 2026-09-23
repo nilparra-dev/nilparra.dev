@@ -65,9 +65,13 @@ export async function syncSeedNodes(locale: Locale, now = Date.now()): Promise<F
       const nodes = (all.result as unknown[])
         .map((entry) => normalizeNode(entry))
         .filter((node): node is FsNode => node !== null);
-      const plan = planSeedSync(nodes, locale, Array.isArray(offered) ? offered : null, now);
-      plan.removals.forEach((id) => store.delete(id));
-      plan.changes.forEach((node) => store.put(node));
+      const repair = planDuplicateRepair(nodes);
+      const plan = planSeedSync(repair.nodes, locale, Array.isArray(offered) ? offered : null, now);
+      const removals = new Set([...repair.removals.keys(), ...plan.removals]);
+      removals.forEach((id) => store.delete(id));
+      const changes = new Map<string, FsNode>();
+      [...repair.changes, ...plan.changes].forEach((node) => changes.set(node.id, node));
+      changes.forEach((node) => store.put(node));
       nextOffer = plan.offered;
     };
   });
@@ -83,19 +87,16 @@ function isUntouched(node: FsNode): boolean {
   return node.createdAt === node.updatedAt;
 }
 
-/**
- * Duplicates left behind by the old non-atomic initialisation: two mounts
- * could seed an empty disk at the same time, and every node the seed creates
- * with a random id (desktop shortcuts, the note in Documents and the whole
- * portfolio subtree) ended up written twice.
- *
- * Only untouched copies are removed. Visitor files, and any copy that was
- * edited, renamed or moved, keep their place; a shortcut that points to a
- * removed copy is redirected to the one that stays.
- */
-export async function repairDuplicateSeedNodes(nodes: FsNode[]): Promise<FsNode[]> {
+interface DuplicateRepairPlan {
+  nodes: FsNode[];
+  changes: FsNode[];
+  removals: Map<string, string | null>;
+}
+
+function planDuplicateRepair(nodes: FsNode[]): DuplicateRepairPlan {
   const removals = planDuplicateRemovals(nodes);
-  if (!removals.size) return nodes;
+  if (!removals.size) return { nodes, changes: [], removals };
+
   const changes: FsNode[] = [];
   const repaired = nodes
     .filter((node) => !removals.has(node.id))
@@ -107,12 +108,28 @@ export async function repairDuplicateSeedNodes(nodes: FsNode[]): Promise<FsNode[
       changes.push(updated);
       return updated;
     });
+  return { nodes: repaired, changes, removals };
+}
+
+/**
+ * Duplicates left behind by the old non-atomic initialisation: two mounts
+ * could seed an empty disk at the same time, and every node the seed creates
+ * with a random id (desktop shortcuts, the note in Documents and the whole
+ * portfolio subtree) ended up written twice.
+ *
+ * Only untouched copies are removed. Visitor files, and any copy that was
+ * edited, renamed or moved, keep their place; a shortcut that points to a
+ * removed copy is redirected to the one that stays.
+ */
+export async function repairDuplicateSeedNodes(nodes: FsNode[]): Promise<FsNode[]> {
+  const repair = planDuplicateRepair(nodes);
+  if (!repair.removals.size) return repair.nodes;
   await write([STORE_NODES], (tx) => {
     const store = tx.objectStore(STORE_NODES);
-    changes.forEach((node) => store.put(node));
-    removals.forEach((_, id) => store.delete(id));
+    repair.changes.forEach((node) => store.put(node));
+    repair.removals.forEach((_, id) => store.delete(id));
   });
-  return repaired;
+  return repair.nodes;
 }
 
 /** Removal plan of the duplicated nodes: id to remove -> id that takes its place. */

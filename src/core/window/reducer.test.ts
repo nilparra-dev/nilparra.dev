@@ -122,4 +122,17 @@ describe('window manager reducer', () => {
     expect(state.windows).toHaveLength(2);
     expect(state.windows.every((window) => window.state === 'normal')).toBe(true);
   });
+
+  it('never gives two windows the same z after a maximize', () => {
+    let state = createWindowManagerState(viewport);
+    state = windowManagerReducer(state, { type: 'open', window: request({ id: 'a' }) });
+    state = windowManagerReducer(state, { type: 'open', window: request({ id: 'b' }) });
+    state = windowManagerReducer(state, { type: 'maximize', id: 'a' });
+    expect(activeWindowId(state)).toBe('a');
+    state = windowManagerReducer(state, { type: 'open', window: request({ id: 'c' }) });
+    state = windowManagerReducer(state, { type: 'maximize', id: 'b' });
+    const zs = state.windows.map((window) => window.z);
+    expect(new Set(zs).size).toBe(zs.length);
+    expect(activeWindowId(state)).toBe('b');
+  });
 });

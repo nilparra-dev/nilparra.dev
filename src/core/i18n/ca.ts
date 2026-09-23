@@ -23,6 +23,7 @@ export const ca: Catalog = {
   'common.loading': 'S’està carregant…',
   'common.working': 'S’està processant…',
   'common.error': 'Error',
+  'common.loadFailed': 'No s’ha pogut carregar l’aplicació.',
   'common.warning': 'Avís',
   'common.information': 'Informació',
   'common.question': 'Pregunta',

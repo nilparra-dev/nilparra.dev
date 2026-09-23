@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { preloadApps } from '../core/apps/components';
 import { useAppLauncher } from '../core/apps/launcher';
 import { DESKTOP_PRODUCT_NAME } from '../core/content/branding';
 import { useVfs } from '../core/fs/VfsProvider';
@@ -47,6 +48,18 @@ export function Shell() {
     bootstrapped.current = true;
     launch({ appId: 'welcome' });
   }, [launch, power, preferences.openWelcomeOnStart, wm.booted, wm.windows.length]);
+
+  /* Once the desktop is on screen, fetch the split applications in the background. */
+  useEffect(() => {
+    if (!vfs.ready) return;
+    const preload = () => void preloadApps().catch(() => {});
+    if (typeof window.requestIdleCallback === 'function') {
+      const handle = window.requestIdleCallback(preload, { timeout: 4000 });
+      return () => window.cancelIdleCallback(handle);
+    }
+    const handle = window.setTimeout(preload, 2000);
+    return () => window.clearTimeout(handle);
+  }, [vfs.ready]);
 
   /* Ctrl+Esc and the Windows key open the Start menu, as in the original. */
   useEffect(() => {

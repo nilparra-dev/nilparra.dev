@@ -25,7 +25,12 @@ SOFTWARE.
 NOTA SOBRE MARCAS Y RECURSOS DE TERCEROS
 
 Windows es una marca registrada de Microsoft Corporation. Este proyecto es un
-homenaje no oficial, no está afiliado ni patrocinado por Microsoft y no
-redistribuye ningún recurso original de Microsoft: los iconos, los cursores,
-los fondos de escritorio y los sonidos se han creado desde cero para este
-repositorio (ver la sección "Recursos gráficos" del README).
+homenaje no oficial y no está afiliado ni patrocinado por Microsoft.
+
+El código fuente y los recursos creados específicamente para este repositorio
+se publican bajo la licencia MIT, salvo que se indique lo contrario. Los
+logotipos de centros, empresas y proyectos, las marcas de las herramientas y
+los fondos de escritorio de Windows 95 son recursos de terceros o materiales
+archivados; pertenecen a sus titulares y conservan sus propias condiciones. Su
+origen y sus avisos se documentan en los README correspondientes de `public/`
+y en `src/assets/fonts/README.md`.

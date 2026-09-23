@@ -51,6 +51,8 @@ export function MailApp({ windowId }: AppRenderProps) {
           </div>
         </header>
 
+        <p className="mail-invite">{t('mail.invite')}</p>
+
         <GroupBox title={t('internet.page.contact')}>
           <div className="u-row">
             <input id="mail-address" className="field u-grow" value={PROFILE.email} readOnly />

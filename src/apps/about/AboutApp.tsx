@@ -54,15 +54,6 @@ export function AboutApp({ windowId }: AppRenderProps) {
               });
             },
           },
-          {
-            kind: 'item',
-            id: 'cv',
-            label: t('about.downloadCv'),
-            disabled: !PROFILE.cvUrl,
-            onSelect: () => {
-              if (PROFILE.cvUrl) window.open(PROFILE.cvUrl, '_blank', 'noopener,noreferrer');
-            },
-          },
           { kind: 'separator', id: 'sep', label: '' },
           { kind: 'item', id: 'projects', label: t('projects.heading'), onSelect: () => launch({ appId: 'projects' }) },
           { kind: 'item', id: 'close', label: t('window.close'), onSelect: () => void wm.close(windowId) },

@@ -174,7 +174,7 @@ export function buildSeed(locale: Locale, now = Date.now()): SeedResult {
 export function seedShortcuts(desktopId: string, now = Date.now()): FsNode[] {
   const apps: Array<{ name: string; appId: string; icon: FsNode['icon'] }> = [
     { name: 'Mis proyectos.lnk', appId: 'projects', icon: APP_CATALOG.projects?.icon ?? 'projects' },
-    { name: 'Sobre mí y CV.lnk', appId: 'about', icon: APP_CATALOG.about?.icon ?? 'about-me' },
+    { name: 'Sobre mí.lnk', appId: 'about', icon: APP_CATALOG.about?.icon ?? 'about-me' },
     { name: 'Contacto.lnk', appId: 'mail', icon: APP_CATALOG.mail?.icon ?? 'mail' },
     { name: 'Bienvenida.lnk', appId: 'welcome', icon: APP_CATALOG.welcome?.icon ?? 'welcome' },
   ];

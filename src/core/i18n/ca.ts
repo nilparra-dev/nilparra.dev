@@ -146,7 +146,7 @@ export const ca: Catalog = {
   'dialog.cannotDeleteSystem': 'Aquest element forma part del sistema i no es pot eliminar.',
   'dialog.readOnly': '«{name}» és contingut del portfolio i només es pot llegir. Fes servir «Anomena i desa» per crear-ne una còpia.',
   'dialog.confirmDelete': 'Segur que vols enviar «{name}» a la paperera?',
-  'dialog.confirmDeleteMany': 'Segur que vols enviar {count} elements a la paperera?',
+  'dialog.confirmDeleteMany': 'Segur que vols enviar {count} {count|element|elements} a la paperera?',
   'dialog.confirmEmptyBin': 'Segur que vols esborrar definitivament {count} {count|element|elements} de la paperera?',
   'dialog.confirmReset': 'S’esborraran tots els fitxers del disc virtual guardats en aquest navegador i es tornarà a l’estructura inicial. Aquesta acció no es pot desfer.',
   'dialog.storageFailed':

@@ -51,7 +51,7 @@ export const APP_CATALOG: Record<string, AppDefinition> = {
     minSize: { width: 320, height: 200 },
     maximizable: true,
     startMenu: 'main',
-    helpTopicId: 'help',
+    helpTopicId: 'welcome',
   },
   explorer: {
     id: 'explorer',

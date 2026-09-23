@@ -146,7 +146,7 @@ export const en: Catalog = {
   'dialog.cannotDeleteSystem': 'This item belongs to the system and cannot be deleted.',
   'dialog.readOnly': '“{name}” is portfolio content and is read only. Use “Save as” to create a copy.',
   'dialog.confirmDelete': 'Are you sure you want to send “{name}” to the Recycle Bin?',
-  'dialog.confirmDeleteMany': 'Are you sure you want to send {count} items to the Recycle Bin?',
+  'dialog.confirmDeleteMany': 'Are you sure you want to send {count} {count|item|items} to the Recycle Bin?',
   'dialog.confirmEmptyBin': 'Are you sure you want to permanently delete {count} {count|item|items} from the Recycle Bin?',
   'dialog.confirmReset': 'Every file of the virtual disk stored in this browser will be deleted and the initial structure will be recreated. This cannot be undone.',
   'dialog.storageFailed': 'The browser storage could not be written. The change was not saved.',

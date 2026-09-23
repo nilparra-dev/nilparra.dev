@@ -157,7 +157,7 @@ export const es = {
   'dialog.cannotDeleteSystem': 'Este elemento forma parte del sistema y no se puede eliminar.',
   'dialog.readOnly': '«{name}» es contenido del portfolio y solo se puede leer. Usa «Guardar como» para crear una copia.',
   'dialog.confirmDelete': '¿Seguro que quieres enviar «{name}» a la papelera?',
-  'dialog.confirmDeleteMany': '¿Seguro que quieres enviar {count} elementos a la papelera?',
+  'dialog.confirmDeleteMany': '¿Seguro que quieres enviar {count} {count|elemento|elementos} a la papelera?',
   'dialog.confirmEmptyBin': '¿Seguro que quieres borrar definitivamente {count} {count|elemento|elementos} de la papelera?',
   'dialog.confirmReset': 'Se borrarán todos los archivos del disco virtual guardados en este navegador y se volverá a la estructura inicial. Esta acción no se puede deshacer.',
   'dialog.storageFailed':

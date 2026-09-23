@@ -178,7 +178,7 @@ export function buildSeed(locale: Locale, now = Date.now()): SeedResult {
   nodes.push(
     shortcut(
       desktopId,
-      'Sobre mí y CV.lnk',
+      'Sobre mí.lnk',
       { type: 'app', appId: 'about' },
       APP_CATALOG.about?.icon ?? 'about-me',
       now,

@@ -15,7 +15,10 @@ import {
   write,
 } from './db';
 import { welcomeNote } from '../content/portfolioFiles';
+import type { Locale } from '../i18n/I18nProvider';
+import { readStored, writeStored } from '../persist/storage';
 import { WELCOME_FILE_NAME } from './seed';
+import { planSeedSync } from './seedSync';
 import { FsError, type FsBlob, type FsNode, type SystemFolderKey } from './types';
 
 /**
@@ -43,12 +46,69 @@ export async function initializeNodes(createSeed: () => FsNode[]): Promise<FsNod
   return loadNodes();
 }
 
+/** localStorage entry with the shortcuts the seed has offered on this disk. */
+const SEED_OFFER_KEY = 'seed-offer';
+const SEED_OFFER_VERSION = 1;
+
+/**
+ * Brings the portfolio files and the desktop shortcuts up to the published
+ * content. Planning and writing share one transaction that re-reads the
+ * store, so a second tab booting at the same time finds the work done.
+ */
+export async function syncSeedNodes(locale: Locale, now = Date.now()): Promise<FsNode[]> {
+  const offered = readStored<string[] | null>(SEED_OFFER_KEY, SEED_OFFER_VERSION, null);
+  let nextOffer: string[] | null = null;
+  await write([STORE_NODES], (tx) => {
+    const store = tx.objectStore(STORE_NODES);
+    const all = store.getAll();
+    all.onsuccess = () => {
+      const nodes = (all.result as unknown[])
+        .map((entry) => normalizeNode(entry))
+        .filter((node): node is FsNode => node !== null);
+      const repair = planDuplicateRepair(nodes);
+      const plan = planSeedSync(repair.nodes, locale, Array.isArray(offered) ? offered : null, now);
+      const removals = new Set([...repair.removals.keys(), ...plan.removals]);
+      removals.forEach((id) => store.delete(id));
+      const changes = new Map<string, FsNode>();
+      [...repair.changes, ...plan.changes].forEach((node) => changes.set(node.id, node));
+      changes.forEach((node) => store.put(node));
+      nextOffer = plan.offered;
+    };
+  });
+  if (nextOffer) writeStored(SEED_OFFER_KEY, SEED_OFFER_VERSION, nextOffer);
+  return loadNodes();
+}
+
 /** Deepest folder chain the repair walks; deeper chains are treated as corrupt. */
 const MAX_REPAIR_DEPTH = 32;
 
 /** Written once and never edited, renamed or moved since. */
 function isUntouched(node: FsNode): boolean {
   return node.createdAt === node.updatedAt;
+}
+
+interface DuplicateRepairPlan {
+  nodes: FsNode[];
+  changes: FsNode[];
+  removals: Map<string, string | null>;
+}
+
+function planDuplicateRepair(nodes: FsNode[]): DuplicateRepairPlan {
+  const removals = planDuplicateRemovals(nodes);
+  if (!removals.size) return { nodes, changes: [], removals };
+
+  const changes: FsNode[] = [];
+  const repaired = nodes
+    .filter((node) => !removals.has(node.id))
+    .map((node) => {
+      if (node.shortcut?.type !== 'node') return node;
+      const replacement = removals.get(node.shortcut.nodeId);
+      if (!replacement) return node;
+      const updated: FsNode = { ...node, shortcut: { type: 'node', nodeId: replacement } };
+      changes.push(updated);
+      return updated;
+    });
+  return { nodes: repaired, changes, removals };
 }
 
 /**
@@ -62,25 +122,14 @@ function isUntouched(node: FsNode): boolean {
  * removed copy is redirected to the one that stays.
  */
 export async function repairDuplicateSeedNodes(nodes: FsNode[]): Promise<FsNode[]> {
-  const removals = planDuplicateRemovals(nodes);
-  if (!removals.size) return nodes;
-  const changes: FsNode[] = [];
-  const repaired = nodes
-    .filter((node) => !removals.has(node.id))
-    .map((node) => {
-      if (node.shortcut?.type !== 'node') return node;
-      const replacement = removals.get(node.shortcut.nodeId);
-      if (!replacement) return node;
-      const updated: FsNode = { ...node, shortcut: { type: 'node', nodeId: replacement } };
-      changes.push(updated);
-      return updated;
-    });
+  const repair = planDuplicateRepair(nodes);
+  if (!repair.removals.size) return repair.nodes;
   await write([STORE_NODES], (tx) => {
     const store = tx.objectStore(STORE_NODES);
-    changes.forEach((node) => store.put(node));
-    removals.forEach((_, id) => store.delete(id));
+    repair.changes.forEach((node) => store.put(node));
+    repair.removals.forEach((_, id) => store.delete(id));
   });
-  return repaired;
+  return repair.nodes;
 }
 
 /** Removal plan of the duplicated nodes: id to remove -> id that takes its place. */

@@ -23,6 +23,7 @@ export const en: Catalog = {
   'common.loading': 'Loading…',
   'common.working': 'Working…',
   'common.error': 'Error',
+  'common.loadFailed': 'The application could not be loaded.',
   'common.warning': 'Warning',
   'common.information': 'Information',
   'common.question': 'Question',

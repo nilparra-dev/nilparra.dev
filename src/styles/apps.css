@@ -12,6 +12,17 @@
   background: var(--w95-face);
 }
 
+.client.app-load-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--w95-face);
+  text-align: center;
+}
+
 /* ------------------------------------------------------------------ *
  * Welcome
  * ------------------------------------------------------------------ */

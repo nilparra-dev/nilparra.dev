@@ -1,5 +1,6 @@
-import { lazy, type ComponentType } from 'react';
+import type { ComponentType } from 'react';
 import type { AppComponent, AppRenderProps } from './launcher';
+import { createRetryableApp, type AppLoader } from './RetryableApp';
 import { WelcomeApp } from '../../apps/welcome/WelcomeApp';
 import { HelpApp } from '../../apps/help/HelpApp';
 import { ProjectsApp } from '../../apps/projects/ProjectsApp';
@@ -7,14 +8,14 @@ import { AboutApp } from '../../apps/about/AboutApp';
 import { MailApp } from '../../apps/mail/MailApp';
 
 /** Loader of an application that is split out of the first bundle. */
-type AppLoader = () => Promise<AppComponent>;
+type AppModuleLoader = () => Promise<AppComponent>;
 
 /**
  * Everything a visitor does not need to read the portfolio (games, tools,
  * the file manager) lives in its own chunk. Each loader is memoised so the
  * idle preload and a real open share one download.
  */
-const LAZY_LOADERS: Record<string, AppLoader> = {
+const LAZY_LOADERS: Record<string, AppModuleLoader> = {
   explorer: () => import('../../apps/explorer/ExplorerApp').then((m) => m.ExplorerApp),
   notepad: () => import('../../apps/notepad/NotepadApp').then((m) => m.NotepadApp),
   recyclebin: () => import('../../apps/recyclebin/RecycleBinApp').then((m) => m.RecycleBinApp),
@@ -39,12 +40,27 @@ function load(appId: string): Promise<AppComponent> {
   let pending = loads.get(appId);
   if (!pending) {
     pending = LAZY_LOADERS[appId]();
-    /* A failed download (offline, new deploy) may be retried on the next open. */
-    pending.catch(() => loads.delete(appId));
+    const failed = pending;
+    /* A failed download (offline, new deploy) is forgotten before a retry. */
+    failed.catch(() => {
+      if (loads.get(appId) === failed) loads.delete(appId);
+    });
     loads.set(appId, pending);
   }
   return pending;
 }
+
+const APP_LOADERS: Record<string, AppLoader> = Object.fromEntries(
+  Object.keys(LAZY_LOADERS).map((appId) => [
+    appId,
+    {
+      load: () => load(appId),
+      reset: () => {
+        loads.delete(appId);
+      },
+    },
+  ]),
+);
 
 /** Downloads every split application; called when the desktop is idle. */
 export async function preloadApps(): Promise<void> {
@@ -52,10 +68,7 @@ export async function preloadApps(): Promise<void> {
 }
 
 const LAZY_COMPONENTS = Object.fromEntries(
-  Object.keys(LAZY_LOADERS).map((appId) => [
-    appId,
-    lazy(async () => ({ default: await load(appId) })),
-  ]),
+  Object.keys(LAZY_LOADERS).map((appId) => [appId, createRetryableApp(APP_LOADERS[appId])]),
 );
 
 /**

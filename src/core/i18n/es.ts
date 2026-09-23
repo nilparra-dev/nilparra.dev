@@ -27,6 +27,7 @@ export const es = {
   'common.loading': 'Cargando…',
   'common.working': 'Procesando…',
   'common.error': 'Error',
+  'common.loadFailed': 'No se pudo cargar la aplicación.',
   'common.warning': 'Aviso',
   'common.information': 'Información',
   'common.question': 'Pregunta',

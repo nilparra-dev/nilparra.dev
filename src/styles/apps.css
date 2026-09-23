@@ -4,6 +4,25 @@
  * in win95.css.
  */
 
+/* Placeholder while a split application downloads. */
+.client.app-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--w95-face);
+}
+
+.client.app-load-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--w95-face);
+  text-align: center;
+}
+
 /* ------------------------------------------------------------------ *
  * Welcome
  * ------------------------------------------------------------------ */
@@ -1320,6 +1339,11 @@
   background: var(--w95-navy);
   color: #ffffff;
   font-size: 18px;
+}
+
+.mail-invite {
+  margin: 0 0 8px;
+  line-height: 1.4;
 }
 
 .mail-actions {

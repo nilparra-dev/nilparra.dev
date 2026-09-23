@@ -111,12 +111,15 @@ export function windowManagerReducer(
           : window,
       );
 
-    case 'maximize':
-      return patchWindow(state, action.id, (window) =>
+    case 'maximize': {
+      const next = patchWindow(state, action.id, (window) =>
         window.maximizable && window.state !== 'maximized'
           ? { ...window, state: 'maximized', z: state.nextZ }
           : window,
       );
+      /* The z it took is spent: the next window must land above it, not beside it. */
+      return next === state ? state : { ...next, nextZ: state.nextZ + 1 };
+    }
 
     case 'restore':
       return patchWindow(state, action.id, (window) =>

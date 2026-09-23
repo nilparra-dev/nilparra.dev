@@ -46,7 +46,7 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
   const initialFolder =
     typeof params.folderId === 'string' && vfs.nodeById(params.folderId)
       ? params.folderId
-      : vfs.folders.desktop ?? ROOT_ID;
+      : ROOT_ID;
 
   const [folderId, setFolderId] = useState(initialFolder);
   const [history, setHistory] = useState<string[]>([initialFolder]);

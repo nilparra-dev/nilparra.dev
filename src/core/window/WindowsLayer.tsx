@@ -66,6 +66,7 @@ export function WindowsLayer() {
             instance={instance}
             active={instance.id === wm.activeId}
           >
+            {/* Split applications own their loading and retry state. */}
             <Application windowId={instance.id} params={instance.params} />
           </WindowFrame>
         );

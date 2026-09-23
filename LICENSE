@@ -31,7 +31,7 @@ El código fuente y los recursos creados específicamente para este repositorio
 se publican bajo la licencia MIT, salvo que se indique lo contrario. Los
 logotipos de centros, empresas y proyectos, las marcas de las herramientas y
 los fondos de escritorio de Windows 95 son recursos de terceros o materiales
-archivados; pertenecen a sus titulares y conservan sus propias condiciones. La
-tipografía MS Sans Serif y sus avisos de licencia se documentan en
-`src/assets/fonts/README.md` y `src/assets/fonts/NOTICE.md`. El origen de los
-otros recursos third-party está en los README correspondientes de `public/`.
+archivados; pertenecen a sus titulares y conservan sus propias condiciones. Su
+origen y sus avisos se documentan en los README correspondientes de `public/`.
+La tipografía MS Sans Serif y sus avisos de licencia se documentan en
+`src/assets/fonts/README.md` y `src/assets/fonts/NOTICE.md`.

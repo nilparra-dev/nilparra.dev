@@ -87,9 +87,11 @@ written in English.
 ## Credits and trademark notice
 
 The source code and resources created specifically for this repository are released under the
-[MIT licence](LICENSE), unless stated otherwise. The bundled MS Sans Serif fonts come from
-[React95](https://github.com/react95-io/React95); their terms and attribution are documented in
-[`src/assets/fonts/README.md`](src/assets/fonts/README.md). The classic pointer follows
+[MIT licence](LICENSE), unless stated otherwise. The bundled MS Sans Serif fonts are generated
+from [React95](https://github.com/react95-io/React95); their provenance, modifications and
+embedded CC BY-SA 3.0 metadata are documented in
+[`src/assets/fonts/README.md`](src/assets/fonts/README.md) and
+[`src/assets/fonts/NOTICE.md`](src/assets/fonts/NOTICE.md). The classic pointer follows
 [JS Paint](https://github.com/1j01/jspaint) under the MIT licence. School, company and project
 logos, tool marks and other third-party assets retain their own terms; see the README files under
 [`public/education`](public/education), [`public/experience`](public/experience),

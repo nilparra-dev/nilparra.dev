@@ -41,7 +41,7 @@ export function WelcomeApp({ windowId }: AppRenderProps) {
             </Button>
             <Button onClick={() => launch({ appId: 'about' })}>{t('welcome.aboutMe')}</Button>
             <Button onClick={() => launch({ appId: 'mail' })}>{t('welcome.contact')}</Button>
-            <Button onClick={() => launch({ appId: 'help', params: { topicId: 'intro' } })}>
+            <Button onClick={() => launch({ appId: 'help', params: { topicId: 'welcome' } })}>
               {t('start.help')}
             </Button>
           </div>

@@ -44,8 +44,12 @@ Two IndexedDB stores: `nodes` (metadata, indexed by parent and deletion time) an
 (binary content). `vfs.ts` exposes the operations over them, and `FsError` carries typed codes
 that the interface translates. `seed.ts` creates the first disk (system folders and the
 portfolio) and `display.ts` resolves translated display names without touching the stored paths.
-The portfolio folder is read only and can be restored from the Control Panel. On boot, `vfs.ts`
-also removes the copies an older non-atomic initialisation could leave behind, and only when the
+The portfolio folder is read only and can be restored from the Control Panel.
+On every boot `seedSync.ts` compares the stored portfolio with the published content (in the
+current language) and rewrites it when they differ, and adds desktop shortcuts published after
+the visitor's first visit. A localStorage list of the shortcuts already offered keeps the ones the
+visitor deleted from coming back. On boot, `vfs.ts` repairs the copies an older non-atomic
+initialisation could leave behind in the same transaction as the seed sync, and only when the
 copies are untouched: the visitor's files are never touched.
 
 ## Applications (`src/core/apps/`)

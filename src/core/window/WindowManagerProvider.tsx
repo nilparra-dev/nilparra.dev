@@ -25,6 +25,11 @@ function prefersCoarsePointer(): boolean {
   return window.matchMedia('(pointer: coarse)').matches;
 }
 
+/** Floating windows need room and a fine pointer; otherwise every window fills the screen. */
+function isCompact(viewport: ViewportSize): boolean {
+  return isViewportSmall(viewport) || prefersCoarsePointer();
+}
+
 export interface WindowManagerValue {
   windows: WindowInstance[];
   /** The window that currently owns the focus ring and the taskbar highlight. */
@@ -80,7 +85,8 @@ export function WindowManagerProvider({
   const [state, dispatch] = useReducer(windowManagerReducer, undefined, () =>
     createWindowManagerState(measureViewport()),
   );
-  const [compact, setCompact] = useState(() => prefersCoarsePointer());
+  /* Decided from the first render: a narrow screen must not paint floating windows first. */
+  const [compact, setCompact] = useState(() => isCompact(state.viewport));
   const [booted, setBooted] = useState(false);
   const [announcement, setAnnouncement] = useState('');
   const restored = useRef(false);
@@ -90,7 +96,7 @@ export function WindowManagerProvider({
     const onResize = () => {
       const next = measureViewport();
       dispatch({ type: 'setViewport', viewport: next });
-      setCompact(isViewportSmall(next) || prefersCoarsePointer());
+      setCompact(isCompact(next));
     };
     window.addEventListener('resize', onResize);
     window.addEventListener('orientationchange', onResize);

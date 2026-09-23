@@ -150,6 +150,10 @@ describe('InternetApp', () => {
     renderApp({ url: 'https://es.wikipedia.org/wiki/Windows_95' });
     const frame = screen.getByTitle('Página de es.wikipedia.org');
     expect(frame.getAttribute('src')).toBe('https://es.wikipedia.org/wiki/Windows_95');
+    /* docs/security.md promises the framed site cannot open windows or escape. */
+    const sandbox = frame.getAttribute('sandbox')?.split(/\s+/) ?? [];
+    expect(sandbox).not.toContain('allow-popups');
+    expect(sandbox).not.toContain('allow-top-navigation');
     const address = screen.getByLabelText('Dirección') as HTMLInputElement;
     expect(address.value).toBe('https://es.wikipedia.org/wiki/Windows_95');
   });

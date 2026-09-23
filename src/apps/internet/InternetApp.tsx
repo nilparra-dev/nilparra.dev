@@ -396,7 +396,9 @@ export function InternetApp({ windowId, params }: AppRenderProps) {
       /*
        * Sandboxed: the framed site runs with its own origin (allow-same-origin
        * plus allow-scripts is required for anything to work), but navigation
-       * of this page, forms towards us and every other permission stay off.
+       * of this page, forms towards us, popups and every other permission
+       * stay off: a link the site opens in a new tab is simply blocked, while
+       * the toolbar still opens the page in a real browser tab.
        * The source is always a validated http(s) URL from parseWebUrl.
        */
       <iframe
@@ -404,7 +406,7 @@ export function InternetApp({ windowId, params }: AppRenderProps) {
         src={item.url}
         title={t('internet.site.frameTitle', { host })}
         referrerPolicy="no-referrer"
-        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+        sandbox="allow-scripts allow-same-origin allow-forms"
       />
     );
   };

@@ -1341,6 +1341,11 @@
   font-size: 18px;
 }
 
+.mail-invite {
+  margin: 0 0 8px;
+  line-height: 1.4;
+}
+
 .mail-actions {
   margin-top: 8px;
 }

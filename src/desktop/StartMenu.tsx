@@ -113,7 +113,7 @@ export function StartMenu({ onClose, onShutdown }: StartMenuProps) {
           ? group('find-group')
           : [{ id: 'find-apps', label: t('app.find'), icon: 'find', onSelect: () => launch({ appId: 'find' }) }],
       },
-      { id: 'help', label: t('start.help'), icon: 'help', onSelect: () => launch({ appId: 'help', params: { topicId: 'intro' } }) },
+      { id: 'help', label: t('start.help'), icon: 'help', onSelect: () => launch({ appId: 'help', params: { topicId: 'welcome' } }) },
       { id: 'run', label: t('start.run'), icon: 'run', onSelect: () => launch({ appId: 'run' }) },
       { id: 'sep-power', label: '', heading: true },
       { id: 'shutdown', label: t('start.shutdown'), icon: 'shutdown', onSelect: onShutdown },

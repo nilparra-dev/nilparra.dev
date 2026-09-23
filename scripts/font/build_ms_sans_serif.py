@@ -16,12 +16,16 @@ them from another typeface. This script:
 4. writes the regular font, and derives the bold one the way Windows 95 did:
    every pixel doubled one column to the right and the advance one pixel wider.
 
-Requirements: Python 3.9+, `pip install fonttools brotli`.
+Requirements: Python 3.9+, `pip install -r scripts/font/requirements.txt`.
 Run from the repository root: `python scripts/font/build_ms_sans_serif.py`.
+Use `--check` to verify deterministic output against the committed WOFF2 files.
 The output is committed; the site build does not run this script.
 """
 from __future__ import annotations
 
+import argparse
+import hashlib
+import tempfile
 from pathlib import Path
 
 from fontTools.agl import UV2AGL
@@ -39,6 +43,7 @@ GRID = 11          # the font is drawn on an 11 px em
 ROWS = 13          # cell height: rows 0..10 above the baseline, 11..12 below
 BASELINE_ROW = 10  # lowest row that sits on the baseline
 X_HEIGHT_TOP = 5   # first row of a lowercase letter such as "a"
+FONT_TIMESTAMP = 3670413448  # fixed OpenType timestamp for reproducible output
 
 Pixels = set  # of (column, row); row 0 is the top of the cell
 
@@ -110,8 +115,8 @@ DRAWN = {
     '«': (6, {6: '.#.#', 7: '#.#.', 8: '.#.#'}),
     '»': (6, {6: '#.#.', 7: '.#.#', 8: '#.#.'}),
     '·': (3, {7: '#'}),
-    'º': (5, {2: '.#.', 3: '#.#', 4: '.#.', 6: '###'}),
-    'ª': (5, {2: '.##', 3: '#.#', 4: '.##', 6: '###'}),
+    'º': (4, {2: '.#.', 3: '#.#', 4: '.#.', 6: '###'}),
+    'ª': (4, {2: '.##', 3: '#.#', 4: '.##', 6: '###'}),
     '±': (6, {4: '..#..', 5: '..#..', 6: '#####', 7: '..#..', 8: '..#..', 10: '#####'}),
     '×': (6, {5: '#...#', 6: '.#.#.', 7: '..#..', 8: '.#.#.', 9: '#...#'}),
     '÷': (6, {5: '..#..', 7: '#####', 9: '..#..'}),
@@ -321,21 +326,86 @@ def write(template: TTFont, glyphs: dict[int, tuple[int, Pixels]], path: Path, n
 
     if naming is not font:
         font['name'] = naming['name']
-        font['OS/2'].usWeightClass = naming['OS/2'].usWeightClass
-        font['OS/2'].fsSelection = naming['OS/2'].fsSelection
-        font['head'].macStyle = naming['head'].macStyle
+        font['name'].setName('Bold', 2, 3, 1, 0x409)
+        font['name'].setName('MS Sans Serif Bold', 4, 3, 1, 0x409)
+        os2.usWeightClass = 700
+        os2.fsSelection = (os2.fsSelection & ~0x40) | 0x20
+        font['head'].macStyle = (font['head'].macStyle & ~0x01) | 0x01
+    else:
+        os2.usWeightClass = 400
+        os2.fsSelection = (os2.fsSelection & ~0x20) | 0x40
+        font['head'].macStyle &= ~0x01
+    font['head'].created = FONT_TIMESTAMP
+    font['head'].modified = FONT_TIMESTAMP
 
     font.flavor = 'woff2'
     font.save(path)
 
 
-def main() -> None:
-    regular_source = TTFont(SOURCE / 'ms_sans_serif.woff2')
-    bold_source = TTFont(SOURCE / 'ms_sans_serif_bold.woff2')
+def validate(output: Path) -> None:
+    regular = TTFont(output / 'ms_sans_serif.woff2')
+    bold = TTFont(output / 'ms_sans_serif_bold.woff2')
+    regular_name = {(entry.nameID, entry.toUnicode()) for entry in regular['name'].names}
+    if (13, 'Creative Commons Attribution Share Alike') not in regular_name:
+        raise ValueError('The regular font lost its CC BY-SA 3.0 metadata')
+    if (14, 'http://creativecommons.org/licenses/by-sa/3.0/') not in regular_name:
+        raise ValueError('The regular font lost its CC BY-SA 3.0 licence URL')
+    for font in (regular, bold):
+        if font['head'].created != FONT_TIMESTAMP or font['head'].modified != FONT_TIMESTAMP:
+            raise ValueError('Font timestamps are not fixed')
+    if regular['OS/2'].usWeightClass != 400 or bold['OS/2'].usWeightClass != 700:
+        raise ValueError('Font weight metadata is incorrect')
+    if bold['OS/2'].fsSelection != 0x20 or bold['head'].macStyle != 1:
+        raise ValueError('Bold font selection metadata is incorrect')
+    for code, expected in ((0x00AA, 4), (0x00BA, 4)):
+        name = regular.getBestCmap()[code]
+        if regular['hmtx'][name][0] != to_units(expected):
+            raise ValueError(f'Unexpected advance width for U+{code:04X}')
+        name = bold.getBestCmap()[code]
+        if bold['hmtx'][name][0] != to_units(expected + 1):
+            raise ValueError(f'Unexpected bold advance width for U+{code:04X}')
+
+
+def build(output: Path) -> None:
+    regular_source = TTFont(SOURCE / 'ms_sans_serif.woff2', recalcTimestamp=False)
+    bold_source = TTFont(SOURCE / 'ms_sans_serif_bold.woff2', recalcTimestamp=False)
     glyphs = build_regular(regular_source)
-    write(regular_source, glyphs, OUTPUT / 'ms_sans_serif.woff2', regular_source)
-    write(TTFont(SOURCE / 'ms_sans_serif.woff2'), embolden(glyphs), OUTPUT / 'ms_sans_serif_bold.woff2', bold_source)
-    print(f'{len(glyphs)} glyphs written to {OUTPUT.relative_to(ROOT)}')
+    write(regular_source, glyphs, output / 'ms_sans_serif.woff2', regular_source)
+    write(
+        TTFont(SOURCE / 'ms_sans_serif.woff2', recalcTimestamp=False),
+        embolden(glyphs),
+        output / 'ms_sans_serif_bold.woff2',
+        bold_source,
+    )
+    validate(output)
+    print(f'{len(glyphs)} glyphs written to {output.relative_to(ROOT) if output.is_relative_to(ROOT) else output}')
+
+
+def sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def check() -> None:
+    with tempfile.TemporaryDirectory(prefix='ms-sans-serif-') as temporary:
+        generated = Path(temporary)
+        build(generated)
+        first = {path.name: sha256(path) for path in generated.glob('*.woff2')}
+        build(generated)
+        second = {path.name: sha256(path) for path in generated.glob('*.woff2')}
+        committed = {path.name: sha256(path) for path in OUTPUT.glob('*.woff2')}
+        if first != second or first != committed:
+            raise SystemExit('Generated fonts are not reproducible or do not match the committed files')
+    print('Font output is reproducible and matches the committed files')
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--check', action='store_true', help='verify reproducibility without changing the output')
+    args = parser.parse_args()
+    if args.check:
+        check()
+    else:
+        build(OUTPUT)
 
 
 if __name__ == '__main__':

@@ -86,13 +86,19 @@ written in English.
 
 ## Credits and trademark notice
 
-Code, artwork and sounds by Nil Parra Luna, released under the [MIT licence](LICENSE). The
-bundled MS Sans Serif fonts are generated from the [React95](https://github.com/react95-io/React95)
-port, with the Windows 95 metrics and the accented letters added, and the classic pointer follows
-[JS Paint](https://github.com/1j01/jspaint), both MIT. Style references for everything else are
-the public Windows 95 documentation and screenshots.
+The source code and resources created specifically for this repository are released under the
+[MIT licence](LICENSE), unless stated otherwise. The bundled MS Sans Serif fonts are generated
+from [React95](https://github.com/react95-io/React95); their provenance, modifications and
+embedded CC BY-SA 3.0 metadata are documented in
+[`src/assets/fonts/README.md`](src/assets/fonts/README.md) and
+[`src/assets/fonts/NOTICE.md`](src/assets/fonts/NOTICE.md). The classic pointer follows
+[JS Paint](https://github.com/1j01/jspaint) under the MIT licence. School, company and project
+logos, tool marks and other third-party assets retain their own terms; see the README files under
+[`public/education`](public/education), [`public/experience`](public/experience),
+[`public/portfolio`](public/portfolio) and
+[`public/wallpapers/windows95`](public/wallpapers/windows95).
 
 Windows is a registered trademark of Microsoft Corporation. This is an unofficial tribute, not
-affiliated with Microsoft. The only Microsoft material in the repository is the archived
-wallpaper set documented in
+affiliated with Microsoft. The repository includes an archived set of Windows 95 wallpaper
+bitmaps, documented in
 [`public/wallpapers/windows95/README.md`](public/wallpapers/windows95/README.md).

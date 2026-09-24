@@ -4,6 +4,7 @@
  * Nothing here is invented. Values marked with PLACEHOLDER are waiting for the
  * owner to fill them in and are rendered as clearly marked placeholders.
  */
+import type { TechnologyId } from './technologies';
 import type { Localized } from './types';
 import type { IconId } from '../../assets/generated/icons';
 
@@ -37,9 +38,16 @@ export interface ExperienceEntry {
 }
 
 export interface SkillEntry {
-  name: string;
+  /** Name and logo come from the shared technology catalogue. */
+  technology: TechnologyId;
   /** Optional, 0..100. Omit it when you do not want to show a level. */
   level?: number;
+}
+
+/** Skills shown together under one heading, such as networks or databases. */
+export interface SkillGroup {
+  title: Localized<string>;
+  skills: SkillEntry[];
 }
 
 export interface ProfileContent {
@@ -58,7 +66,7 @@ export interface ProfileContent {
   bio: Localized<string[]>;
   studies: StudyEntry[];
   experience: ExperienceEntry[];
-  skills: SkillEntry[];
+  skills: SkillGroup[];
   /** Free-form extras shown next to the CV (languages, certificates…). */
   extras: Localized<string[]>;
 }
@@ -188,15 +196,67 @@ export const PROFILE: ProfileContent = {
     },
   ],
   skills: [
-    { name: 'Linux (systemd)' },
-    { name: 'Docker' },
-    { name: 'PostgreSQL' },
-    { name: 'Apache Airflow' },
-    { name: 'Grafana' },
-    { name: 'GitHub Actions' },
-    { name: 'Python' },
-    { name: 'TypeScript' },
-    { name: 'Odoo' },
+    {
+      title: { es: 'Sistemas operativos', ca: 'Sistemes operatius', en: 'Operating systems' },
+      skills: [
+        { technology: 'linux' },
+        { technology: 'ubuntu' },
+        { technology: 'debian' },
+        { technology: 'windowsServer' },
+        { technology: 'bash' },
+        { technology: 'powershell' },
+      ],
+    },
+    {
+      title: { es: 'Redes y servicios', ca: 'Xarxes i serveis', en: 'Networks and services' },
+      skills: [
+        { technology: 'cisco' },
+        { technology: 'nginx' },
+        { technology: 'apache' },
+        { technology: 'wireshark' },
+      ],
+    },
+    {
+      title: {
+        es: 'Virtualización y seguridad',
+        ca: 'Virtualització i seguretat',
+        en: 'Virtualisation and security',
+      },
+      skills: [
+        { technology: 'proxmox' },
+        { technology: 'virtualbox' },
+        { technology: 'docker' },
+        { technology: 'pfsense' },
+      ],
+    },
+    {
+      title: { es: 'Automatización', ca: 'Automatització', en: 'Automation' },
+      skills: [
+        { technology: 'ansible' },
+        { technology: 'git' },
+        { technology: 'githubActions' },
+        { technology: 'airflow' },
+        { technology: 'grafana' },
+      ],
+    },
+    {
+      title: { es: 'Bases de datos', ca: 'Bases de dades', en: 'Databases' },
+      skills: [{ technology: 'postgresql' }, { technology: 'mysql' }, { technology: 'mariadb' }],
+    },
+    {
+      title: { es: 'Programación y web', ca: 'Programació i web', en: 'Programming and web' },
+      skills: [
+        { technology: 'python' },
+        { technology: 'typescript' },
+        { technology: 'php' },
+        { technology: 'html' },
+        { technology: 'css' },
+      ],
+    },
+    {
+      title: { es: 'Empresa', ca: 'Empresa', en: 'Business software' },
+      skills: [{ technology: 'odoo' }],
+    },
   ],
   extras: {
     es: [],

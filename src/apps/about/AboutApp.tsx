@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { AppRenderProps } from '../../core/apps/launcher';
 import { useAppLauncher } from '../../core/apps/launcher';
-import { PLACEHOLDER, PROFILE, isPlaceholder, pick } from '../../core/content';
+import { PLACEHOLDER, PROFILE, TECHNOLOGIES, isPlaceholder, pick } from '../../core/content';
 import type { StudyEntry } from '../../core/content/profile';
 import { useVfs } from '../../core/fs/VfsProvider';
 import { useI18n } from '../../core/i18n/I18nProvider';
@@ -166,18 +166,40 @@ export function AboutApp({ windowId }: AppRenderProps) {
 
         {PROFILE.skills.length > 0 && (
           <GroupBox title={t('about.skills')}>
-            <ul className="about-skills" role="list">
-              {PROFILE.skills.map((skill) => (
-                <li key={skill.name}>
-                  <span>{skill.name}</span>
-                  {typeof skill.level === 'number' && (
-                    <span className="about-skill-track bevel-down" aria-hidden="true">
-                      <span className="about-skill-fill" style={{ width: `${skill.level}%` }} />
-                    </span>
-                  )}
-                </li>
-              ))}
-            </ul>
+            {PROFILE.skills.map((group) => {
+              const title = pick(group.title, locale);
+              return (
+                <section key={title} className="about-skill-group">
+                  <h3 className="about-skill-group-title">{title}</h3>
+                  <ul className="about-skills" role="list">
+                    {group.skills.map((skill) => {
+                      const technology = TECHNOLOGIES[skill.technology];
+                      return (
+                        <li key={skill.technology}>
+                          <span className="about-skill-name">
+                            {technology.logo && (
+                              <img
+                                src={`${import.meta.env.BASE_URL}${technology.logo}`}
+                                alt=""
+                                width={16}
+                                height={16}
+                                loading="lazy"
+                              />
+                            )}
+                            {technology.name}
+                          </span>
+                          {typeof skill.level === 'number' && (
+                            <span className="about-skill-track bevel-down" aria-hidden="true">
+                              <span className="about-skill-fill" style={{ width: `${skill.level}%` }} />
+                            </span>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </section>
+              );
+            })}
           </GroupBox>
         )}
 

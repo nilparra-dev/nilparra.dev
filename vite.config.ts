@@ -1,6 +1,7 @@
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { PROFILE } from './src/core/content/profile';
+import { TECHNOLOGIES } from './src/core/content/technologies';
 import { pick } from './src/core/content/types';
 
 /**
@@ -79,7 +80,8 @@ function structuredData(): Record<string, unknown> {
   const studies = alumniOf();
   if (studies.length > 0) person.alumniOf = studies;
 
-  if (PROFILE.skills.length > 0) person.knowsAbout = PROFILE.skills.map((skill) => skill.name);
+  const skills = PROFILE.skills.flatMap((group) => group.skills);
+  if (skills.length > 0) person.knowsAbout = skills.map((skill) => TECHNOLOGIES[skill.technology].name);
 
   return {
     '@context': 'https://schema.org',

@@ -1143,7 +1143,21 @@
   }
 }
 
+/* Skills: one heading per area, then the tools with their marks on a wrapping line. */
+.about-skill-group + .about-skill-group {
+  margin-top: 10px;
+}
+
+.about-skill-group-title {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
 .about-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1153,7 +1167,19 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 5px;
+}
+
+.about-skill-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.about-skill-name img {
+  width: 16px;
+  height: 16px;
 }
 
 .about-skill-track {

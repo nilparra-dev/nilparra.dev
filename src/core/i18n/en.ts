@@ -127,6 +127,7 @@ export const en: Catalog = {
   'boot.starting': 'Starting the desktop…',
   'boot.loadingFiles': 'Reading the files of the virtual disk…',
   'boot.restarting': 'The desktop is restarting…',
+  'boot.noScript': 'This is the text version. The interactive desktop needs JavaScript.',
   'shutdown.safeTitle': 'It is now safe to turn off your computer',
   'shutdown.safeNote':
     'Nothing was sent to any server: your files are still stored in this browser.',

@@ -29,9 +29,10 @@ npm run build
 - The canonical domain is written down once, as `VITE_SITE_URL` in `vite.config.ts`, and inlined
   into `index.html` at build time. `public/CNAME`, `public/robots.txt` and `public/sitemap.xml`
   mirror it: change all of them together.
-- The structured data of the landing page is generated from `src/core/content/profile.ts` by the
-  seo plugin, so it can never contradict the desktop. Never hand-write JSON-LD into `index.html`.
-  `index.html` must keep one `%STRUCTURED_DATA%` marker and at least one `%SITE_URL%`; the build
+- The structured data and the plain HTML copy inside `#root` are generated from
+  `src/core/content/` by the seo plugin, so they can never contradict the desktop. Never
+  hand-write JSON-LD or portfolio text into `index.html`. `index.html` must keep exactly one
+  `%STRUCTURED_DATA%` and one `%STATIC_PROFILE%` marker and at least one `%SITE_URL%`; the build
   fails without them, because a stray marker would be visible on the page.
 - The Pages workflow is manual on purpose while the site is not public. Do not wire it back to
   `push` without being asked.

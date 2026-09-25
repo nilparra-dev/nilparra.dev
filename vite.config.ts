@@ -1,6 +1,8 @@
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { PROFILE } from './src/core/content/profile';
+import { PROJECTS } from './src/core/content/projects';
+import { staticProfileHtml } from './src/core/content/staticHtml';
 import { TECHNOLOGIES } from './src/core/content/technologies';
 import { pick } from './src/core/content/types';
 
@@ -95,14 +97,16 @@ function structuredData(): Record<string, unknown> {
 
 const SITE_URL_PLACEHOLDER = '%SITE_URL%';
 const STRUCTURED_DATA_PLACEHOLDER = '%STRUCTURED_DATA%';
+const STATIC_PROFILE_PLACEHOLDER = '%STATIC_PROFILE%';
 
 /**
  * Replaces the placeholders of `index.html` with real values.
  *
  * The checks are strict on purpose: a literal marker that reaches the built
  * page is visible text to the visitor, and structured data that is silently
- * dropped is worse than a failed build. The structured-data marker has to
- * appear exactly once, which also stops it from being swallowed by a comment.
+ * dropped is worse than a failed build. The structured-data and static
+ * profile markers have to appear exactly once, which also stops them from
+ * being swallowed by a comment.
  */
 function seoPlugin(): Plugin {
   return {
@@ -113,10 +117,12 @@ function seoPlugin(): Plugin {
       handler(html) {
         const siteUrlCount = html.split(SITE_URL_PLACEHOLDER).length - 1;
         const dataCount = html.split(STRUCTURED_DATA_PLACEHOLDER).length - 1;
-        if (siteUrlCount === 0 || dataCount !== 1) {
+        const profileCount = html.split(STATIC_PROFILE_PLACEHOLDER).length - 1;
+        if (siteUrlCount === 0 || dataCount !== 1 || profileCount !== 1) {
           throw new Error(
             `index.html needs at least one ${SITE_URL_PLACEHOLDER} and exactly one ` +
-              `${STRUCTURED_DATA_PLACEHOLDER} (found ${siteUrlCount} and ${dataCount})`,
+              `${STRUCTURED_DATA_PLACEHOLDER} and ${STATIC_PROFILE_PLACEHOLDER} ` +
+              `(found ${siteUrlCount}, ${dataCount} and ${profileCount})`,
           );
         }
         // `<` is escaped so a future content value can never close the script.
@@ -124,7 +130,8 @@ function seoPlugin(): Plugin {
         const script = `<script type="application/ld+json">${json}</script>`;
         return html
           .replaceAll(SITE_URL_PLACEHOLDER, siteUrl)
-          .replaceAll(STRUCTURED_DATA_PLACEHOLDER, script);
+          .replaceAll(STRUCTURED_DATA_PLACEHOLDER, script)
+          .replaceAll(STATIC_PROFILE_PLACEHOLDER, staticProfileHtml(PROFILE, PROJECTS));
       },
     },
   };

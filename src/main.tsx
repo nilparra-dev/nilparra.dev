@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import { installPixelPerfectScale } from './ui/scale';
 import './styles/reset.css';
+import './styles/static.css';
 import './styles/cursors.generated.css';
 import './styles/tokens.css';
 import './styles/win95.css';

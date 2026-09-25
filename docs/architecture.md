@@ -91,7 +91,7 @@ device pixels.
 
 There is no router, so the site has exactly one address and the landing document has to carry all
 of the metadata itself. `index.html` holds the prose (title, description, Open Graph, X card,
-canonical, robots) and the seo plugin of `vite.config.ts` fills in the two things that cannot be
+canonical, robots) and the seo plugin of `vite.config.ts` fills in the three things that cannot be
 written by hand:
 
 - `%SITE_URL%`, the canonical domain. `%BASE_URL%` only carries the path, and social networks and
@@ -100,9 +100,14 @@ written by hand:
 - `%STRUCTURED_DATA%`, a `ProfilePage` with a `Person` inside, built from `PROFILE`, `studies`,
   `links` and `skills`. Generating it means the description a crawler reads cannot drift from the
   one the desktop shows, and optional sections simply do not appear while their content is empty.
+- `%STATIC_PROFILE%`, inside `#root`: the portfolio as plain HTML (name, bio, published projects,
+  studies, experience, skills and contact links), written by `src/core/content/staticHtml.ts`.
+  It is what link previews, crawlers that skip JavaScript and visitors without it get, and what
+  shows while the scripts load; React replaces it when the desktop mounts. It is styled as the
+  text screen of a machine that has not booted yet (`src/styles/static.css`).
 
-The plugin fails the build when a marker is missing or duplicated: a literal `%STRUCTURED_DATA%`
-would be visible text to the visitor, and silent structured data is worse than a broken build.
+The plugin fails the build when a marker is missing or duplicated: a literal marker would be
+visible text to the visitor, and silent structured data is worse than a broken build.
 
 The `404.html` that the Pages workflow copies from `index.html` is marked `noindex`, since Pages
 answers unknown paths with a 404 status and the copy must never compete with the landing page.

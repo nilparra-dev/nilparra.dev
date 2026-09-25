@@ -47,8 +47,9 @@ manager.
   `npm run assets` rebuilds them and writes review sheets to compare against period references.
 - The landing page carries the whole metadata set: Open Graph and X cards with a real preview
   image, `canonical`, `robots.txt`, a one-URL `sitemap.xml`, a web manifest and `noindex` on the
-  Pages fallback. The `ProfilePage` structured data is built from `src/core/content/profile.ts`
-  during the build, so it can never contradict what the desktop shows.
+  Pages fallback. The `ProfilePage` structured data and a plain HTML copy of the portfolio (for
+  link previews, crawlers that skip JavaScript and visitors without it) are built from
+  `src/core/content/` during the build, so they can never contradict what the desktop shows.
 - Klondike and Hold'em run on plain TypeScript engines with tests. The poker engine handles hand
   evaluation, blinds, side pots and bot opponents.
 - The translation catalogues are compiler-checked. `es.ts` is the source of truth, and a missing

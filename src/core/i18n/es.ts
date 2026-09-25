@@ -137,6 +137,7 @@ export const es = {
   'boot.starting': 'Iniciando el escritorio…',
   'boot.loadingFiles': 'Leyendo los archivos del disco virtual…',
   'boot.restarting': 'El escritorio se está reiniciando…',
+  'boot.noScript': 'Esta es la versión en texto. El escritorio interactivo necesita JavaScript.',
   'shutdown.safeTitle': 'Ya puedes apagar el equipo',
   'shutdown.safeNote':
     'Ningún dato se ha enviado a ningún servidor: tus archivos siguen guardados en este navegador.',

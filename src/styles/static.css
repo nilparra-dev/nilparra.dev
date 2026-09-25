@@ -1,7 +1,7 @@
-/* Plain HTML copy of the portfolio (src/core/content/staticHtml.ts). It is
- * what shows while the scripts load and all that shows without JavaScript,
- * so it reads like the text screen of a machine that has not booted Windows
- * yet. The body does not scroll (reset.css), so the copy scrolls itself. */
+/* Plain HTML copy of the portfolio (src/core/content/staticHtml.ts). Only
+ * visitors without JavaScript see it (index.html hides it otherwise), so it
+ * reads like the text screen of a machine that never booted Windows. The
+ * body does not scroll (reset.css), so the copy scrolls itself. */
 .static-profile {
   position: fixed;
   inset: 0;

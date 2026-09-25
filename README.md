@@ -65,6 +65,7 @@ npm install
 npm run dev      # development server at http://localhost:5173
 npm run build    # type check plus static build in dist/
 npm test         # test suite
+npm run tunnel   # public https address for the dev server, to try it on a phone
 ```
 
 ## Deployment

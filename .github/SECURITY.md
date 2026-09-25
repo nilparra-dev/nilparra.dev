@@ -26,7 +26,7 @@ disk lives in the browser's IndexedDB and only leaves the browser when the visit
 
 ## Reporting a vulnerability
 
-Please do not open a public issue. Write to nilparra@nilparra.dev with the details and, when
+Please do not open a public issue. Write to nil@nilparra.dev with the details and, when
 possible, a minimal reproduction. I read every report and reply as soon as I can. There is no bug
 bounty.
 

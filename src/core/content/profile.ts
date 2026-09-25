@@ -76,7 +76,7 @@ export const PROFILE: ProfileContent = {
   photoUrl: 'profile/nil-parra.jpg',
   location: 'Blanes, Girona',
   shortName: 'Nil Parra',
-  email: 'nilparra@nilparra.dev',
+  email: 'nil@nilparra.dev',
   // Set these two when the PDF is published inside `public/`:
   //   cvUrl: 'cv/nil-parra-cv.pdf', cvUpdatedAt: '2026-09-17'
   cvUrl: null,
@@ -99,8 +99,8 @@ export const PROFILE: ProfileContent = {
     },
     {
       id: 'email',
-      label: 'nilparra@nilparra.dev',
-      url: 'mailto:nilparra@nilparra.dev',
+      label: 'nil@nilparra.dev',
+      url: 'mailto:nil@nilparra.dev',
       icon: 'mail',
       external: true,
     },

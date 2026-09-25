@@ -10,7 +10,7 @@ describe('web addresses', () => {
     expect(parseWebUrl('windows 95')).toBeNull();
     expect(parseWebUrl('calculadora')).toBeNull();
     expect(parseWebUrl('2.5')).toBeNull();
-    expect(parseWebUrl('mailto:nilparra@nilparra.dev')).toBeNull();
+    expect(parseWebUrl('mailto:nil@nilparra.dev')).toBeNull();
     expect(parseWebUrl('127.0.0.1:5173')?.href).toBe('https://127.0.0.1:5173/');
   });
 

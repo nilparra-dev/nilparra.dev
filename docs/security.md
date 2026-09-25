@@ -61,21 +61,30 @@ domain through Cloudflare (free tier) in front of Pages closes that gap:
      `Permissions-Policy: camera=(), microphone=(), geolocation=()`.
    - `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload` once the
      domain is stable.
-2. **DNS/DNSSEC and TLS**: DNSSEC at the registrar, Cloudflare proxy on, TLS mode
-   "Full (strict)" is not possible with Pages certificates — use "Full" and keep
-   "Always Use HTTPS" enabled so plaintext never answers.
-3. **Caching integrity**: Pages already serves immutable hashed assets; the edge rule
-   only forwards, never rewrites, HTML.
-4. **Monitoring**: Cloudflare Web Analytics (cookieless, fits the CSP with one
-   `connect-src` host if self-hosted, or zero scripts if using the beacon host — add it
-   to the policy when adopted). No cookies, so no consent banner is needed.
-5. **Domain control**: keep the `CNAME` record to `nilparra.github.io`, verify the
-   domain in GitHub settings so it cannot be claimed by a deleted/recreated repository.
+2. **DNS/DNSSEC and TLS**: DNSSEC at the registrar and the Cloudflare proxy on. The
+   apex domain cannot carry a `CNAME`, so it points at GitHub Pages with the four
+   `A` records (`185.199.108.153` to `185.199.111.153`) and the four matching `AAAA`
+   records; `www` can be a `CNAME` to `nilparra-dev.github.io`. Pages issues a valid
+   certificate for the custom domain, so TLS mode "Full (strict)" works once that
+   certificate exists. Turn the proxy on only after it has been issued: the
+   certificate check needs to reach GitHub directly. `.dev` is on the browsers' HSTS
+   preload list as a whole, so the site is HTTPS only whatever the headers say.
+3. **Caching**: Pages answers every file with `Cache-Control: max-age=600`, hashed
+   assets included. An edge cache rule can mark `/assets/*` as immutable, because
+   their names change with their contents; the HTML is only forwarded, never
+   rewritten.
+4. **Monitoring**: Cloudflare Web Analytics is cookieless, so it needs no consent
+   banner. Its beacon is a third-party script: adopting it means adding
+   `https://static.cloudflareinsights.com` to `script-src` and
+   `https://cloudflareinsights.com` to `connect-src`.
+5. **Domain control**: verify `nilparra.dev` for the `nilparra-dev` organisation in
+   GitHub settings, so no other account can publish a Pages site under it if the
+   repository is ever deleted or renamed.
 
 ## Incident and maintenance posture
 
-- **Reporting**: `.github/SECURITY.md` asks for private email reports instead of
-  public issues, with an acknowledgement and fix timeline.
+- **Reporting**: `.github/SECURITY.md` asks for private reports, through GitHub's
+  private vulnerability reporting or by email, instead of public issues.
 - **Secrets**: none exist by design. If one is ever needed (e.g. a paid search API), it
   must live behind a serverless proxy on the domain, never in the bundle — the CSP's
   `connect-src` would then list only that proxy.

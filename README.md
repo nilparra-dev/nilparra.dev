@@ -51,7 +51,7 @@ manager.
   evaluation, blinds, side pots and bot opponents.
 - The translation catalogues are compiler-checked. `es.ts` is the source of truth, and a missing
   key in `ca.ts` or `en.ts` fails the build.
-- CI (`.github/workflows/ci.yml`) runs the type check, 152 tests with Vitest and Testing Library,
+- CI (`.github/workflows/ci.yml`) runs the type check, the Vitest and Testing Library suite,
   and a production build on every pull request.
 
 More detail in [`docs/architecture.md`](docs/architecture.md).

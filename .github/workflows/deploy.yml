@@ -1,24 +1,24 @@
 name: Deploy to GitHub Pages
 
 # Manual publish to GitHub Pages: Actions -> Deploy to GitHub Pages -> Run
-# workflow. Nothing is published automatically while the repository stays
-# private and the site is not meant to be public yet.
+# workflow. Nothing is published automatically until the site is launched.
 #
-#   - To deploy on every push to main again, restore this trigger:
+#   - To deploy on every push to main, restore this trigger:
 #
 #       on:
 #         push:
 #           branches: [main]
 #         workflow_dispatch:
 #
-#   - Custom domain (the current setup, https://nilparra.dev/) -> BASE_PATH and
-#     SITE_URL default to the custom domain through public/CNAME. The domain
-#     must also be configured in Settings -> Pages so GitHub can issue the
-#     certificate and enforce HTTPS.
-#   - Project site (https://<user>.github.io/<repo>/) -> set the repository
-#     variable BASE_PATH to "/<repo>/" and SITE_URL to the full project URL, so
-#     the canonical address and the structured data keep pointing at the real
-#     domain instead of the preview one.
+#   - Custom domain (the current setup, https://nilparra.dev/) -> nothing to
+#     set: BASE_PATH and SITE_URL fall back to "/" and https://nilparra.dev in
+#     the env block below, and public/CNAME carries the domain into the
+#     artifact. The domain must also be configured in Settings -> Pages so
+#     GitHub can issue the certificate and enforce HTTPS.
+#   - Project site (https://<owner>.github.io/<repo>/) -> set the repository
+#     variables BASE_PATH to "/<repo>/" and SITE_URL to that address, so the
+#     canonical URL, the social tags and the structured data match where the
+#     site is really served.
 #
 # The site is fully static: no backend, no secrets, no server side rendering.
 

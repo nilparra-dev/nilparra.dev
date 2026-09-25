@@ -8,6 +8,7 @@ import { parseWebUrl } from '../websearch/embed';
 import { getClipboard, setClipboard } from './clipboard';
 import { ROOT_ID, type FsNode } from './types';
 import { useDialogs } from '../dialogs/DialogProvider';
+import { useOpenExternal } from '../dialogs/useOpenExternal';
 
 export type OpenTarget =
   | { kind: 'node'; node: FsNode }
@@ -45,6 +46,7 @@ export function useFileOpener() {
   const launch = useAppLauncher();
   const t = useT();
   const dialogs = useDialogs();
+  const openExternal = useOpenExternal();
 
   return useCallback(
     async (node: FsNode) => {
@@ -86,7 +88,7 @@ export function useFileOpener() {
         // carry any scheme (a tampered IndexedDB record is attacker controlled
         // data): javascript: or data: URLs must never be opened.
         if (/^https?:\/\//i.test(resolution.url)) {
-          window.open(resolution.url, '_blank', 'noopener,noreferrer');
+          await openExternal(resolution.url);
           return;
         }
         // The shortcut is stored but points nowhere safe: say so instead of
@@ -129,7 +131,7 @@ export function useFileOpener() {
         docKey: `${appId}:${current.id}`,
       });
     },
-    [dialogs, launch, t, vfs],
+    [dialogs, launch, openExternal, t, vfs],
   );
 }
 

@@ -7,6 +7,7 @@ import { useVfs } from '../../core/fs/VfsProvider';
 import { useI18n } from '../../core/i18n/I18nProvider';
 import { useWindowManager } from '../../core/window/WindowManagerProvider';
 import { Button } from '../../ui/Button';
+import { ExternalLink } from '../../ui/ExternalLink';
 import { Icon } from '../../ui/Icon';
 import { MenuBar, type MenuBarMenu } from '../../ui/menu/MenuBar';
 import { StatusBar } from '../../ui/StatusBar';
@@ -67,14 +68,9 @@ function ProjectDetail({ project }: { project: ProjectContent }) {
       {hasActions && (
         <div className="project-actions">
           {project.repo.kind === 'public' && (
-            <a
-              className="btn btn--default project-cta"
-              href={project.repo.url}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <ExternalLink className="btn btn--default project-cta" href={project.repo.url}>
               {t('projects.openRepo')}
-            </a>
+            </ExternalLink>
           )}
           {project.repo.kind === 'closed' && (
             <>
@@ -88,9 +84,9 @@ function ProjectDetail({ project }: { project: ProjectContent }) {
             <PlaceholderBadge text={PLACEHOLDER} />
           )}
           {project.demoUrl && (
-            <a className="btn" href={project.demoUrl} target="_blank" rel="noopener noreferrer">
+            <ExternalLink className="btn" href={project.demoUrl}>
               {t('projects.openDemo')}
-            </a>
+            </ExternalLink>
           )}
         </div>
       )}

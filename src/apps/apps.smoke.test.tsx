@@ -215,7 +215,7 @@ describe('applications', () => {
     internet.unmount();
 
     const mail = renderApp('mail');
-    expect(await screen.findByDisplayValue('nilparra@nilparra.dev')).toBeTruthy();
+    expect(await screen.findByDisplayValue('nil@nilparra.dev')).toBeTruthy();
     // Opening the external program gives feedback inside the window: a machine
     // without a mail app would otherwise look like a broken button.
     fireEvent.click(screen.getByRole('link', { name: 'Abrir mi cliente de correo' }));

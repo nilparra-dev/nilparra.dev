@@ -62,6 +62,8 @@ export function Desktop() {
   const clipboard = useClipboard();
   const { paste } = useClipboardActions();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  /** Pointer that last pressed an icon, so a touch double tap does not open it twice. */
+  const lastPointerType = useRef<string>('mouse');
 
   const surfaceRef = useRef<HTMLDivElement | null>(null);
   const [area, setArea] = useState(() =>
@@ -159,6 +161,8 @@ export function Desktop() {
       : { x: ICON_CELL / 2, y: ICON_CELL / 2 };
     let moved = false;
     let lastPointer = { ...origin };
+    const pointerType = event.pointerType;
+    lastPointerType.current = pointerType;
 
     const onMove = (moveEvent: PointerEvent) => {
       lastPointer = { x: uiPixels(moveEvent.clientX), y: uiPixels(moveEvent.clientY) };
@@ -169,12 +173,17 @@ export function Desktop() {
       setDragging({ ids: movingIds, dx, dy });
     };
 
-    const finish = () => {
+    const finish = (endEvent: PointerEvent) => {
       target.removeEventListener('pointermove', onMove);
       target.removeEventListener('pointerup', finish);
       target.removeEventListener('pointercancel', finish);
       if (target.hasPointerCapture(event.pointerId)) target.releasePointerCapture(event.pointerId);
       setDragging(null);
+      // A double tap is awkward on a touch screen: a tap that did not drag opens the icon.
+      if (!moved && pointerType === 'touch' && endEvent.type === 'pointerup' && !additive) {
+        openItem(item);
+        return;
+      }
       if (!moved || preferences.autoArrangeIcons || !startSlot) return;
 
       // Where the icon would land, in surface coordinates.
@@ -482,6 +491,8 @@ export function Desktop() {
               onPointerDown={(event) => beginIconInteraction(event, item)}
               onDoubleClick={(event) => {
                 event.stopPropagation();
+                // Touch already opened the icon on the first tap.
+                if (lastPointerType.current === 'touch') return;
                 openItem(item);
               }}
               onClick={(event) => {

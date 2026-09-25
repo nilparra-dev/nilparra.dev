@@ -184,6 +184,7 @@ export const es = {
   'welcome.storageNote': 'Lo que crees aquí se guarda solo en este navegador.',
   'welcome.languageLabel': 'Idioma del escritorio',
   'welcome.tip': 'Consejo: haz doble clic en los iconos y usa el botón Inicio para ver todos los programas.',
+  'welcome.tipTouch': 'Consejo: toca un icono para abrirlo y usa el botón Inicio para ver todos los programas.',
 
   /* --- Wallpaper ---------------------------------------------------- */
   'wallpaper.title': 'Fondo de escritorio',

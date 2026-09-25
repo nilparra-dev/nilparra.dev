@@ -6,7 +6,7 @@
  * free of third party artwork.
  *
  * Outputs
- *   src/assets/generated/icons/*.png      32x32 and 16x16 app/file icons
+ *   src/assets/generated/icons/*.png      32x32 and hand drawn 16x16 app/file icons
  *   src/assets/generated/chrome/*.png     16x16 taskbar/tray glyphs
  *   src/assets/generated/cursors/*.png    32x32 cursors with their hotspot
  *   src/styles/cursors.generated.css      ready to use `cursor` values
@@ -19,7 +19,7 @@
  *   public/icon-192.png                   Android/PWA icon
  *   public/icon-512.png                   Android/PWA icon
  *   public/icon-maskable-512.png          Android adaptive icon
- *   qa/*.png                              contact sheets for visual review
+ *   qa/*.png                              contact sheets for visual review (not committed)
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -27,6 +27,7 @@ import { fileURLToPath } from 'node:url';
 import { createCanvas, downscale } from './lib/raster.mjs';
 import { blit, encodePNG, scaleUp } from './lib/png.mjs';
 import { ICONS, SMALL_ICONS } from './art/icons.mjs';
+import { ICONS_16 } from './art/icons16.mjs';
 import { CURSORS } from './art/cursors.mjs';
 import { renderPattern, PATTERNS } from './art/patterns.mjs';
 
@@ -128,6 +129,23 @@ function encodeICO(entries) {
  * --------------------------------------------------------------- */
 
 const iconIds = Object.keys(ICONS);
+
+/* Every icon needs its hand drawn small size: halving the 32x32 art loses the
+ * outlines, so there is no automatic fallback. */
+const missingSmall = iconIds.filter((id) => !ICONS_16[id]);
+const orphanSmall = Object.keys(ICONS_16).filter((id) => !ICONS[id]);
+if (missingSmall.length > 0 || orphanSmall.length > 0) {
+  throw new Error(
+    `scripts/art/icons16.mjs is out of sync with icons.mjs. Missing: ${missingSmall.join(', ') || 'none'}. ` +
+      `Unknown: ${orphanSmall.join(', ') || 'none'}.`,
+  );
+}
+
+function drawIcon16(id) {
+  const canvas = createCanvas(16, 16);
+  ICONS_16[id](canvas);
+  return canvas;
+}
 const smallIconIds = Object.keys(SMALL_ICONS);
 const iconIdentifier = (id) => `icon_${id.replace(/[^a-zA-Z0-9]/g, '_')}`;
 const smallIconIdentifier = (id) => `chrome_${id.replace(/[^a-zA-Z0-9]/g, '_')}`;
@@ -136,7 +154,7 @@ for (const id of iconIds) {
   const canvas = createCanvas(32, 32);
   ICONS[id](canvas);
   writePNG(`src/assets/generated/icons/${id}.png`, canvas);
-  writePNG(`src/assets/generated/icons/${id}-16.png`, downscale(canvas, 2));
+  writePNG(`src/assets/generated/icons/${id}-16.png`, drawIcon16(id));
 }
 
 for (const id of smallIconIds) {
@@ -179,7 +197,7 @@ ${iconEntries}
 
 export type IconId = keyof typeof ICON_URLS;
 
-/** Native 16x16 variants, generated from the same source art. */
+/** Hand drawn 16x16 variants (scripts/art/icons16.mjs). */
 export const ICON_URLS_16 = {
 ${icon16Entries}
 } as const;
@@ -274,6 +292,7 @@ export function patternBackground(id: string): string {
 
 const faviconArt = createCanvas(32, 32);
 ICONS.computer(faviconArt);
+const faviconArt16 = drawIcon16('computer');
 writePNG('public/favicon.png', faviconArt);
 write('public/favicon.svg', svgFromCanvas(faviconArt));
 
@@ -282,7 +301,7 @@ write('public/favicon.svg', svgFromCanvas(faviconArt));
 write(
   'public/favicon.ico',
   encodeICO([
-    { size: 16, png: encodePNG(downscale(faviconArt, 2)) },
+    { size: 16, png: encodePNG(faviconArt16) },
     { size: 32, png: encodePNG(faviconArt) },
     { size: 48, png: encodePNG(downscale(scaleUp(faviconArt, 3), 2)) },
   ]),
@@ -311,11 +330,12 @@ writePNG('public/icon-512.png', iconTile(ICON_COLOR, 512, 15));
 writePNG('public/icon-maskable-512.png', iconTile(ICON_COLOR, 512, 9));
 writePNG('public/apple-touch-icon.png', iconTile(ICON_COLOR, 180, 5));
 
-function sheetOptions() {
-  return { columns: 8, cell: 40, scale: 2, background: '#c0c0c0', pad: 6 };
-}
-
+/** Grid of artwork; each cell is at least as large as the scaled art. */
 function buildSheet(entries, { columns, cell, scale, background, pad }) {
+  const largest = Math.max(...entries.map(({ canvas: art }) => Math.max(art.width, art.height)));
+  if (largest * scale > cell) {
+    throw new Error(`Contact sheet cell of ${cell}px cannot hold ${largest}px art at ${scale}x`);
+  }
   const rows = Math.ceil(entries.length / columns);
   const canvas = createCanvas(columns * cell + pad * 2, rows * cell + pad * 2);
   for (let y = 0; y < canvas.height; y += 1) {
@@ -339,7 +359,17 @@ const iconSheetEntries = iconIds.map((id) => {
   ICONS[id](canvas);
   return { canvas };
 });
-writePNG('qa/icons-sheet@2x.png', buildSheet(iconSheetEntries, sheetOptions()));
+writePNG(
+  'qa/icons-sheet@2x.png',
+  buildSheet(iconSheetEntries, { columns: 8, cell: 72, scale: 2, background: '#c0c0c0', pad: 6 }),
+);
+writePNG(
+  'qa/icons16-sheet@4x.png',
+  buildSheet(
+    iconIds.map((id) => ({ canvas: drawIcon16(id) })),
+    { columns: 8, cell: 72, scale: 4, background: '#c0c0c0', pad: 6 },
+  ),
+);
 
 const smallSheetEntries = smallIconIds.map((id) => {
   const canvas = createCanvas(16, 16);
@@ -364,9 +394,9 @@ writePNG(
 /* --------------------------------------------------------------- */
 
 console.log(`generate-assets: ${written.length} files written`);
-console.log(`  icons:    ${iconIds.length} (plus 16x16 variants)`);
+console.log(`  icons:    ${iconIds.length} (plus hand drawn 16x16 variants)`);
 console.log(`  chrome:   ${smallIconIds.length}`);
 console.log(`  cursors:  ${Object.keys(CURSORS).length}`);
 console.log(`  patterns: ${Object.keys(PATTERNS).length}`);
 console.log('  browsers: favicon.png, favicon.ico, favicon.svg, apple-touch-icon.png, icon-{192,512}.png');
-console.log('  review:   qa/icons-sheet@2x.png, qa/cursors-sheet@3x.png, qa/pattern-*@3x.png');
+console.log('  review:   qa/icons-sheet@2x.png, qa/icons16-sheet@4x.png, qa/cursors-sheet@3x.png, qa/pattern-*@3x.png');

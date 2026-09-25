@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useI18n } from '../../core/i18n/I18nProvider';
 import type { MessageOptions, MessageResult } from '../../core/dialogs/types';
 import { Button } from '../Button';
+import { Checkbox } from '../Checkbox';
 import { Dialog } from '../Dialog';
 import { Icon } from '../Icon';
 
@@ -21,6 +23,7 @@ export function MessageBoxView({
 }) {
   const { t } = useI18n();
   const kind = options.kind ?? 'info';
+  const [checked, setChecked] = useState(false);
   const buttons = options.buttons ?? 'ok';
 
   const definitions: Array<{ result: MessageResult; label: string; primary?: boolean }> = [];
@@ -72,6 +75,17 @@ export function MessageBoxView({
       <div className="dialog-message">
         <div>{options.message}</div>
         {options.detail && <p className="dialog-detail">{options.detail}</p>}
+        {options.checkbox && (
+          <Checkbox
+            className="dialog-checkbox"
+            checked={checked}
+            onChange={(value) => {
+              setChecked(value);
+              options.checkbox?.onChange(value);
+            }}
+            label={options.checkbox.label}
+          />
+        )}
       </div>
     </Dialog>
   );

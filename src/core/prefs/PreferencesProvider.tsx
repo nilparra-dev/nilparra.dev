@@ -21,6 +21,8 @@ export interface Preferences {
   autoArrangeIcons: boolean;
   /** Explorer windows show the folder tree on the left. */
   showExplorerTree: boolean;
+  /** Links to other sites ask before opening a new tab. */
+  confirmExternalLinks: boolean;
 }
 
 export const DEFAULT_PREFERENCES: Preferences = {
@@ -33,6 +35,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
   highContrastLabels: false,
   autoArrangeIcons: true,
   showExplorerTree: true,
+  confirmExternalLinks: true,
 };
 
 /** Defensive read: stored values can come from a modified or older client. */
@@ -71,6 +74,10 @@ export function sanitizePreferences(input: unknown): Preferences {
       typeof source.showExplorerTree === 'boolean'
         ? source.showExplorerTree
         : DEFAULT_PREFERENCES.showExplorerTree,
+    confirmExternalLinks:
+      typeof source.confirmExternalLinks === 'boolean'
+        ? source.confirmExternalLinks
+        : DEFAULT_PREFERENCES.confirmExternalLinks,
   };
 }
 

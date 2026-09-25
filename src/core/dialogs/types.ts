@@ -18,6 +18,8 @@ export interface MessageOptions {
   buttons?: MessageButtons;
   /** Index of the button focused when the box opens. */
   defaultButton?: number;
+  /** Optional check box under the message, such as "Do not ask again". */
+  checkbox?: { label: string; onChange: (checked: boolean) => void };
 }
 
 export interface PromptOptions {

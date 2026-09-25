@@ -156,6 +156,11 @@ export function ControlPanelApp({ windowId }: AppRenderProps) {
               onChange={(checked) => update({ highContrastLabels: checked })}
               label={t('cp.highContrast')}
             />
+            <Checkbox
+              checked={preferences.confirmExternalLinks}
+              onChange={(checked) => update({ confirmExternalLinks: checked })}
+              label={t('cp.confirmExternal')}
+            />
           </GroupBox>
         )}
 

@@ -110,7 +110,7 @@ describe('InternetApp', () => {
     expect(link.getAttribute('rel')).toContain('noopener');
     expect(screen.getByText('Second snippet')).toBeTruthy();
     // The footer is honest about where the results come from.
-    expect(screen.getByText(/Tavily/)).toBeTruthy();
+    expect(screen.getByText(/Resultados reales obtenidos con el buscador Tavily/)).toBeTruthy();
   });
 
   it('walks the internal pages without calling the search service', () => {

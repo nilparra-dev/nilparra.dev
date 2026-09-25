@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
+import { usePreferences } from '../prefs/PreferencesProvider';
 import { useDialogs } from './DialogProvider';
 
 /**
@@ -18,8 +19,9 @@ export function externalTarget(href: string): URL | null {
 
 /**
  * Opens an address in a new browser tab. Addresses on another site first ask
- * for confirmation, so leaving the desktop is never a surprise; files of this
- * same site (the CV) open straight away.
+ * for confirmation, so leaving the desktop is never a surprise, unless the
+ * visitor ticked "Do not ask again"; files of this same site (the CV) open
+ * straight away.
  *
  * The tab is opened right after the answer, still inside the click on the
  * message box button, so popup blockers accept it.
@@ -27,23 +29,34 @@ export function externalTarget(href: string): URL | null {
 export function useOpenExternal(): (href: string) => Promise<void> {
   const dialogs = useDialogs();
   const { t } = useI18n();
+  const { preferences, update } = usePreferences();
+  const confirm = preferences.confirmExternalLinks;
 
   return useCallback(
     async (href: string) => {
       const url = externalTarget(href);
       if (!url) return;
-      if (url.origin !== window.location.origin) {
+      if (confirm && url.origin !== window.location.origin) {
+        let dontAskAgain = false;
         const answer = await dialogs.message({
           title: t('dialog.leaveSiteTitle'),
           kind: 'warning',
           message: t('dialog.leaveSite', { host: url.hostname }),
           detail: url.href,
           buttons: 'okCancel',
+          checkbox: {
+            label: t('dialog.leaveSiteDontAsk'),
+            onChange: (checked) => {
+              dontAskAgain = checked;
+            },
+          },
         });
         if (answer !== 'ok') return;
+        // Only an accepted link stores the choice: Cancel keeps asking.
+        if (dontAskAgain) update({ confirmExternalLinks: false });
       }
       window.open(url.href, '_blank', 'noopener,noreferrer');
     },
-    [dialogs, t],
+    [confirm, dialogs, t, update],
   );
 }

@@ -93,7 +93,8 @@ export const APP_CATALOG: Record<string, AppDefinition> = {
     nameKey: 'app.projects',
     icon: 'projects',
     instance: 'single',
-    defaultSize: { width: 820, height: 600 },
+    // Tall on purpose: the window manager shrinks it to fit smaller screens.
+    defaultSize: { width: 820, height: 760 },
     minSize: { width: 380, height: 260 },
     maximizable: true,
     startMenu: 'main',
@@ -103,7 +104,7 @@ export const APP_CATALOG: Record<string, AppDefinition> = {
     nameKey: 'app.about',
     icon: 'about-me',
     instance: 'single',
-    defaultSize: { width: 760, height: 600 },
+    defaultSize: { width: 760, height: 760 },
     minSize: { width: 380, height: 260 },
     maximizable: true,
     startMenu: 'main',
@@ -117,7 +118,7 @@ export const APP_CATALOG: Record<string, AppDefinition> = {
     minSize: { width: 380, height: 260 },
     maximizable: true,
     startMenu: 'internet',
-    helpTopicId: 'welcome',
+    helpTopicId: 'privacy',
   },
   mail: {
     id: 'mail',

@@ -204,6 +204,7 @@ function projectFile(index: number): PortfolioFileSeed {
       `Tecnologías: ${project?.technologies.length ? project.technologies.map((id) => TECHNOLOGIES[id].name).join(', ') : '[PENDIENTE]'}`,
       `Repositorio: ${repoLine(project, 'es')}`,
       `Demo: ${project?.demoUrl ?? (project?.status === 'published' ? pick(NO_PUBLIC_DEMO, 'es') : '[PENDIENTE]')}`,
+      ...(project?.links ?? []).map((link) => `${link.label}: ${link.url}`),
     ].join('\n'),
     ca: [
       pick(label, 'ca'),
@@ -214,6 +215,7 @@ function projectFile(index: number): PortfolioFileSeed {
       `Tecnologies: ${project?.technologies.length ? project.technologies.map((id) => TECHNOLOGIES[id].name).join(', ') : '[PENDIENTE]'}`,
       `Repositori: ${repoLine(project, 'ca')}`,
       `Demo: ${project?.demoUrl ?? (project?.status === 'published' ? pick(NO_PUBLIC_DEMO, 'ca') : '[PENDIENTE]')}`,
+      ...(project?.links ?? []).map((link) => `${link.label}: ${link.url}`),
     ].join('\n'),
     en: [
       pick(label, 'en'),
@@ -224,6 +226,7 @@ function projectFile(index: number): PortfolioFileSeed {
       `Technologies: ${project?.technologies.length ? project.technologies.map((id) => TECHNOLOGIES[id].name).join(', ') : '[PENDIENTE]'}`,
       `Repository: ${repoLine(project, 'en')}`,
       `Demo: ${project?.demoUrl ?? (project?.status === 'published' ? pick(NO_PUBLIC_DEMO, 'en') : '[PENDIENTE]')}`,
+      ...(project?.links ?? []).map((link) => `${link.label}: ${link.url}`),
     ].join('\n'),
   };
   return {

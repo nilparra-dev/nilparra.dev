@@ -17,6 +17,14 @@ export interface ProjectScreenshot {
   alt: Localized<string>;
 }
 
+/** Another place where the project is published, such as a package registry. */
+export interface ProjectLink {
+  id: string;
+  /** Name of the site; brand names are not translated. */
+  label: string;
+  url: string;
+}
+
 /** How the source code of a project is published. */
 export type ProjectRepo =
   | { kind: 'public'; url: string }
@@ -38,6 +46,8 @@ export interface ProjectContent {
   logo: string;
   technologies: TechnologyId[];
   repo: ProjectRepo;
+  /** Extra places to see the project, shown as "See on <label>" buttons. */
+  links: ProjectLink[];
   demoUrl: string | null;
   screenshots: ProjectScreenshot[];
   year: string | null;
@@ -114,6 +124,7 @@ export const PROJECTS: ProjectContent[] = [
       'githubActions',
     ],
     repo: { kind: 'public', url: 'https://github.com/nilparra-dev/wooster' },
+    links: [{ id: 'npm', label: 'npm', url: 'https://www.npmjs.com/package/twitch-vod-m3u8' }],
     demoUrl: null,
     screenshots: [
       {
@@ -259,6 +270,7 @@ export const PROJECTS: ProjectContent[] = [
         en: 'The repository and the data are private. I can walk through the architecture or give a demo.',
       },
     },
+    links: [],
     demoUrl: null,
     screenshots: [
       {

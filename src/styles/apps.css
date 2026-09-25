@@ -809,6 +809,10 @@
   overflow-wrap: anywhere;
 }
 
+.dialog-checkbox {
+  margin-top: 12px;
+}
+
 /* ------------------------------------------------------------------ *
  * Shared pieces of the content applications
  * ------------------------------------------------------------------ */

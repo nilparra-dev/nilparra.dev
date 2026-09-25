@@ -55,6 +55,10 @@ export function staticProfileHtml(profile: ProfileContent, projects: ProjectCont
       } else if (project.repo.kind === 'closed') {
         lines.push(`<p>${text(pick(project.repo.note, 'es'))}</p>`);
       }
+      for (const link of project.links) {
+        const label = es['projects.openOn'].replace('{site}', link.label);
+        lines.push(`<p><a href="${text(link.url)}">${text(label)}</a></p>`);
+      }
       if (project.demoUrl) {
         lines.push(`<p><a href="${text(project.demoUrl)}">${text(es['projects.openDemo'])}</a></p>`);
       }

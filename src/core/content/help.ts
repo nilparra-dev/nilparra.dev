@@ -177,6 +177,31 @@ export const HELP_TOPICS: HelpTopic[] = [
     },
   },
   {
+    id: 'privacy',
+    title: {
+      es: 'Privacidad',
+      ca: 'Privadesa',
+      en: 'Privacy',
+    },
+    body: {
+      es: [
+        'Esta web no usa cookies, no tiene analítica ni cuentas de usuario y no tiene servidor propio. Las preferencias y la posición de las ventanas se guardan en el almacenamiento local de tu navegador, y los archivos, en IndexedDB. Nada de eso sale de tu equipo salvo que exportes un archivo.',
+        'La única excepción es la ventana Internet. Para mostrar resultados, cada búsqueda se envía a Tavily, un servicio de búsqueda de Estados Unidos, que recibe el texto buscado y tu dirección IP. Las páginas que abres dentro de esa ventana se cargan directamente desde su propio sitio y siguen sus propias políticas.',
+        'Los enlaces a otras webs (GitHub, LinkedIn, los resultados de búsqueda) se abren en una pestaña nueva, sin enviarles desde qué página vienes.',
+      ],
+      ca: [
+        'Aquest web no fa servir galetes, no té analítica ni comptes d’usuari i no té servidor propi. Les preferències i la posició de les finestres es desen a l’emmagatzematge local del teu navegador, i els fitxers, a IndexedDB. Res d’això surt del teu equip tret que exportis un fitxer.',
+        'L’única excepció és la finestra Internet. Per mostrar resultats, cada cerca s’envia a Tavily, un servei de cerca dels Estats Units, que rep el text cercat i la teva adreça IP. Les pàgines que obres dins d’aquesta finestra es carreguen directament des del seu propi lloc i segueixen les seves pròpies polítiques.',
+        'Els enllaços a altres webs (GitHub, LinkedIn, els resultats de cerca) s’obren en una pestanya nova, sense dir-los des de quina pàgina hi arribes.',
+      ],
+      en: [
+        'This site sets no cookies, runs no analytics, has no user accounts and no server of its own. Preferences and window positions are kept in your browser local storage, and files in IndexedDB. None of it leaves your computer unless you export a file.',
+        'The one exception is the Internet window. To show results, every search is sent to Tavily, a search service based in the United States, which receives the search text and your IP address. Pages opened inside that window load straight from their own site and follow their own policies.',
+        'Links to other sites (GitHub, LinkedIn, search results) open in a new tab without telling them which page you came from.',
+      ],
+    },
+  },
+  {
     id: 'credits',
     title: {
       es: 'Créditos y licencias',

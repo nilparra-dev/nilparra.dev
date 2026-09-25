@@ -276,6 +276,9 @@ export const es = {
   'projects.requestDemo': 'Pedir una demostración',
   'projects.placeholderBadge': 'Pendiente',
   'projects.openFolder': 'Ver los archivos en el Explorador',
+  'projects.copyLink': 'Copiar el enlace de este proyecto',
+  'projects.linkCopied': 'Enlace copiado al portapapeles',
+  'projects.linkLabel': 'Enlace directo a este proyecto:',
 
   /* --- About me / CV ----------------------------------------------- */
   'about.heading': 'Sobre mí',

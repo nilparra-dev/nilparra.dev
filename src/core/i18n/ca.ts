@@ -256,6 +256,9 @@ export const ca: Catalog = {
   'projects.requestDemo': 'Demanar una demostració',
   'projects.placeholderBadge': 'Pendent',
   'projects.openFolder': 'Veure els fitxers a l’Explorador',
+  'projects.copyLink': 'Copiar l’enllaç d’aquest projecte',
+  'projects.linkCopied': 'Enllaç copiat al porta-retalls',
+  'projects.linkLabel': 'Enllaç directe a aquest projecte:',
 
   'about.heading': 'Sobre mi',
   'about.bio': 'Presentació',

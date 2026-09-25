@@ -1,8 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { AppRenderProps } from '../../core/apps/launcher';
+import { projectLink } from '../../core/apps/deepLink';
 import { useAppLauncher } from '../../core/apps/launcher';
 import type { ProjectContent } from '../../core/content';
 import { PLACEHOLDER, PROFILE, PROJECTS, TECHNOLOGIES, isPlaceholder, pick } from '../../core/content';
+import { useDialogs } from '../../core/dialogs/DialogProvider';
 import { useVfs } from '../../core/fs/VfsProvider';
 import { useI18n } from '../../core/i18n/I18nProvider';
 import { useWindowManager } from '../../core/window/WindowManagerProvider';
@@ -166,13 +168,34 @@ function ProjectDetail({ project }: { project: ProjectContent }) {
  * top and the selected one fills the page below. Entries marked as
  * `placeholder` say so out loud.
  */
-export function ProjectsApp({ windowId }: AppRenderProps) {
+export function ProjectsApp({ windowId, params }: AppRenderProps) {
   const { t, locale } = useI18n();
   const vfs = useVfs();
   const launch = useAppLauncher();
   const wm = useWindowManager();
-  const [selectedId, setSelectedId] = useState<string>(PROJECTS[0]?.id ?? '');
+  const dialogs = useDialogs();
+  const requestedId = typeof params.projectId === 'string' ? params.projectId : null;
+  const [selectedId, setSelectedId] = useState<string>(requestedId ?? PROJECTS[0]?.id ?? '');
   const selected = PROJECTS.find((project) => project.id === selectedId) ?? PROJECTS[0];
+  const [notice, setNotice] = useState<string | null>(null);
+
+  /* A deep link can ask an already open window for another project. */
+  useEffect(() => {
+    if (requestedId) setSelectedId(requestedId);
+  }, [requestedId]);
+
+  const copyLink = useCallback(async () => {
+    if (!selected) return;
+    const link = projectLink(selected.slug);
+    try {
+      await navigator.clipboard.writeText(link);
+      setNotice(t('projects.linkCopied'));
+    } catch {
+      // No async clipboard (older browser or an insecure context): show the
+      // address in a field so it can be copied by hand.
+      await dialogs.prompt({ title: t('projects.copyLink'), label: t('projects.linkLabel'), initialValue: link });
+    }
+  }, [dialogs, selected, t]);
 
   const menus = useMemo<MenuBarMenu[]>(
     () => [
@@ -199,6 +222,7 @@ export function ProjectsApp({ windowId }: AppRenderProps) {
               });
             },
           },
+          { kind: 'item', id: 'link', label: t('projects.copyLink'), onSelect: () => void copyLink() },
           { kind: 'item', id: 'about', label: t('about.heading'), onSelect: () => launch({ appId: 'about' }) },
           { kind: 'separator', id: 'sep', label: '' },
           { kind: 'item', id: 'close', label: t('window.close'), onSelect: () => void wm.close(windowId) },
@@ -218,7 +242,7 @@ export function ProjectsApp({ windowId }: AppRenderProps) {
         ],
       },
     ],
-    [launch, t, vfs, windowId, wm],
+    [copyLink, launch, t, vfs, windowId, wm],
   );
 
   return (
@@ -235,7 +259,10 @@ export function ProjectsApp({ windowId }: AppRenderProps) {
         <Tabs
           tabs={PROJECTS.map((project) => ({ id: project.id, label: pick(project.title, locale) }))}
           activeId={selected?.id ?? ''}
-          onChange={setSelectedId}
+          onChange={(id) => {
+            setSelectedId(id);
+            setNotice(null);
+          }}
           ariaLabel={t('projects.heading')}
         />
         <div
@@ -250,7 +277,7 @@ export function ProjectsApp({ windowId }: AppRenderProps) {
       <StatusBar
         grip
         panels={[
-          { id: 'count', width: 200, content: t('common.items', { count: PROJECTS.length }) },
+          { id: 'count', width: 200, content: notice ?? t('common.items', { count: PROJECTS.length }) },
           { id: 'author', content: PROFILE.displayName },
         ]}
       />

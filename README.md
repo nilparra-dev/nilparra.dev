@@ -29,6 +29,8 @@ manager.
 - Search the web from the Internet window. Results appear inside the window and each link opens
   in a real browser tab.
 - Switch the interface between Spanish, Catalan and English.
+- Link straight to a window: `#projects`, `#projects/wooster`, `#about` and `#contact` open it on
+  top of the desktop, and the Projects window copies the link of the project on screen.
 
 ## How it is built
 

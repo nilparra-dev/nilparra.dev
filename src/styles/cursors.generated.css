@@ -3,18 +3,21 @@
  * Every value is a complete "cursor" declaration: the pointer image with its
  * hotspot plus the native keyword used as fallback when the image cannot be
  * loaded. Consumers write: cursor: var(--cursor-arrow);
+ *
+ * These are the 1x images. src/ui/cursors.ts replaces the values at runtime
+ * with the size that matches the interface zoom and the screen density.
  */
 :root {
-  /* arrow */ --cursor-arrow: url('../assets/generated/cursors/arrow.png') 1 1, default;
-  /* text */ --cursor-text: url('../assets/generated/cursors/text.png') 16 16, text;
-  /* wait */ --cursor-wait: url('../assets/generated/cursors/wait.png') 16 16, wait;
-  /* cross */ --cursor-cross: url('../assets/generated/cursors/cross.png') 16 16, crosshair;
-  /* move */ --cursor-move: url('../assets/generated/cursors/move.png') 16 16, move;
-  /* sizens */ --cursor-sizens: url('../assets/generated/cursors/sizens.png') 16 16, ns-resize;
-  /* sizewe */ --cursor-sizewe: url('../assets/generated/cursors/sizewe.png') 16 16, ew-resize;
-  /* sizenwse */ --cursor-sizenwse: url('../assets/generated/cursors/sizenwse.png') 16 16, nwse-resize;
-  /* sizenesw */ --cursor-sizenesw: url('../assets/generated/cursors/sizenesw.png') 16 16, nesw-resize;
-  /* no */ --cursor-no: url('../assets/generated/cursors/no.png') 16 16, not-allowed;
-  /* hand */ --cursor-hand: url('../assets/generated/cursors/hand.png') 6 1, pointer;
-  /* help */ --cursor-help: url('../assets/generated/cursors/help.png') 1 1, help;
+  /* arrow */ --cursor-arrow: url('../assets/generated/cursors/arrow.png') 0 0, default;
+  /* text */ --cursor-text: url('../assets/generated/cursors/text.png') 4 8, text;
+  /* wait */ --cursor-wait: url('../assets/generated/cursors/wait.png') 6 10, wait;
+  /* cross */ --cursor-cross: url('../assets/generated/cursors/cross.png') 9 9, crosshair;
+  /* move */ --cursor-move: url('../assets/generated/cursors/move.png') 11 11, move;
+  /* sizens */ --cursor-sizens: url('../assets/generated/cursors/sizens.png') 4 11, ns-resize;
+  /* sizewe */ --cursor-sizewe: url('../assets/generated/cursors/sizewe.png') 11 4, ew-resize;
+  /* sizenwse */ --cursor-sizenwse: url('../assets/generated/cursors/sizenwse.png') 8 8, nwse-resize;
+  /* sizenesw */ --cursor-sizenesw: url('../assets/generated/cursors/sizenesw.png') 8 8, nesw-resize;
+  /* no */ --cursor-no: url('../assets/generated/cursors/no.png') 8 8, not-allowed;
+  /* hand */ --cursor-hand: url('../assets/generated/cursors/hand.png') 5 0, pointer;
+  /* help */ --cursor-help: url('../assets/generated/cursors/help.png') 0 0, help;
 }

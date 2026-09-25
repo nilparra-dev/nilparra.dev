@@ -15,6 +15,9 @@ npm run build
 ## Rules
 
 - `main` is protected. Work on a branch, open a pull request and let CI pass before merging.
+- Clean up after yourself: any extra git worktree, clone or scratch checkout created for a task
+  is removed (`git worktree remove`, then `git worktree prune`) once its branch is merged or
+  abandoned. Only the original repository checkout stays on disk.
 - Commit messages are written in English and follow conventional commits (`feat:`, `fix:`,
   `docs:`, `test:`, `ci:`, `refactor:`, `chore:`).
 - Interface texts live in `src/core/i18n/`. `es.ts` is the source of truth and the catalogues are

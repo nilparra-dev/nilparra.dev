@@ -1,3 +1,4 @@
+import { ICON_CELL, ICON_MARGIN } from '../desktop/iconLayout';
 import type { ViewportSize, WindowInstance, WindowRect } from './types';
 
 /** Height of the taskbar, mirrored from the CSS token. */
@@ -12,8 +13,17 @@ const MIN_VISIBLE_X = 56;
 const MIN_VISIBLE_Y = 22;
 
 /**
+ * Left edges that clear the first two columns of desktop icons, then the
+ * first one: the default shortcuts overflow into a second column on common
+ * laptop heights.
+ */
+const ICON_COLUMN_CLEARANCES = [2, 1].map((columns) => ICON_MARGIN + ICON_CELL * columns + 12);
+
+/**
  * Places a new window inside the viewport, cascading like the original shell
- * so windows never open exactly on top of each other.
+ * so windows never open exactly on top of each other. When the window fits
+ * beside them, the cascade starts right of the icon columns so the desktop
+ * shortcuts stay visible.
  */
 export function cascadeRect(
   step: number,
@@ -26,7 +36,9 @@ export function cascadeRect(
   const maxHeight = Math.max(MIN_WINDOW_HEIGHT, viewport.height - offset * 2);
   const width = Math.min(size.width, maxWidth);
   const height = Math.min(size.height, maxHeight);
-  const x = Math.max(0, Math.min(offset + shift, viewport.width - width - 6));
+  const room = viewport.width - width - offset;
+  const left = ICON_COLUMN_CLEARANCES.find((clearance) => room >= clearance) ?? offset;
+  const x = Math.max(0, Math.min(left + shift, viewport.width - width - 6));
   const y = Math.max(0, Math.min(offset + shift, viewport.height - height - 6));
   return { x: Math.round(x), y: Math.round(y), width: Math.round(width), height: Math.round(height) };
 }

@@ -519,7 +519,7 @@
 .explorer-empty {
   flex: 1 0 100%;
   padding: 12px;
-  color: var(--w95-gray);
+  color: var(--w95-text-secondary);
 }
 
 .explorer-rename-error {
@@ -581,7 +581,7 @@
 
 .bin-hint {
   padding: 0 6px;
-  color: var(--w95-gray);
+  color: var(--w95-text-secondary);
 }
 
 .bin-list {
@@ -622,7 +622,7 @@
 
 .bin-empty {
   padding: 12px;
-  color: var(--w95-gray);
+  color: var(--w95-text-secondary);
 }
 
 /* ------------------------------------------------------------------ *
@@ -751,7 +751,7 @@
 
 .properties-row dt {
   flex: 0 0 110px;
-  color: var(--w95-gray);
+  color: var(--w95-text-secondary);
 }
 
 .properties-row dd {
@@ -774,7 +774,7 @@
 
 .dialog-detail {
   margin-top: 6px;
-  color: var(--w95-gray);
+  color: var(--w95-text-secondary);
   overflow-wrap: anywhere;
 }
 
@@ -880,7 +880,7 @@
 
 .project-detail-year {
   flex: 0 0 auto;
-  color: var(--w95-gray);
+  color: var(--w95-text-secondary);
 }
 
 @container (max-width: 460px) {
@@ -978,7 +978,7 @@
 
 .project-shots-empty {
   padding: 10px;
-  color: var(--w95-gray);
+  color: var(--w95-text-secondary);
   border: 1px dashed var(--w95-gray);
 }
 
@@ -1040,7 +1040,7 @@
 
 .about-profile-location {
   margin-top: 8px;
-  color: var(--w95-gray);
+  color: var(--w95-text-secondary);
 }
 
 .about-profile-photo {
@@ -1065,7 +1065,7 @@
 .about-period {
   display: block;
   min-width: 96px;
-  color: var(--w95-gray);
+  color: var(--w95-text-secondary);
 }
 
 .about-study-logo {
@@ -1468,7 +1468,7 @@ a.btn {
 }
 
 .sysinfo-grid dt {
-  color: var(--w95-gray);
+  color: var(--w95-text-secondary);
 }
 
 .sysinfo-grid dd {

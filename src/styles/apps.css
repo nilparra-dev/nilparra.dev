@@ -64,6 +64,22 @@
   line-height: 1.45;
 }
 
+.app-welcome-facts {
+  display: grid;
+  gap: 4px;
+  line-height: 1.35;
+}
+
+.app-welcome-fact {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 8px;
+}
+
+.app-welcome-fact dt {
+  font-weight: var(--w95-font-weight-bold);
+}
+
 .welcome-language-select {
   width: 140px;
   max-width: 100%;

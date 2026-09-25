@@ -34,4 +34,18 @@ describe('node display names', () => {
     const copy: FsNode = { ...seededShortcut('welcome'), id: 'user-copy', origin: 'user' };
     expect(nodeDisplayName(copy, tFor('en'))).toBe('Bienvenida');
   });
+
+  it('shows the seeded portfolio files and the untouched welcome note in the interface language', () => {
+    const nodes = buildSeed('es', 1000).nodes;
+    const byName = (name: string) => {
+      const node = nodes.find((candidate) => candidate.name === name);
+      if (!node) throw new Error(`Missing seeded node: ${name}`);
+      return node;
+    };
+    expect(nodeDisplayName(byName('Proyectos'), tFor('en'))).toBe('Projects');
+    expect(nodeDisplayName(byName('Contacto.txt'), tFor('ca'))).toBe('Contacte.txt');
+    const welcome = byName('Bienvenida.txt');
+    expect(nodeDisplayName(welcome, tFor('en'))).toBe('Welcome.txt');
+    expect(nodeDisplayName({ ...welcome, updatedAt: 2000 }, tFor('en'))).toBe('Bienvenida.txt');
+  });
 });

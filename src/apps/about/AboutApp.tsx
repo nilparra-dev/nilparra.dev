@@ -205,6 +205,18 @@ export function AboutApp({ windowId }: AppRenderProps) {
           </GroupBox>
         )}
 
+        {PROFILE.languages.length > 0 && (
+          <GroupBox title={t('about.languages')}>
+            <ul className="about-list" role="list">
+              {PROFILE.languages.map((language) => (
+                <li key={language.code} className="u-selectable">
+                  <strong>{pick(language.name, locale)}</strong>: {pick(language.level, locale)}
+                </li>
+              ))}
+            </ul>
+          </GroupBox>
+        )}
+
         {extras.length > 0 && (
           <GroupBox title={t('about.extras')}>
             <ul className="about-list" role="list">

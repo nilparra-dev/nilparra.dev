@@ -5,6 +5,7 @@ import { PROJECTS } from './src/core/content/projects';
 import { staticProfileHtml } from './src/core/content/staticHtml';
 import { TECHNOLOGIES } from './src/core/content/technologies';
 import { pick } from './src/core/content/types';
+import { DEFAULT_LOCALE } from './src/core/i18n/locales';
 
 /**
  * `base` must match the deployment path:
@@ -47,7 +48,7 @@ function postalAddress(): Record<string, string> | null {
 }
 
 function alumniOf(): Array<Record<string, string>> {
-  const centres = new Set(PROFILE.studies.map((study) => pick(study.centre, 'es')));
+  const centres = new Set(PROFILE.studies.map((study) => pick(study.centre, DEFAULT_LOCALE)));
   return [...centres].map((name) => ({ '@type': 'EducationalOrganization', name }));
 }
 
@@ -64,13 +65,13 @@ function structuredData(): Record<string, unknown> {
     '@type': 'Person',
     '@id': `${siteUrl}/#person`,
     name: PROFILE.displayName,
-    jobTitle: pick(PROFILE.tagline, 'es'),
+    jobTitle: pick(PROFILE.tagline, DEFAULT_LOCALE),
     url: `${siteUrl}/`,
     image: absolute(PROFILE.photoUrl),
     email: `mailto:${emailAddress()}`,
   };
 
-  const [bio] = pick(PROFILE.bio, 'es');
+  const [bio] = pick(PROFILE.bio, DEFAULT_LOCALE);
   if (bio) person.description = bio;
 
   const address = postalAddress();
@@ -85,12 +86,20 @@ function structuredData(): Record<string, unknown> {
   const skills = PROFILE.skills.flatMap((group) => group.skills);
   if (skills.length > 0) person.knowsAbout = skills.map((skill) => TECHNOLOGIES[skill.technology].name);
 
+  if (PROFILE.languages.length > 0) {
+    person.knowsLanguage = PROFILE.languages.map((language) => ({
+      '@type': 'Language',
+      name: pick(language.name, DEFAULT_LOCALE),
+      alternateName: language.code,
+    }));
+  }
+
   return {
     '@context': 'https://schema.org',
     '@type': 'ProfilePage',
     '@id': `${siteUrl}/#page`,
     url: `${siteUrl}/`,
-    inLanguage: 'es',
+    inLanguage: DEFAULT_LOCALE,
     mainEntity: person,
   };
 }
@@ -131,7 +140,7 @@ function seoPlugin(): Plugin {
         return html
           .replaceAll(SITE_URL_PLACEHOLDER, siteUrl)
           .replaceAll(STRUCTURED_DATA_PLACEHOLDER, script)
-          .replaceAll(STATIC_PROFILE_PLACEHOLDER, staticProfileHtml(PROFILE, PROJECTS));
+          .replaceAll(STATIC_PROFILE_PLACEHOLDER, staticProfileHtml(PROFILE, PROJECTS, DEFAULT_LOCALE));
       },
     },
   };

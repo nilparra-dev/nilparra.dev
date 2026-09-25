@@ -67,17 +67,17 @@ export const HELP_TOPICS: HelpTopic[] = [
     },
     body: {
       es: [
-        'La interfaz está disponible en español, catalán e inglés. La primera vez se detecta el idioma del navegador y, si no coincide con ninguno, se usa el español.',
+        'La interfaz está disponible en inglés, español y catalán. La primera visita se abre en inglés; el idioma que elijas se recuerda en este navegador.',
         'Puedes cambiarlo cuando quieras desde el Panel de control o desde la ventana de Bienvenida: el cambio es inmediato y no se pierde ningún documento abierto.',
         'Los nombres de las carpetas del sistema se traducen, pero las rutas internas no cambian nunca. Los archivos que creas tú conservan el nombre que les pusiste.',
       ],
       ca: [
-        'La interfície està disponible en espanyol, català i anglès. La primera vegada es detecta l’idioma del navegador i, si no coincideix amb cap, s’usa l’espanyol.',
+        'La interfície està disponible en anglès, espanyol i català. La primera visita s’obre en anglès; l’idioma que triïs es recorda en aquest navegador.',
         'Pots canviar-lo quan vulguis des del Tauler de control o des de la finestra de Benvinguda: el canvi és immediat i no es perd cap document obert.',
         'Els noms de les carpetes del sistema es tradueixen, però les rutes internes no canvien mai. Els fitxers que crees tu conserven el nom que els vas posar.',
       ],
       en: [
-        'The interface is available in Spanish, Catalan and English. On the first visit the browser language is detected and Spanish is used when it matches none of them.',
+        'The interface is available in English, Spanish and Catalan. The first visit opens in English; the language you pick is remembered in this browser.',
         'You can change it whenever you want from the Control Panel or from the Welcome window: the change is immediate and no open document is lost.',
         'System folder names are translated, but internal paths never change. Files you create keep the name you gave them.',
       ],

@@ -1,4 +1,4 @@
-import type { Locale } from '../i18n/I18nProvider';
+import type { Locale } from '../i18n/locales';
 
 /** A piece of content written once per supported language. */
 export interface Localized<T> {

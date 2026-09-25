@@ -60,6 +60,10 @@ export const en: Catalog = {
   'folder.pictures': 'Pictures',
   'folder.recycleBin': 'Recycle Bin',
   'folder.drive': 'Local disk (C:)',
+  'seed.projectsFolder': 'Projects',
+  'seed.aboutFile': 'About-me.txt',
+  'seed.contactFile': 'Contact.txt',
+  'seed.welcomeFile': 'Welcome.txt',
 
   'desktop.open': 'Open',
   'desktop.openWith': 'Open with…',
@@ -267,6 +271,7 @@ export const en: Catalog = {
   'about.inProgress': 'In progress',
   'about.experience': 'Experience',
   'about.skills': 'Skills',
+  'about.languages': 'Languages',
   'about.extras': 'Other details',
   'about.cv': 'Curriculum vitae',
   'about.downloadCv': 'Download the CV as PDF',

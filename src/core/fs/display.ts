@@ -6,6 +6,7 @@
 import type { IconId } from '../../assets/generated/icons';
 import { APP_CATALOG } from '../apps/catalog';
 import type { I18nValue } from '../i18n/I18nProvider';
+import { WELCOME_FILE_NAME } from './seed';
 import { ROOT_ID, type FsNode } from './types';
 import { baseNameOf, iconForName, isTextExtension, extensionOf } from './vfsUtils';
 
@@ -39,11 +40,34 @@ function systemShortcutLabel(node: FsNode): Parameters<Translate>[0] | null {
   return SYSTEM_SHORTCUT_LABELS[node.shortcut.appId] ?? null;
 }
 
+/**
+ * Seeded files and folders keep stable Spanish names on disk (the seed sync
+ * matches them by name), but are shown in the interface language while the
+ * visitor has not changed them. Portfolio content is read only, so it always
+ * qualifies; the welcome note only until it is edited or renamed.
+ */
+const SEEDED_NAME_LABELS: Record<string, Parameters<Translate>[0]> = {
+  Proyectos: 'seed.projectsFolder',
+  'Sobre-mi.txt': 'seed.aboutFile',
+  'Contacto.txt': 'seed.contactFile',
+};
+
+function seededNameLabel(node: FsNode): Parameters<Translate>[0] | null {
+  if (node.deletedAt !== null) return null;
+  if (node.origin === 'portfolio') return SEEDED_NAME_LABELS[node.name] ?? null;
+  if (node.name === WELCOME_FILE_NAME && node.kind === 'file' && node.createdAt === node.updatedAt) {
+    return 'seed.welcomeFile';
+  }
+  return null;
+}
+
 export function nodeDisplayName(node: FsNode, t: Translate): string {
   if (node.id === ROOT_ID || node.parentId === null) return t('folder.drive');
   if (node.systemKey) return t(`folder.${node.systemKey}` as Parameters<Translate>[0]);
   const shortcutLabel = systemShortcutLabel(node);
   if (shortcutLabel) return t(shortcutLabel);
+  const seededLabel = seededNameLabel(node);
+  if (seededLabel) return t(seededLabel);
   if (node.shortcut && (extensionOf(node.name) === '.lnk' || extensionOf(node.name) === '.url')) {
     return baseNameOf(node.name);
   }

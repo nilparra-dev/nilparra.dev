@@ -1,6 +1,7 @@
 /**
  * Pixel art of the project: 32x32 application/file icons plus a few 16x16
- * chrome glyphs (taskbar, tray, start button).
+ * chrome glyphs (taskbar, tray, start button). The 16x16 versions of the
+ * application/file icons are drawn separately in icons16.mjs.
  *
  * Every icon is original. The shapes follow the visual language of mid-90s
  * desktop UI (1px outlines, light from the top-left, small palettes) but none
@@ -572,8 +573,8 @@ const docUnknown = (c) => {
   text(c, '?', 14, 19, 'K', { scale: 2 });
 };
 
-/* Toolbar glyphs. They are drawn at 32px and downscaled by the asset
- * generator, so the 16px controls use the same pixel source as the desktop. */
+/* Toolbar glyphs. The 16px toolbar uses their hand drawn versions in
+ * icons16.mjs. */
 const navBack = (c) => {
   folderOpen(c);
   hLine(c, 3, 27, 14, 'N');

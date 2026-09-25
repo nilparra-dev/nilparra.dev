@@ -269,8 +269,9 @@ export function textHeight(scale = 1) {
 }
 
 /**
- * Nearest-neighbour downscale used to derive 16x16 taskbar and menu icons from
- * the 32x32 art. Fully transparent blocks stay transparent, otherwise the most
+ * Nearest-neighbour downscale by a whole factor. The 16x16 icons do not use it
+ * (their 1px outlines would not survive); it only builds the 48x48 favicon
+ * entry from a 3x enlargement. Fully transparent blocks stay transparent, otherwise the most
  * frequent opaque colour of the block wins (ties resolve to the darkest, so
  * outlines survive).
  */

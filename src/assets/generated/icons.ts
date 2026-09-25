@@ -166,7 +166,7 @@ export const ICON_URLS = {
 
 export type IconId = keyof typeof ICON_URLS;
 
-/** Native 16x16 variants, generated from the same source art. */
+/** Hand drawn 16x16 variants (scripts/art/icons16.mjs). */
 export const ICON_URLS_16 = {
   'computer': icon_computer_16,
   'network': icon_network_16,

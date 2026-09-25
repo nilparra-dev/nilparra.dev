@@ -1013,18 +1013,97 @@
   border: 1px dashed var(--w95-gray);
 }
 
-.project-shots-list {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+/*
+ * Screenshots: the selected one at the full width of the pane inside a sunken
+ * frame, its caption, and a strip of same-sized thumbnails cropped from the
+ * top, where the title bar and the first lines of a terminal are.
+ */
+.project-gallery {
   margin: 6px 0 0;
-  padding: 0;
-  list-style: none;
 }
 
-.project-shots-list img {
-  max-width: 220px;
-  border: 1px solid var(--w95-black);
+.project-gallery-hero {
+  display: block;
+  width: 100%;
+  padding: 0;
+  background: var(--w95-black);
+  border: 1px solid;
+  border-color: var(--w95-gray) var(--w95-white) var(--w95-white) var(--w95-gray);
+  box-shadow: inset 1px 1px 0 var(--w95-black);
+  cursor: var(--cursor-hand);
+}
+
+.project-gallery-hero img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.project-gallery-hero:focus-visible {
+  outline: 1px dotted var(--w95-black);
+  outline-offset: 2px;
+}
+
+.project-gallery-caption {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.project-gallery-position {
+  flex: none;
+  color: var(--w95-text-secondary);
+}
+
+.project-gallery-strip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.project-gallery-thumb {
+  display: block;
+  padding: 2px;
+  background: var(--w95-face);
+  border: 1px solid;
+  border-color: var(--w95-white) var(--w95-gray) var(--w95-gray) var(--w95-white);
+  cursor: var(--cursor-arrow);
+}
+
+.project-gallery-thumb img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: top;
+  background: var(--w95-black);
+}
+
+.project-gallery-thumb[aria-pressed='true'] {
+  border-color: var(--w95-gray) var(--w95-white) var(--w95-white) var(--w95-gray);
+  box-shadow: inset 1px 1px 0 var(--w95-black);
+  background: var(--w95-hilite);
+}
+
+.project-gallery-thumb:focus-visible {
+  outline: 1px dotted var(--w95-black);
+  outline-offset: 1px;
+}
+
+@media (max-width: 720px) {
+  .project-gallery-strip {
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .project-gallery-thumb {
+    flex: 0 0 110px;
+  }
 }
 
 /* ------------------------------------------------------------------ *

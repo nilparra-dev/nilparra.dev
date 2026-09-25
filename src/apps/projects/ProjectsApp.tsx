@@ -11,6 +11,7 @@ import { Icon } from '../../ui/Icon';
 import { MenuBar, type MenuBarMenu } from '../../ui/menu/MenuBar';
 import { StatusBar } from '../../ui/StatusBar';
 import { Tabs } from '../../ui/Tabs';
+import { ScreenshotGallery } from './ScreenshotGallery';
 
 /** Small badge that marks content still waiting for the author. */
 function PlaceholderBadge({ text }: { text: string }) {
@@ -102,13 +103,7 @@ function ProjectDetail({ project }: { project: ProjectContent }) {
         {project.screenshots.length === 0 ? (
           <p className="project-shots-empty">{t('projects.noScreenshots')}</p>
         ) : (
-          <ul className="project-shots-list" role="list">
-            {project.screenshots.map((shot) => (
-              <li key={shot.src}>
-                <img src={assetUrl(shot.src)} alt={pick(shot.alt, locale)} loading="lazy" />
-              </li>
-            ))}
-          </ul>
+          <ScreenshotGallery screenshots={project.screenshots} />
         )}
       </section>
 

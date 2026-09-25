@@ -264,6 +264,8 @@ export const es = {
   'projects.demo': 'Demo',
   'projects.screenshots': 'Capturas',
   'projects.noScreenshots': 'Sin capturas todavía',
+  'projects.enlargeShot': 'Ampliar captura: {name}',
+  'projects.shotPosition': 'Captura {index} de {total}',
   'projects.moreDetails': 'Ver detalles técnicos',
   'projects.lessDetails': 'Ocultar detalles',
   'projects.openRepo': 'Abrir en GitHub',

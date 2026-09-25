@@ -242,6 +242,8 @@ export const en: Catalog = {
   'projects.demo': 'Demo',
   'projects.screenshots': 'Screenshots',
   'projects.noScreenshots': 'No screenshots yet',
+  'projects.enlargeShot': 'Enlarge screenshot: {name}',
+  'projects.shotPosition': 'Screenshot {index} of {total}',
   'projects.moreDetails': 'View technical details',
   'projects.lessDetails': 'Hide details',
   'projects.openRepo': 'Open on GitHub',

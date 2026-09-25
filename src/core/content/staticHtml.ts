@@ -115,7 +115,7 @@ export function staticProfileHtml(
   }
 
   if (profile.cvUrl) {
-    lines.push(`<p><a href="${text(profile.cvUrl)}">${text(catalog['about.downloadCv'])}</a></p>`);
+    lines.push(`<p><a href="${text(pick(profile.cvUrl, locale))}">${text(catalog['about.downloadCv'])}</a></p>`);
   }
 
   lines.push(`<h2>${text(catalog['mail.heading'])}</h2>`);

@@ -27,6 +27,7 @@ export function AboutApp({ windowId }: AppRenderProps) {
   const tagline = pick(PROFILE.tagline, locale);
   const bio = pick(PROFILE.bio, locale);
   const extras = pick(PROFILE.extras, locale);
+  const cvUrl = PROFILE.cvUrl ? pick(PROFILE.cvUrl, locale) : null;
   const schools = new Map<string, Pick<StudyEntry, 'centre' | 'centreLogo'> & { studies: StudyEntry[] }>();
   for (const study of PROFILE.studies) {
     const school = schools.get(study.centreId);
@@ -229,12 +230,10 @@ export function AboutApp({ windowId }: AppRenderProps) {
           </GroupBox>
         )}
 
-        {PROFILE.cvUrl && (
+        {cvUrl && (
           <GroupBox title={t('about.cv')}>
             <div className="u-row">
-              <Button primary onClick={() => {
-                if (PROFILE.cvUrl) void openExternal(PROFILE.cvUrl);
-              }}>
+              <Button primary onClick={() => void openExternal(cvUrl)}>
                 {t('about.downloadCv')}
               </Button>
               {PROFILE.cvUpdatedAt && (

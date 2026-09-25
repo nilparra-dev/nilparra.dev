@@ -64,8 +64,8 @@ export interface ProfileContent {
   /** Short name used by the title bars of single-instance windows. */
   shortName: string;
   email: string;
-  /** Where the CV PDF lives once it exists, relative to the site root. */
-  cvUrl: string | null;
+  /** Where the CV PDF of each language lives, relative to the site root. */
+  cvUrl: Localized<string> | null;
   cvUpdatedAt: string | null;
   links: ProfileLink[];
   tagline: Localized<string>;
@@ -85,10 +85,12 @@ export const PROFILE: ProfileContent = {
   location: 'Blanes, Girona',
   shortName: 'Nil Parra',
   email: 'nil@nilparra.dev',
-  // Set these two when the PDF is published inside `public/`:
-  //   cvUrl: 'cv/nil-parra-cv.pdf', cvUpdatedAt: '2026-09-17'
-  cvUrl: null,
-  cvUpdatedAt: null,
+  cvUrl: {
+    es: 'cv/nil-parra-cv-es.pdf',
+    ca: 'cv/nil-parra-cv-ca.pdf',
+    en: 'cv/nil-parra-cv-en.pdf',
+  },
+  cvUpdatedAt: '2026-09-26',
 
   links: [
     {

@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="light" />
     <!-- `max-image-preview:large` is what allows a full-width thumbnail in Google. -->
     <meta name="robots" content="index, follow, max-image-preview:large" />
-    <title>Nil Parra Luna · Portfolio</title>
+    <title>Nil Parra Luna · Sistemas y redes (ASIX) · Portfolio</title>
     <meta
       name="description"
       content="Nil Parra Luna, estudiante de ASIX en Blanes: proyectos de sistemas, datos y machine learning en un escritorio interactivo que recrea Windows 95."
@@ -47,7 +47,7 @@
     <meta property="og:locale:alternate" content="ca_ES" />
     <meta property="og:locale:alternate" content="en_US" />
     <meta property="og:url" content="%SITE_URL%/" />
-    <meta property="og:title" content="Nil Parra Luna · Portfolio" />
+    <meta property="og:title" content="Nil Parra Luna · Sistemas y redes (ASIX) · Portfolio" />
     <meta
       property="og:description"
       content="Nil Parra Luna, estudiante de ASIX en Blanes: proyectos de sistemas, datos y machine learning en un escritorio interactivo que recrea Windows 95."
@@ -76,12 +76,12 @@
     %STRUCTURED_DATA%
   </head>
   <body>
-    <div id="root"></div>
-    <noscript>
-      <p style="font-family: Tahoma, sans-serif; padding: 16px">
-        Este escritorio necesita JavaScript para funcionar.
-      </p>
-    </noscript>
+    <!--
+      Plain HTML copy of the portfolio for link previews, crawlers that do not
+      run scripts and visitors without JavaScript. The seo plugin writes it
+      from src/core/content/ and React replaces it when the desktop mounts.
+    -->
+    <div id="root">%STATIC_PROFILE%</div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

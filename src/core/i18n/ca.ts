@@ -127,6 +127,7 @@ export const ca: Catalog = {
   'boot.starting': 'S’està iniciant l’escriptori…',
   'boot.loadingFiles': 'S’estan llegint els fitxers del disc virtual…',
   'boot.restarting': 'L’escriptori s’està reiniciant…',
+  'boot.noScript': 'Aquesta és la versió en text. L’escriptori interactiu necessita JavaScript.',
   'shutdown.safeTitle': 'Ja pots apagar l’ordinador',
   'shutdown.safeNote':
     'Cap dada no s’ha enviat a cap servidor: els teus fitxers segueixen guardats en aquest navegador.',

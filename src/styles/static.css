@@ -1,0 +1,56 @@
+/* Plain HTML copy of the portfolio (src/core/content/staticHtml.ts). It is
+ * what shows while the scripts load and all that shows without JavaScript,
+ * so it reads like the text screen of a machine that has not booted Windows
+ * yet. The body does not scroll (reset.css), so the copy scrolls itself. */
+.static-profile {
+  position: fixed;
+  inset: 0;
+  overflow: auto;
+  padding: 32px max(16px, calc((100% - 44rem) / 2));
+  background: #000000;
+  color: #c0c0c0;
+  font: 16px/1.55 'Courier New', Courier, monospace;
+  user-select: text;
+}
+
+.static-profile h1,
+.static-profile h2,
+.static-profile h3 {
+  color: #ffffff;
+  font-size: 1em;
+  font-weight: 700;
+}
+
+.static-profile h1 {
+  font-size: 1.5em;
+}
+
+.static-profile h2 {
+  margin-top: 2em;
+  text-transform: uppercase;
+}
+
+.static-profile h3 {
+  margin-top: 1.25em;
+}
+
+.static-profile p,
+.static-profile ul {
+  margin: 0.5em 0;
+}
+
+.static-profile ul {
+  padding-left: 2ch;
+}
+
+.static-profile a {
+  color: #55ffff;
+}
+
+.static-profile-tagline {
+  color: #ffffff;
+}
+
+.static-profile-note {
+  color: #ffb000;
+}

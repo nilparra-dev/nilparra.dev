@@ -196,7 +196,7 @@ describe('applications', () => {
     expect(windows).toContainEqual({ appId: 'viewer', params: { src: 'portfolio/wooster-chat@2x.png' } });
   });
 
-  it('renders the about window with education grouped by school and hides the unpublished CV', async () => {
+  it('renders the about window with education grouped by school and the CV in its language', async () => {
     renderApp('about');
     expect(await screen.findByRole('heading', { name: 'Nil Parra Luna' })).toBeTruthy();
     expect(screen.getByText('Estudiante de Administración de Sistemas Informáticos en Red (ASIX)')).toBeTruthy();
@@ -206,7 +206,16 @@ describe('applications', () => {
     expect(screen.getByText(/iDiomund, SL/)).toBeTruthy();
     expect(screen.getByText('Conocimientos')).toBeTruthy();
     expect(screen.getByText('Odoo')).toBeTruthy();
-    expect(screen.queryByText('Currículum')).toBeNull();
+    expect(screen.getByText('Currículum')).toBeTruthy();
+
+    const open = vi.spyOn(window, 'open').mockReturnValue(null);
+    fireEvent.click(screen.getByRole('button', { name: 'Descargar el CV en PDF' }));
+    await waitFor(() => expect(open).toHaveBeenCalledWith(
+      new URL('cv/nil-parra-cv-es.pdf', window.location.href).href,
+      '_blank',
+      'noopener,noreferrer',
+    ));
+    open.mockRestore();
   });
 
   it('renders the browser, the mail window and the control panel', async () => {

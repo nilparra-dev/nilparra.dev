@@ -17,6 +17,13 @@ describe('static profile html', () => {
     expect(staticProfileHtml(PROFILE, PROJECTS, 'es')).toContain('Sobre mí');
   });
 
+  it('links the CV written in the language of the page', () => {
+    for (const locale of ['es', 'ca', 'en'] as const) {
+      const html = staticProfileHtml(PROFILE, PROJECTS, locale);
+      expect(html).toContain(`href="cv/nil-parra-cv-${locale}.pdf"`);
+    }
+  });
+
   it('escapes the content instead of trusting it as markup', () => {
     const profile: ProfileContent = { ...PROFILE, displayName: '<script>alert("x")</script>' };
     const html = staticProfileHtml(profile, [], 'en');

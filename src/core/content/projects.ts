@@ -210,6 +210,7 @@ export const PROJECTS: ProjectContent[] = [
         'El modelo de goles es Dixon-Coles, un modelo estadístico clásico basado en la distribución de Poisson que corrige los resultados cortos y da más peso a los partidos recientes. Los córners, las tarjetas y las estadísticas de jugadores usan gradient boosting con LightGBM, con los hiperparámetros ajustados con Optuna, y cada modelo pasa calibración y backtest antes de ponerse en producción.',
         'La parte de sistemas es la más cercana a la administración de redes y sistemas: el servidor Linux ejecuta los servicios en contenedores Docker con PostgreSQL como base de datos, Airflow y un servicio systemd lanzan el ciclo de cada jornada sin intervención manual, Grafana sirve para la monitorización y las pruebas con pytest se ejecutan en GitHub Actions.',
         'Un panel interno en React y FastAPI muestra la ficha del partido, la previsión y el rendimiento del modelo. Cada previsión queda guardada en un registro inmutable, así el rendimiento siempre se mide con previsiones hechas antes del partido.',
+        'El proyecto sigue en desarrollo activo: todavía se están comparando arquitecturas de modelos, conjuntos de variables y formas de validarlos, mientras el sistema que los rodea ya funciona cada jornada.',
         'El código y los datos son privados.',
       ],
       ca: [
@@ -220,6 +221,7 @@ export const PROJECTS: ProjectContent[] = [
         'El model de gols és Dixon-Coles, un model estadístic clàssic basat en la distribució de Poisson que corregeix els resultats curts i dona més pes als partits recents. Els còrners, les targetes i les estadístiques de jugadors fan servir gradient boosting amb LightGBM, amb els hiperparàmetres ajustats amb Optuna, i cada model passa calibratge i backtest abans de posar-se en producció.',
         'La part de sistemes és la més propera a l’administració de xarxes i sistemes: el servidor Linux executa els serveis en contenidors Docker amb PostgreSQL com a base de dades, Airflow i un servei systemd llancen el cicle de cada jornada sense intervenció manual, Grafana serveix per a la monitorització i les proves amb pytest s’executen a GitHub Actions.',
         'Un panell intern en React i FastAPI mostra la fitxa del partit, la previsió i el rendiment del model. Cada previsió queda desada en un registre immutable, així el rendiment sempre es mesura amb previsions fetes abans del partit.',
+        'El projecte continua en desenvolupament actiu: encara s’estan comparant arquitectures de models, conjunts de variables i maneres de validar-los, mentre el sistema que els envolta ja funciona cada jornada.',
         'El codi i les dades són privats.',
       ],
       en: [
@@ -230,6 +232,7 @@ export const PROJECTS: ProjectContent[] = [
         'The goals model is Dixon-Coles, a classic statistical model based on the Poisson distribution that corrects low scores and gives more weight to recent matches. Corners, cards and player statistics use gradient boosting with LightGBM, with hyperparameters tuned by Optuna, and every model goes through calibration and backtesting before it reaches production.',
         'The systems side is the closest to network and systems administration: the Linux server runs the services in Docker containers with PostgreSQL as the database, Airflow and a systemd service launch the matchday cycle without manual steps, Grafana handles monitoring and the pytest suite runs on GitHub Actions.',
         'An internal React and FastAPI panel shows the match file, the forecast and the model’s performance. Every forecast lands in an immutable ledger, so performance is always measured on forecasts made before kick-off.',
+        'The project is under active development: model architectures, feature sets and validation schemes are still being compared, while the system around them already runs every matchday.',
         'The code and the data are private.',
       ],
     },
@@ -257,7 +260,26 @@ export const PROJECTS: ProjectContent[] = [
       },
     },
     demoUrl: null,
-    screenshots: [],
+    screenshots: [
+      {
+        src: 'portfolio/antevue-kickoff.png',
+        full: 'portfolio/antevue-kickoff@2x.png',
+        alt: {
+          es: 'Ciclo de una previsión partido por el pitido inicial: lo que se calcula antes del partido y lo que se hace después del final',
+          ca: 'Cicle d’una previsió partit pel xiulet inicial: el que es calcula abans del partit i el que es fa després del final',
+          en: 'Forecast cycle split at kick-off: what is computed before the match and what happens after full time',
+        },
+      },
+      {
+        src: 'portfolio/antevue-architecture.png',
+        full: 'portfolio/antevue-architecture@2x.png',
+        alt: {
+          es: 'Arquitectura de Antevue: de los datos del partido a la previsión, con la puerta de entrenamiento y la infraestructura que la mantiene',
+          ca: 'Arquitectura d’Antevue: de les dades del partit a la previsió, amb la porta d’entrenament i la infraestructura que la manté',
+          en: 'Antevue architecture: from match data to the forecast, with the training gate and the infrastructure that keeps it running',
+        },
+      },
+    ],
     year: '2026',
     status: 'published',
   },

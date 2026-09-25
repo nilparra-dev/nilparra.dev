@@ -239,7 +239,10 @@ export function AboutApp({ windowId }: AppRenderProps) {
           { id: 'links', width: 260, content: PROFILE.email },
           {
             id: 'projects',
-            content: PROFILE.links.map((link) => link.label).join(' · '),
+            content: PROFILE.links
+              .filter((link) => !link.url.startsWith('mailto:'))
+              .map((link) => link.label)
+              .join(' · '),
           },
         ]}
       />

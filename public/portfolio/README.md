@@ -10,6 +10,9 @@ only to name the tools each project is built with.
   `docs/screenshots/render-screenshots.mjs` in the Wooster repository. Copy
   them again after re-rendering.
 - `antevue.svg`: Antevue app icon, taken from the project's brand kit.
+- `antevue-*.png`: Antevue diagrams, rendered by
+  `docs/screenshots/render-screenshots.mjs` in the Antevue repository. Copy
+  them again after re-rendering.
 - `tech/*.svg`: official marks. Most come from
   [Simple Icons](https://simpleicons.org) (CC0 1.0). `playwright.svg` comes from
   the [Playwright repository](https://github.com/microsoft/playwright) and

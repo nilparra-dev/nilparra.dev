@@ -1,87 +1,102 @@
 /**
  * Monochrome cursors in the style of the 9x pointer set, drawn from scratch.
  *
- * Real .cur files are 32x32 bitmaps where the visible shape occupies only part
- * of the canvas; the CSS `cursor` rule then places the hotspot on top of that
- * shape. We follow the same model so the sizes match a 96 dpi screen.
+ * Every pointer is white with a 1px black outline, or black with a 1px white
+ * halo for the thin ones (I-beam, crosshair, the "?" of help), so each one
+ * stays visible on light and dark surfaces alike. The generator crops each
+ * canvas to the drawn shape: Chrome drops custom cursors larger than 32x32
+ * CSS pixels near the edge of the viewport, and the interface zoom enlarges
+ * them by up to 1.25.
  */
-import { createCanvas, ellipseRing, setPixel, stamp, text } from '../lib/raster.mjs';
-import { fillBox, fillPolygon, outlineShape, translate } from '../lib/vector.mjs';
+import { createCanvas, setPixel, stamp } from '../lib/raster.mjs';
+import { fillPolygon, outlineShape, translate } from '../lib/vector.mjs';
+
+/** Paints `value` on every empty pixel that touches the shape (4-neighbours). */
+function halo(canvas, value = 'W') {
+  const snapshot = canvas.pixels.slice();
+  const filled = (x, y) =>
+    x >= 0 && y >= 0 && x < canvas.width && y < canvas.height && snapshot[y * canvas.width + x];
+  for (let y = 0; y < canvas.height; y += 1) {
+    for (let x = 0; x < canvas.width; x += 1) {
+      if (filled(x, y)) continue;
+      if (filled(x - 1, y) || filled(x + 1, y) || filled(x, y - 1) || filled(x, y + 1)) {
+        setPixel(canvas, x, y, value);
+      }
+    }
+  }
+}
+
+/** Fills every pixel for which `inside(x, y)` holds. */
+function fillWhere(canvas, inside, value = 'W') {
+  for (let y = 0; y < canvas.height; y += 1) {
+    for (let x = 0; x < canvas.width; x += 1) {
+      if (inside(x, y)) setPixel(canvas, x, y, value);
+    }
+  }
+}
 
 /** Classic 11x19 pointer; see scripts/art/THIRD_PARTY.md for the bitmap reference. */
-const drawArrow = (canvas) => {
-  stamp(canvas, [
-    'K',
-    'KK',
-    'KWK',
-    'KWWK',
-    'KWWWK',
-    'KWWWWK',
-    'KWWWWWK',
-    'KWWWWWWK',
-    'KWWWWWWWK',
-    'KWWWWWWWWK',
-    'KWWWWWKKKKK',
-    'KWWKWWK',
-    'KWK.KWWK',
-    'KK..KWWK',
-    'K....KWWK',
-    '.....KWWK',
-    '......KWWK',
-    '......KWWK',
-    '.......KK',
-  ], 1, 1);
+const ARROW = [
+  'K',
+  'KK',
+  'KWK',
+  'KWWK',
+  'KWWWK',
+  'KWWWWK',
+  'KWWWWWK',
+  'KWWWWWWK',
+  'KWWWWWWWK',
+  'KWWWWWWWWK',
+  'KWWWWWKKKKK',
+  'KWWKWWK',
+  'KWK.KWWK',
+  'KK..KWWK',
+  'K....KWWK',
+  '.....KWWK',
+  '......KWWK',
+  '......KWWK',
+  '.......KK',
+];
+
+const drawArrow = (canvas) => stamp(canvas, ARROW, 1, 1);
+
+/** I-beam: serifs joined by a 1px stem, haloed so it reads on dark text boxes. */
+const drawIBeam = (canvas) => {
+  const stem = Array.from({ length: 13 }, () => '...K...');
+  stamp(canvas, ['KKK.KKK', ...stem, 'KKK.KKK'], 13, 9);
+  halo(canvas);
 };
 
-/** I-beam: top and bottom serifs joined by a 1px stem. */
-const drawIBeam = (canvas) => {
+/** Hourglass with capped ends, sand draining from the top bulb into the bottom one. */
+const drawHourglass = (canvas) => {
   stamp(
     canvas,
     [
-      'KKK.KKK',
-      '...K...',
-      '...K...',
-      '...K...',
-      '...K...',
-      '...K...',
-      '...K...',
-      '...K...',
-      '...K...',
-      '...K...',
-      '...K...',
-      '...K...',
-      '...K...',
-      '...K...',
-      'KKK.KKK',
+      'KKKKKKKKKKKKK',
+      'KWWWWWWWWWWWK',
+      'KKKKKKKKKKKKK',
+      '.KWWWWWWWWWK.',
+      '.KWKKKKKKKWK.',
+      '.KWWKKKKKWWK.',
+      '..KWWKKKWWK..',
+      '...KWWKWWK...',
+      '....KWKWK....',
+      '.....KWK.....',
+      '.....KWK.....',
+      '....KWWWK....',
+      '...KWWKWWK...',
+      '..KWWWKWWWK..',
+      '.KWWWWKWWWWK.',
+      '.KWWWKKKWWWK.',
+      '.KWWKKKKKWWK.',
+      '.KWKKKKKKKWK.',
+      'KKKKKKKKKKKKK',
+      'KWWWWWWWWWWWK',
+      'KKKKKKKKKKKKK',
     ],
-    13,
-    9,
+    10,
+    6,
   );
-};
-
-/** Hourglass: two facing triangles with the 90s "sand" look. */
-const drawHourglass = (canvas) => {
-  fillPolygon(
-    canvas,
-    [
-      [10, 8],
-      [22, 8],
-      [17, 15],
-      [15, 15],
-    ],
-    'W',
-  );
-  fillPolygon(
-    canvas,
-    [
-      [15, 17],
-      [17, 17],
-      [22, 24],
-      [10, 24],
-    ],
-    'W',
-  );
-  outlineShape(canvas, 'K');
 };
 
 /** Two-headed arrow, `vertical` selects the axis. */
@@ -99,16 +114,23 @@ const drawDoubleArrow = (canvas, vertical) => {
   outlineShape(canvas, 'K');
 };
 
-/** Diagonal two-headed arrow (NW-SE), optionally mirrored to NE-SW. */
+/**
+ * Diagonal two-headed arrow (NW-SE), optionally mirrored to NE-SW. Same build
+ * as the straight ones: a 3px shaft and two right-angled heads, white inside a
+ * black outline.
+ */
 const drawDiagonalArrow = (canvas, flip) => {
-  fillPolygon(
-    canvas,
-    [
-      [6, 6], [13, 6], [10, 9], [23, 22], [26, 19],
-      [26, 26], [19, 26], [22, 23], [9, 10], [6, 13],
-    ],
-    'W',
-  );
+  const size = 17;
+  const origin = 8;
+  const last = size - 1;
+  fillWhere(canvas, (x, y) => {
+    const u = x - origin;
+    const v = y - origin;
+    if (u < 0 || v < 0 || u > last || v > last) return false;
+    const shaft = Math.abs(u - v) <= 1;
+    const head = u + v <= 7 || last - u + (last - v) <= 7;
+    return shaft || head;
+  });
   outlineShape(canvas, 'K');
   if (flip) {
     const snapshot = canvas.pixels.slice();
@@ -126,64 +148,83 @@ const drawMove = (canvas) => {
   outlineShape(canvas, 'K');
 };
 
+/** Thin precision cross with a white halo, open in the middle like the original. */
 const drawCross = (canvas) => {
-  const arm = 9;
-  const thick = 1;
-  fillPolygon(
-    canvas,
-    [
-      [16 - thick, 16 - arm],
-      [16 + thick, 16 - arm],
-      [16 + thick, 16 - thick],
-      [16 + arm, 16 - thick],
-      [16 + arm, 16 + thick],
-      [16 + thick, 16 + thick],
-      [16 + thick, 16 + arm],
-      [16 - thick, 16 + arm],
-      [16 - thick, 16 + thick],
-      [16 - arm, 16 + thick],
-      [16 - arm, 16 - thick],
-      [16 - thick, 16 - thick],
-    ],
-    'W',
-  );
-  outlineShape(canvas, 'K');
+  const arm = 8;
+  for (let i = 2; i <= arm; i += 1) {
+    setPixel(canvas, 16, 16 - i, 'K');
+    setPixel(canvas, 16, 16 + i, 'K');
+    setPixel(canvas, 16 - i, 16, 'K');
+    setPixel(canvas, 16 + i, 16, 'K');
+  }
+  setPixel(canvas, 16, 16, 'K');
+  halo(canvas);
 };
 
-/** Circle with a slash: the "not available" pointer. */
+/** Circle with a slash: the "not available" pointer, a thick white ring outlined in black. */
 const drawNo = (canvas) => {
-  ellipseRing(canvas, 16, 16, 8, 8, 'W');
-  fillPolygon(
+  const c = 16;
+  fillWhere(canvas, (x, y) => {
+    const d = Math.hypot(x - c, y - c);
+    const ring = d <= 8.5 && d >= 5.5;
+    const slash = d <= 7 && Math.abs(x - c - (y - c)) <= 1;
+    return ring || slash;
+  });
+  outlineShape(canvas, 'K');
+};
+
+/** Pointing hand used for links: raised index finger, three folded fingers, thumb. */
+const drawHand = (canvas) => {
+  stamp(
     canvas,
     [
-      [10, 13],
-      [13, 10],
-      [22, 19],
-      [19, 22],
+      '.....KK..........',
+      '....KWWK.........',
+      '....KWWK.........',
+      '....KWWK.........',
+      '....KWWK.........',
+      '....KWWKKK.......',
+      '....KWWKWWKKK....',
+      '....KWWKWWKWWKK..',
+      '.KK.KWWKWWKWWKWK.',
+      'KWWKKWWWWWWWWKWWK',
+      'KWWWKWWWWWWWWWWWK',
+      '.KWWKWWWWWWWWWWWK',
+      '..KWKWWWWWWWWWWWK',
+      '..KWWWWWWWWWWWWWK',
+      '...KWWWWWWWWWWWWK',
+      '...KWWWWWWWWWWWK.',
+      '....KWWWWWWWWWWK.',
+      '....KWWWWWWWWWWK.',
+      '.....KWWWWWWWWK..',
+      '.....KWWWWWWWWK..',
+      '.....KKKKKKKKKK..',
     ],
-    'W',
+    1,
+    1,
   );
-  outlineShape(canvas, 'K');
 };
 
-/** Pointing hand used for links. */
-const drawHand = (canvas) => {
-  fillBox(canvas, 5, 0, 3, 9, 'W');
-  fillBox(canvas, 4, 7, 10, 9, 'W');
-  fillBox(canvas, 1, 9, 4, 4, 'W');
-  fillBox(canvas, 9, 8, 5, 4, 'W');
-  fillBox(canvas, 5, 15, 8, 3, 'W');
-  outlineShape(canvas, 'K');
-};
-
-/** Arrow plus a "?" plate: the "what is this?" pointer of property sheets. */
+/** Arrow with a black "?" beside it: the "what is this?" pointer of property sheets. */
 const drawHelp = (canvas) => {
+  const mark = createCanvas(canvas.width, canvas.height);
+  stamp(
+    mark,
+    ['.KKKK.', 'KK..KK', '....KK', '...KK.', '..KK..', '..KK..', '......', '..KK..', '..KK..'],
+    14,
+    2,
+  );
+  halo(mark);
   drawArrow(canvas);
-  fillBox(canvas, 12, 13, 12, 12, 'W');
-  outlineShape(canvas, 'K');
-  text(canvas, '?', 16, 15, 'K', { scale: 2 });
+  mark.pixels.forEach((value, index) => {
+    if (value) canvas.pixels[index] = value;
+  });
 };
 
+/**
+ * Hotspots are given on the 32x32 drawing canvas; the generator shifts them
+ * when it crops the image.
+ */
 export const CURSORS = {
   arrow: { hotspot: [1, 1], draw: drawArrow },
   text: { hotspot: [16, 16], draw: drawIBeam },
@@ -193,10 +234,8 @@ export const CURSORS = {
   sizens: { hotspot: [16, 16], draw: (c) => drawDoubleArrow(c, true) },
   sizewe: { hotspot: [16, 16], draw: (c) => drawDoubleArrow(c, false) },
   sizenwse: { hotspot: [16, 16], draw: (c) => drawDiagonalArrow(c, false) },
-  sizenesw: { hotspot: [16, 16], draw: (c) => drawDiagonalArrow(c, true) },
+  sizenesw: { hotspot: [15, 16], draw: (c) => drawDiagonalArrow(c, true) },
   no: { hotspot: [16, 16], draw: drawNo },
   hand: { hotspot: [6, 1], draw: drawHand },
   help: { hotspot: [1, 1], draw: drawHelp },
 };
-
-export { createCanvas, setPixel };

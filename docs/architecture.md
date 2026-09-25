@@ -81,6 +81,12 @@ primitives; `scripts/art/` draws the icons, the cursors and the wallpaper patter
 assets` writes to `src/assets/generated/`, `src/styles/cursors.generated.css` and the review
 sheets under `qa/` (ignored by git). `predev` and `prebuild` run it automatically.
 
+Icons are drawn twice: 32x32 in `icons.mjs` and 16x16 by hand in `icons16.mjs`, because halving
+the large art loses its outlines. Cursors are cropped to their shape and written at 1x, 2x and 3x.
+The stylesheet carries the 1x values; `src/ui/cursors.ts` swaps in an `image-set()` whose size
+follows the interface zoom (CSS `zoom` does not reach cursors) and whose pixels land on whole
+device pixels.
+
 ## SEO and metadata
 
 There is no router, so the site has exactly one address and the landing document has to carry all

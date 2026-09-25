@@ -1,3 +1,5 @@
+import { applyCursorScale } from './cursors';
+
 /** Size the interface was drawn for: 125% of the 96 dpi original. */
 const DESIGN_SCALE = 1.25;
 /** Below this zoom the bitmap font gets too small to read comfortably. */
@@ -19,8 +21,9 @@ export function pixelPerfectScale(devicePixelRatio: number): number {
 }
 
 /**
- * Applies the pixel perfect zoom now and whenever the viewport or the device
- * pixel ratio changes (browser zoom, moving the window to another monitor).
+ * Applies the pixel perfect zoom, and the cursor size that matches it, now
+ * and whenever the viewport or the device pixel ratio changes (browser zoom,
+ * moving the window to another monitor).
  * Call it before the first render: its resize listener must run before the
  * ones that measure the desktop in interface pixels.
  */
@@ -28,6 +31,7 @@ export function installPixelPerfectScale(): void {
   const apply = () => {
     const scale = pixelPerfectScale(window.devicePixelRatio);
     document.documentElement.style.setProperty('--w95-ui-scale', String(scale));
+    applyCursorScale(scale, window.devicePixelRatio);
   };
   apply();
   window.addEventListener('resize', apply);

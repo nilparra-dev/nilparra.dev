@@ -139,6 +139,10 @@ export default defineConfig({
     assetsDir: 'assets',
     sourcemap: false,
     reportCompressedSize: false,
+    // The bitmap fonts are under the 4 KiB inline limit, but the CSP of
+    // index.html only allows fonts from 'self': inlined as data: URIs they
+    // are blocked and the whole desktop falls back to a system font.
+    assetsInlineLimit: (file) => (/\.(woff2?|ttf|otf)$/i.test(file) ? false : undefined),
   },
   server: {
     port: 5173,

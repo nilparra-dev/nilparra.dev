@@ -39,7 +39,11 @@ function ProjectDetail({ project }: { project: ProjectContent }) {
   const summary = pick(project.summary, locale);
   const highlights = pick(project.highlights, locale);
   const description = pick(project.description, locale);
-  const hasActions = project.repo.kind !== 'none' || project.status === 'placeholder' || Boolean(project.demoUrl);
+  const hasActions =
+    project.repo.kind !== 'none' ||
+    project.status === 'placeholder' ||
+    project.links.length > 0 ||
+    Boolean(project.demoUrl);
 
   return (
     <article className="project-detail" aria-label={title}>
@@ -85,6 +89,11 @@ function ProjectDetail({ project }: { project: ProjectContent }) {
           {project.repo.kind === 'none' && (
             <PlaceholderBadge text={PLACEHOLDER} />
           )}
+          {project.links.map((link) => (
+            <ExternalLink key={link.id} className="btn" href={link.url}>
+              {t('projects.openOn', { site: link.label })}
+            </ExternalLink>
+          ))}
           {project.demoUrl && (
             <ExternalLink className="btn" href={project.demoUrl}>
               {t('projects.openDemo')}

@@ -3,6 +3,7 @@ import type { AppRenderProps } from '../../core/apps/launcher';
 import { useAppLauncher } from '../../core/apps/launcher';
 import { PLACEHOLDER, PROFILE, TECHNOLOGIES, isPlaceholder, pick } from '../../core/content';
 import type { StudyEntry } from '../../core/content/profile';
+import { useOpenExternal } from '../../core/dialogs/useOpenExternal';
 import { useVfs } from '../../core/fs/VfsProvider';
 import { useI18n } from '../../core/i18n/I18nProvider';
 import { useWindowManager } from '../../core/window/WindowManagerProvider';
@@ -18,6 +19,7 @@ function PlaceholderBadge({ text }: { text: string }) {
 /** Published profile content, with education grouped by school. */
 export function AboutApp({ windowId }: AppRenderProps) {
   const { t, locale, formatDate } = useI18n();
+  const openExternal = useOpenExternal();
   const vfs = useVfs();
   const launch = useAppLauncher();
   const wm = useWindowManager();
@@ -219,7 +221,7 @@ export function AboutApp({ windowId }: AppRenderProps) {
           <GroupBox title={t('about.cv')}>
             <div className="u-row">
               <Button primary onClick={() => {
-                if (PROFILE.cvUrl) window.open(PROFILE.cvUrl, '_blank', 'noopener,noreferrer');
+                if (PROFILE.cvUrl) void openExternal(PROFILE.cvUrl);
               }}>
                 {t('about.downloadCv')}
               </Button>

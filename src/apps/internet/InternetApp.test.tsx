@@ -1,8 +1,11 @@
 // @vitest-environment jsdom
+import 'fake-indexeddb/auto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { APP_COMPONENTS } from '../../core/apps/components';
+import { DialogProvider } from '../../core/dialogs/DialogProvider';
+import { VfsProvider } from '../../core/fs/VfsProvider';
 import { I18nProvider } from '../../core/i18n/I18nProvider';
 import { PreferencesProvider } from '../../core/prefs/PreferencesProvider';
 import { WindowManagerProvider } from '../../core/window/WindowManagerProvider';
@@ -13,7 +16,9 @@ function Providers({ children }: { children: ReactNode }) {
     <PreferencesProvider>
       <I18nProvider locale="es">
         <WindowManagerProvider appIds={Object.keys(APP_COMPONENTS)} iconIds={[]}>
-          {children}
+          <VfsProvider>
+            <DialogProvider>{children}</DialogProvider>
+          </VfsProvider>
         </WindowManagerProvider>
       </I18nProvider>
     </PreferencesProvider>
@@ -158,7 +163,7 @@ describe('InternetApp', () => {
     expect(address.value).toBe('https://es.wikipedia.org/wiki/Windows_95');
   });
 
-  it('offers a real browser tab when the site refuses to be framed', () => {
+  it('offers a real browser tab when the site refuses to be framed', async () => {
     const openMock = vi.fn();
     vi.stubGlobal('open', openMock);
     renderApp({ url: 'https://github.com/nilparra-dev' });
@@ -172,11 +177,32 @@ describe('InternetApp', () => {
     const buttons = screen.getAllByRole('button', { name: 'Abrir en una pestaña nueva' });
     expect(buttons.length).toBe(2);
     fireEvent.click(buttons[1]);
-    expect(openMock).toHaveBeenCalledWith(
+    // Leaving the desktop is confirmed first, naming the site.
+    expect(openMock).not.toHaveBeenCalled();
+    expect(await screen.findByText(/Vas a salir de esta página para visitar github\.com/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Aceptar' }));
+    await waitFor(() => expect(openMock).toHaveBeenCalledWith(
       'https://github.com/nilparra-dev',
       '_blank',
       'noopener,noreferrer',
-    );
+    ));
+  });
+
+  it('stays on the page when leaving is cancelled', async () => {
+    const openMock = vi.fn();
+    vi.stubGlobal('open', openMock);
+    renderApp({ url: 'https://github.com/nilparra-dev' });
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Abrir en una pestaña nueva' })[0]);
+    fireEvent.click(await screen.findByRole('button', { name: 'Cancelar' }));
+    await waitFor(() => expect(screen.queryByText(/Vas a salir de esta página/)).toBeNull());
+
+    // Escape backs out too: it must never count as Accept.
+    fireEvent.click(screen.getAllByRole('button', { name: 'Abrir en una pestaña nueva' })[0]);
+    const notice = await screen.findByText(/Vas a salir de esta página/);
+    fireEvent.keyDown(notice, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByText(/Vas a salir de esta página/)).toBeNull());
+    expect(openMock).not.toHaveBeenCalled();
   });
 
   it('opens an address typed in the bar as a site instead of searching it', () => {

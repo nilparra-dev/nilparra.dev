@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type FormEvent } from 'react';
 import type { AppRenderProps } from '../../core/apps/launcher';
 import { useAppLauncher } from '../../core/apps/launcher';
+import { useOpenExternal } from '../../core/dialogs/useOpenExternal';
 import { PROFILE } from '../../core/content';
 import { useI18n } from '../../core/i18n/I18nProvider';
 import {
@@ -11,6 +12,7 @@ import {
   type WebSearchResult,
 } from '../../core/websearch/searchWeb';
 import { Button } from '../../ui/Button';
+import { ExternalLink } from '../../ui/ExternalLink';
 import { Icon } from '../../ui/Icon';
 import { StatusBar } from '../../ui/StatusBar';
 import { canEmbed, hostOf, parseWebUrl } from '../../core/websearch/embed';
@@ -112,9 +114,7 @@ export function InternetApp({ windowId, params }: AppRenderProps) {
     [push],
   );
 
-  const openExternal = useCallback((url: string) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
-  }, []);
+  const openExternal = useOpenExternal();
 
   const startSearch = useCallback((id: number, term: string) => {
     const controller = new AbortController();
@@ -256,9 +256,9 @@ export function InternetApp({ windowId, params }: AppRenderProps) {
                   {link.label}
                 </button>
               ) : (
-                <a className="link" href={link.url} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="link" href={link.url}>
                   {link.label}
-                </a>
+                </ExternalLink>
               )}
               <span className="u-muted">{link.url}</span>
             </li>
@@ -336,14 +336,9 @@ export function InternetApp({ windowId, params }: AppRenderProps) {
             <Button size="small" onClick={() => retry(item)}>
               {t('internet.search.retry')}
             </Button>
-            <a
-              className="link"
-              href={googleSearchUrl(item.query)}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <ExternalLink className="link" href={googleSearchUrl(item.query)}>
               {t('internet.search.openGoogle')}
-            </a>
+            </ExternalLink>
           </p>
         </div>
       )}
@@ -357,14 +352,9 @@ export function InternetApp({ windowId, params }: AppRenderProps) {
           <ol className="internet-results" role="list">
             {item.results.map((result) => (
               <li key={result.id}>
-                <a
-                  className="link internet-result-title"
-                  href={result.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <ExternalLink className="link internet-result-title" href={result.url}>
                   {result.title}
-                </a>
+                </ExternalLink>
                 <span className="internet-result-url u-muted">{result.url}</span>
                 {result.snippet && <p className="internet-result-snippet">{result.snippet}</p>}
               </li>

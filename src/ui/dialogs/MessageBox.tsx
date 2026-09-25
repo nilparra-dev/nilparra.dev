@@ -44,13 +44,18 @@ export function MessageBoxView({
   }
 
   const defaultIndex = options.defaultButton ?? 0;
+  // Escape and the close box back out, as they do in Windows: they answer
+  // Cancel or No when the box offers one, never the default button.
+  const dismissResult =
+    definitions.find((definition) => definition.result === 'cancel' || definition.result === 'no')
+      ?.result ?? definitions[defaultIndex]?.result ?? 'cancel';
 
   return (
     <Dialog
       title={options.title ?? t('common.information')}
       icon={KIND_ICON[kind]}
       width={380}
-      onClose={() => onResult(definitions[defaultIndex]?.result ?? 'cancel')}
+      onClose={() => onResult(dismissResult)}
       buttons={definitions.map((definition, index) => (
         <Button
           key={definition.result}

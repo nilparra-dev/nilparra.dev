@@ -3,6 +3,7 @@ import type { AppRenderProps } from '../../core/apps/launcher';
 import { PROFILE } from '../../core/content';
 import { useI18n } from '../../core/i18n/I18nProvider';
 import { Button } from '../../ui/Button';
+import { ExternalLink } from '../../ui/ExternalLink';
 import { GroupBox } from '../../ui/GroupBox';
 import { StatusBar } from '../../ui/StatusBar';
 
@@ -70,9 +71,9 @@ export function MailApp({ windowId }: AppRenderProps) {
           <ul className="internet-links" role="list">
             {otherLinks.map((link) => (
               <li key={link.id}>
-                <a className="link" href={link.url} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="link" href={link.url}>
                   {link.label}
-                </a>
+                </ExternalLink>
                 <span className="u-muted">{link.url}</span>
               </li>
             ))}

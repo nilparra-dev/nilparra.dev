@@ -48,6 +48,20 @@ describe('window manager reducer', () => {
     expect(activeWindowId(state)).toBe('first');
   });
 
+  it('passes new launch arguments to the window it focuses instead of opening', () => {
+    let state = createWindowManagerState(viewport);
+    state = windowManagerReducer(state, {
+      type: 'open',
+      window: request({ id: 'help', docKey: 'help', params: { topicId: 'welcome', zoom: 1 } }),
+    });
+    state = windowManagerReducer(state, {
+      type: 'open',
+      window: request({ id: 'again', docKey: 'help', params: { topicId: 'storage' } }),
+    });
+    expect(state.windows).toHaveLength(1);
+    expect(state.windows[0].params).toEqual({ topicId: 'storage', zoom: 1 });
+  });
+
   it('restores a minimised window when its taskbar button is clicked', () => {
     let state = createWindowManagerState(viewport);
     state = windowManagerReducer(state, { type: 'open', window: request({ id: 'a' }) });

@@ -254,6 +254,9 @@ export const en: Catalog = {
   'projects.requestDemo': 'Request a demo',
   'projects.placeholderBadge': 'Pending',
   'projects.openFolder': 'See the files in Explorer',
+  'projects.copyLink': 'Copy the link to this project',
+  'projects.linkCopied': 'Link copied to the clipboard',
+  'projects.linkLabel': 'Direct link to this project:',
 
   'about.heading': 'About me',
   'about.bio': 'Introduction',

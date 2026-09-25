@@ -67,7 +67,18 @@ export function windowManagerReducer(
       const request: NewWindow = action.window;
       if (request.docKey) {
         const existing = state.windows.find((window) => window.docKey === request.docKey);
-        if (existing) return focusWindow(state, existing.id);
+        if (existing) {
+          // A second launch can carry new arguments (a help topic, a project to
+          // show): the open window takes them, then comes to the front.
+          const updated =
+            Object.keys(request.params).length > 0
+              ? patchWindow(state, existing.id, (window) => ({
+                  ...window,
+                  params: { ...window.params, ...request.params },
+                }))
+              : state;
+          return focusWindow(updated, existing.id);
+        }
       }
       const minimum = { width: request.minWidth, height: request.minHeight };
       const rect = clampRect(

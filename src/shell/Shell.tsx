@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { preloadApps } from '../core/apps/components';
+import { parseDeepLink } from '../core/apps/deepLink';
 import { useAppLauncher } from '../core/apps/launcher';
 import { DESKTOP_PRODUCT_NAME } from '../core/content/branding';
 import { useVfs } from '../core/fs/VfsProvider';
@@ -48,6 +49,25 @@ export function Shell() {
     bootstrapped.current = true;
     launch({ appId: 'welcome' });
   }, [launch, power, preferences.openWelcomeOnStart, wm.booted, wm.windows.length]);
+
+  /*
+   * An address such as #projects/wooster opens that window on top, on the
+   * first load and whenever the hash changes. The hash is then cleared so the
+   * address bar never names a window that is no longer the one on screen, and
+   * following the same link again still works.
+   */
+  useEffect(() => {
+    if (power !== 'running' || !wm.booted) return;
+    const openFromHash = () => {
+      const target = parseDeepLink(window.location.hash);
+      if (!target) return;
+      launch(target);
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    };
+    openFromHash();
+    window.addEventListener('hashchange', openFromHash);
+    return () => window.removeEventListener('hashchange', openFromHash);
+  }, [launch, power, wm.booted]);
 
   /* Once the desktop is on screen, fetch the split applications in the background. */
   useEffect(() => {

@@ -102,9 +102,10 @@ written by hand:
   one the desktop shows, and optional sections simply do not appear while their content is empty.
 - `%STATIC_PROFILE%`, inside `#root`: the portfolio as plain HTML (name, bio, published projects,
   studies, experience, skills and contact links), written by `src/core/content/staticHtml.ts`.
-  It is what link previews, crawlers that skip JavaScript and visitors without it get, and what
-  shows while the scripts load; React replaces it when the desktop mounts. It is styled as the
-  text screen of a machine that has not booted yet (`src/styles/static.css`).
+  It is what link previews, crawlers that skip JavaScript and visitors without it get; React
+  replaces it when the desktop mounts. An inline style in `index.html` hides it whenever scripts
+  run, so it never flashes while the bundle loads, and a `<noscript>` style shows it otherwise,
+  styled as the text screen of a machine that never booted (`src/styles/static.css`).
 
 The plugin fails the build when a marker is missing or duplicated: a literal marker would be
 visible text to the visitor, and silent structured data is worse than a broken build.

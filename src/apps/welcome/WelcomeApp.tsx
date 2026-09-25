@@ -8,6 +8,11 @@ import { Checkbox } from '../../ui/Checkbox';
 import { Icon } from '../../ui/Icon';
 import { Select } from '../../ui/Select';
 
+/** Touch screens open desktop icons with a single tap, so the tip changes. */
+function touchScreen(): boolean {
+  return typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
+}
+
 /**
  * First visit window: who the desktop belongs to, the shortcut to the rest of
  * the portfolio, and the language switch kept below the main reading.
@@ -57,7 +62,7 @@ export function WelcomeApp({ windowId }: AppRenderProps) {
         </div>
 
         <p className="app-welcome-note u-muted">
-          {t('welcome.tip')} {t('welcome.storageNote')}
+          {t(touchScreen() ? 'welcome.tipTouch' : 'welcome.tip')} {t('welcome.storageNote')}
         </p>
       </div>
 

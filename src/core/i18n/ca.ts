@@ -171,6 +171,7 @@ export const ca: Catalog = {
   'welcome.storageNote': 'El que creïs aquí només es desa en aquest navegador.',
   'welcome.languageLabel': 'Idioma de l’escriptori',
   'welcome.tip': 'Consell: fes doble clic a les icones i fes servir el botó Inicia per veure tots els programes.',
+  'welcome.tipTouch': 'Consell: toca una icona per obrir-la i fes servir el botó Inicia per veure tots els programes.',
 
   'wallpaper.title': 'Fons de l’escriptori',
   'wallpaper.blueRings': 'Anells blaus (recreació)',

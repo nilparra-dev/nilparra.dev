@@ -244,6 +244,8 @@ export const ca: Catalog = {
   'projects.demo': 'Demo',
   'projects.screenshots': 'Captures',
   'projects.noScreenshots': 'Encara no hi ha captures',
+  'projects.enlargeShot': 'Amplia la captura: {name}',
+  'projects.shotPosition': 'Captura {index} de {total}',
   'projects.moreDetails': 'Veure detalls tècnics',
   'projects.lessDetails': 'Amaga els detalls',
   'projects.openRepo': 'Obre a GitHub',

@@ -14,6 +14,8 @@ export interface LaunchOptions {
   /** Deduplication key for document windows. */
   docKey?: string | null;
   rect?: WindowRect;
+  /** Overrides the catalogue size; the window manager still fits it on screen. */
+  size?: { width: number; height: number };
   state?: WindowState;
 }
 
@@ -40,7 +42,7 @@ export function useAppLauncher() {
         appId: app.id,
         title: options.title ?? t(app.nameKey),
         icon: app.icon,
-        size: app.defaultSize,
+        size: options.size ?? app.defaultSize,
         resizable: app.resizable ?? true,
         minimizable: app.minimizable ?? true,
         maximizable: app.maximizable ?? false,

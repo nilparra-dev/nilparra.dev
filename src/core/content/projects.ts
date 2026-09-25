@@ -10,7 +10,10 @@ import type { TechnologyId } from './technologies';
 import type { Localized } from './types';
 
 export interface ProjectScreenshot {
+  /** Path inside `public/` of the image shown in the page. */
   src: string;
+  /** Twice the resolution of `src`, for sharp screens and the image viewer. */
+  full?: string;
   alt: Localized<string>;
 }
 
@@ -112,7 +115,53 @@ export const PROJECTS: ProjectContent[] = [
     ],
     repo: { kind: 'public', url: 'https://github.com/nilparra-dev/wooster' },
     demoUrl: null,
-    screenshots: [],
+    screenshots: [
+      {
+        src: 'portfolio/wooster-player.png',
+        full: 'portfolio/wooster-player@2x.png',
+        alt: {
+          es: 'Reproductor local de Wooster con el vídeo en pausa y la repetición del chat sincronizada al lado',
+          ca: 'Reproductor local de Wooster amb el vídeo en pausa i la repetició del xat sincronitzada al costat',
+          en: 'Wooster local player with the video paused and the chat replay in sync beside it',
+        },
+      },
+      {
+        src: 'portfolio/wooster-list.png',
+        full: 'portfolio/wooster-list@2x.png',
+        alt: {
+          es: 'Terminal con la lista de emisiones de un canal, con las ocultas marcadas por su fuente',
+          ca: 'Terminal amb la llista d’emissions d’un canal, amb les ocultes marcades per la seva font',
+          en: 'Terminal listing a channel’s broadcasts, with the hidden ones marked by their source',
+        },
+      },
+      {
+        src: 'portfolio/wooster-resolve.png',
+        full: 'portfolio/wooster-resolve@2x.png',
+        alt: {
+          es: 'Terminal resolviendo un VOD oculto a una URL M3U8 reproducible',
+          ca: 'Terminal resolent un VOD ocult a una URL M3U8 reproduïble',
+          en: 'Terminal resolving a hidden VOD to a playable M3U8 URL',
+        },
+      },
+      {
+        src: 'portfolio/wooster-download.png',
+        full: 'portfolio/wooster-download@2x.png',
+        alt: {
+          es: 'Terminal con una descarga interrumpida que se reanuda desde el último segmento',
+          ca: 'Terminal amb una baixada interrompuda que es reprèn des de l’últim segment',
+          en: 'Terminal with an interrupted download resuming from the last segment',
+        },
+      },
+      {
+        src: 'portfolio/wooster-chat.png',
+        full: 'portfolio/wooster-chat@2x.png',
+        alt: {
+          es: 'Terminal archivando la repetición del chat y abriendo el reproductor local',
+          ca: 'Terminal arxivant la repetició del xat i obrint el reproductor local',
+          en: 'Terminal archiving the chat replay and opening the local player',
+        },
+      },
+    ],
     year: '2026',
     status: 'published',
   },

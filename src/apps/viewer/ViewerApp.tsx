@@ -31,9 +31,18 @@ interface ViewerSource {
 }
 
 /**
- * Image and PDF viewer. The file arrives as a blob of the virtual disk and is
- * shown through an <img> or an <iframe>; zoom is accumulated over the natural
- * size and everything can be exported back to the host machine.
+ * A launch `src` must name a file shipped with the site, relative to the base
+ * path: no scheme, no host and no way out of `public/`.
+ */
+function isSitePath(path: string): boolean {
+  return /^[\w@-][\w@./-]*$/.test(path) && !path.split('/').includes('..');
+}
+
+/**
+ * Image and PDF viewer. The file arrives as a blob of the virtual disk, or as
+ * an image shipped with the site (`src`), and is shown through an <img> or an
+ * <iframe>; zoom is accumulated over the natural size and files of the disk
+ * can be exported back to the host machine.
  */
 export function ViewerApp({ windowId, params }: AppRenderProps) {
   const { t } = useI18n();
@@ -43,9 +52,10 @@ export function ViewerApp({ windowId, params }: AppRenderProps) {
   vfsRef.current = vfs;
 
   const fileId = typeof params.fileId === 'string' ? params.fileId : null;
+  const sitePath = fileId === null && typeof params.src === 'string' && isSitePath(params.src) ? params.src : null;
 
   const [source, setSource] = useState<ViewerSource | null>(null);
-  const [loading, setLoading] = useState(fileId !== null);
+  const [loading, setLoading] = useState(fileId !== null || sitePath !== null);
   const [failed, setFailed] = useState(false);
   const [mode, setMode] = useState<ZoomMode>('fit');
   const [zoom, setZoom] = useState(1);
@@ -54,14 +64,27 @@ export function ViewerApp({ windowId, params }: AppRenderProps) {
   useEffect(() => {
     let cancelled = false;
     let url: string | null = null;
-    if (!fileId) {
+    if (!fileId && !sitePath) {
       setLoading(false);
       return;
     }
     setLoading(true);
     void (async () => {
-      const node = vfsRef.current.nodeById(fileId);
-      const blob = await vfsRef.current.readFileBlob(fileId);
+      let blob: Blob | null;
+      let name: string;
+      let mime = '';
+      if (fileId) {
+        const node = vfsRef.current.nodeById(fileId);
+        blob = await vfsRef.current.readFileBlob(fileId);
+        name = node?.name ?? '';
+        mime = node?.mime ?? '';
+      } else {
+        const path = sitePath ?? '';
+        blob = await fetch(`${import.meta.env.BASE_URL}${path}`)
+          .then((response) => (response.ok ? response.blob() : null))
+          .catch(() => null);
+        name = path.slice(path.lastIndexOf('/') + 1);
+      }
       if (cancelled) return;
       if (!blob) {
         setFailed(true);
@@ -69,12 +92,7 @@ export function ViewerApp({ windowId, params }: AppRenderProps) {
         return;
       }
       url = URL.createObjectURL(blob);
-      setSource({
-        url,
-        mime: node?.mime || blob.type || '',
-        name: node?.name ?? '',
-        size: blob.size,
-      });
+      setSource({ url, mime: mime || blob.type || '', name, size: blob.size });
       setFailed(false);
       setLoading(false);
     })();
@@ -82,7 +100,7 @@ export function ViewerApp({ windowId, params }: AppRenderProps) {
       cancelled = true;
       if (url) URL.revokeObjectURL(url);
     };
-  }, [fileId]);
+  }, [fileId, sitePath]);
 
   useEffect(() => {
     wm.setTitle(windowId, source ? `${source.name} - ${t('app.viewer')}` : t('app.viewer'));

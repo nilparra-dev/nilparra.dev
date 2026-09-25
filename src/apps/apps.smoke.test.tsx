@@ -8,7 +8,7 @@ import { DialogProvider } from '../core/dialogs/DialogProvider';
 import { VfsProvider } from '../core/fs/VfsProvider';
 import { I18nProvider } from '../core/i18n/I18nProvider';
 import { PreferencesProvider } from '../core/prefs/PreferencesProvider';
-import { WindowManagerProvider } from '../core/window/WindowManagerProvider';
+import { WindowManagerProvider, useWindowManager } from '../core/window/WindowManagerProvider';
 import { MenuLayerProvider } from '../ui/menu/MenuLayer';
 
 /**
@@ -29,6 +29,21 @@ function Providers({ children }: { children: ReactNode }) {
         </WindowManagerProvider>
       </I18nProvider>
     </PreferencesProvider>
+  );
+}
+
+/** The projects window next to a dump of the open windows, to see what it launches. */
+function ProjectsWithWindows() {
+  const Projects = APP_COMPONENTS.projects;
+  const { windows } = useWindowManager();
+  if (!Projects) return null;
+  return (
+    <>
+      <Projects windowId="win-test-projects" params={{}} />
+      <output data-testid="windows">
+        {JSON.stringify(windows.map((window) => ({ appId: window.appId, params: window.params })))}
+      </output>
+    </>
   );
 }
 
@@ -147,6 +162,40 @@ describe('applications', () => {
     expect(screen.queryAllByRole('link', { name: 'Abrir en GitHub' })).toHaveLength(0);
   });
 
+  it('pages through the project screenshots and opens the selected one in the viewer', async () => {
+    render(
+      <Providers>
+        <ProjectsWithWindows />
+      </Providers>,
+    );
+    await screen.findByRole('heading', { name: 'Wooster' });
+
+    // The first capture leads, with its caption and position under it.
+    expect(screen.getByRole('button', { name: /^Ampliar captura: Reproductor local/ })).toBeTruthy();
+    expect(screen.getByText('Captura 1 de 5')).toBeTruthy();
+    const thumbs = screen.getAllByRole('button').filter((button) => button.hasAttribute('aria-pressed'));
+    expect(thumbs).toHaveLength(5);
+    expect(thumbs[0]?.getAttribute('aria-pressed')).toBe('true');
+
+    // A thumbnail moves the large view; the arrow keys walk the strip.
+    fireEvent.click(screen.getByRole('button', { name: /^Terminal con la lista de emisiones/ }));
+    expect(screen.getByText('Captura 2 de 5')).toBeTruthy();
+    expect(screen.getByRole('button', { name: /^Ampliar captura: Terminal con la lista/ })).toBeTruthy();
+    fireEvent.keyDown(screen.getByRole('button', { name: /^Terminal con la lista de emisiones/ }), { key: 'ArrowRight' });
+    expect(screen.getByText('Captura 3 de 5')).toBeTruthy();
+    expect(document.activeElement?.getAttribute('aria-label')).toMatch(/^Terminal resolviendo/);
+    fireEvent.keyDown(document.activeElement as Element, { key: 'End' });
+    expect(screen.getByText('Captura 5 de 5')).toBeTruthy();
+
+    // The large view opens the full-resolution file in the image viewer.
+    fireEvent.click(screen.getByRole('button', { name: /^Ampliar captura:/ }));
+    const windows = JSON.parse(screen.getByTestId('windows').textContent ?? '[]') as Array<{
+      appId: string;
+      params: Record<string, unknown>;
+    }>;
+    expect(windows).toContainEqual({ appId: 'viewer', params: { src: 'portfolio/wooster-chat@2x.png' } });
+  });
+
   it('renders the about window with education grouped by school and hides the unpublished CV', async () => {
     renderApp('about');
     expect(await screen.findByRole('heading', { name: 'Nil Parra Luna' })).toBeTruthy();
@@ -202,6 +251,25 @@ describe('applications', () => {
   it('renders the viewer without a file', async () => {
     renderApp('viewer');
     expect((await screen.findAllByText(/No hay ningún archivo cargado/)).length).toBeGreaterThan(0);
+  });
+
+  it('shows a site image in the viewer from its public path', async () => {
+    const fetchMock = vi.fn(async () => ({ ok: true, blob: async () => new Blob(['png'], { type: 'image/png' }) }));
+    vi.stubGlobal('fetch', fetchMock);
+    URL.createObjectURL = vi.fn(() => 'blob:shot');
+    URL.revokeObjectURL = vi.fn();
+    renderApp('viewer', { src: 'portfolio/wooster-list@2x.png' });
+    const image = await screen.findByRole('img', { name: 'wooster-list@2x.png' });
+    expect(image.getAttribute('src')).toBe('blob:shot');
+    expect(fetchMock).toHaveBeenCalledWith('/portfolio/wooster-list@2x.png');
+  });
+
+  it('refuses a viewer source outside the site', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    renderApp('viewer', { src: 'https://example.com/a.png' });
+    expect((await screen.findAllByText(/No hay ningún archivo cargado/)).length).toBeGreaterThan(0);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it('adds two numbers in the calculator', async () => {

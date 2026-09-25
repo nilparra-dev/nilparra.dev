@@ -6,6 +6,9 @@ only to name the tools each project is built with.
 
 - `wooster.svg`: Wooster signature, taken from `frontend/public/favicon.svg` in
   the Wooster repository.
+- `wooster-*.png`: Wooster screenshots, rendered by
+  `docs/screenshots/render-screenshots.mjs` in the Wooster repository. Copy
+  them again after re-rendering.
 - `antevue.svg`: Antevue app icon, taken from the project's brand kit.
 - `tech/*.svg`: official marks. Most come from
   [Simple Icons](https://simpleicons.org) (CC0 1.0). `playwright.svg` comes from

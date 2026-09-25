@@ -185,10 +185,8 @@ export function WindowManagerProvider({
       resize: (id, rect) => dispatch({ type: 'resize', id, rect }),
       setTitle: (id, title) => dispatch({ type: 'setTitle', id, title }),
       setParams: (id, params) => dispatch({ type: 'setParams', id, params }),
-      minimizeAll: () => {
-        guards.current.clear();
-        dispatch({ type: 'minimizeAll' });
-      },
+      // Minimized windows can still hold unsaved work, so their guards stay.
+      minimizeAll: () => dispatch({ type: 'minimizeAll' }),
       closeAll: () => {
         guards.current.clear();
         dispatch({ type: 'closeAll' });

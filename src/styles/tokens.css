@@ -6,6 +6,8 @@
  * retuned (or a different scheme plugged in) without touching components.
  */
 :root {
+  /* Design size. installPixelPerfectScale (src/ui/scale.ts) replaces it at
+   * runtime with the closest zoom that lands on whole device pixels. */
   --w95-ui-scale: 1.25;
   zoom: var(--w95-ui-scale);
   /* --- Surfaces ------------------------------------------------------ */
@@ -17,6 +19,10 @@
   --w95-gray-mid: #a0a0a0;
   --w95-window-bg: #ffffff;
   --w95-window-text: #000000;
+  /* Not part of the scheme: Windows 95 printed secondary text in black. The
+   * scheme's #808080 means "disabled" and reads at 2.2:1 on the face colour,
+   * so hints and metadata use a dark grey that clears WCAG AA (5.7:1). */
+  --w95-text-secondary: #404040;
 
   /* --- Accents ------------------------------------------------------- */
   --w95-navy: #000080;

@@ -128,5 +128,5 @@
 
 .app-find .find-empty {
   padding: 12px;
-  color: var(--w95-gray);
+  color: var(--w95-text-secondary);
 }

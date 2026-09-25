@@ -21,6 +21,16 @@ const PREFERENCES = {
   autoArrangeIcons: true,
 };
 
+/** jsdom has no pointer capture; the desktop icons rely on it to track a drag. */
+function stubPointerCapture(): void {
+  for (const name of ['setPointerCapture', 'releasePointerCapture', 'hasPointerCapture'] as const) {
+    Object.defineProperty(Element.prototype, name, {
+      configurable: true,
+      value: name === 'hasPointerCapture' ? () => false : () => {},
+    });
+  }
+}
+
 beforeEach(() => {
   class ResizeObserverStub {
     observe() {}
@@ -105,6 +115,54 @@ describe('shell', () => {
 
     expect(await screen.findByText(/no permite que su página se muestre dentro de otra web/)).toBeTruthy();
     expect(screen.getByRole('dialog', { name: 'GitHub' })).toBeTruthy();
+  });
+
+  it('opens a desktop icon with a single tap on a touch screen', async () => {
+    stubPointerCapture();
+    render(<App />);
+    const desktop = await screen.findByRole('listbox', { name: 'Escritorio' }, { timeout: 4000 });
+    const about = within(desktop).getByRole('option', { name: 'Sobre mí' });
+
+    fireEvent.pointerDown(about, { pointerType: 'touch', pointerId: 1, button: 0 });
+    fireEvent.pointerUp(about, { pointerType: 'touch', pointerId: 1, button: 0 });
+
+    expect(await screen.findByRole('dialog', { name: 'Sobre mí' })).toBeTruthy();
+  });
+
+  it('leaves a single mouse click as a selection', async () => {
+    stubPointerCapture();
+    render(<App />);
+    const desktop = await screen.findByRole('listbox', { name: 'Escritorio' }, { timeout: 4000 });
+    const about = within(desktop).getByRole('option', { name: 'Sobre mí' });
+
+    fireEvent.pointerDown(about, { pointerType: 'mouse', pointerId: 1, button: 0 });
+    fireEvent.pointerUp(about, { pointerType: 'mouse', pointerId: 1, button: 0 });
+
+    await screen.findAllByRole('dialog');
+    expect(screen.queryByRole('dialog', { name: 'Sobre mí' })).toBeNull();
+  });
+
+  it('returns to the desktop from the taskbar on a narrow screen', async () => {
+    const width = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 400 });
+    try {
+      render(<App />);
+      await screen.findByRole('dialog', { name: 'Bienvenida' }, { timeout: 4000 });
+      const taskbar = screen.getByRole('toolbar', { name: 'Escritorio' });
+
+      fireEvent.click(within(taskbar).getByRole('button', { name: 'Escritorio' }));
+
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
+    }
+  });
+
+  it('keeps the desktop button out of the taskbar on a wide screen', async () => {
+    render(<App />);
+    await screen.findByRole('dialog', { name: 'Bienvenida' }, { timeout: 4000 });
+    const taskbar = screen.getByRole('toolbar', { name: 'Escritorio' });
+    expect(within(taskbar).queryByRole('button', { name: 'Escritorio' })).toBeNull();
   });
 
   it('opens the Start menu with Ctrl+Esc', async () => {

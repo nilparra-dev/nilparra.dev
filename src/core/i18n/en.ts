@@ -169,6 +169,7 @@ export const en: Catalog = {
   'welcome.storageNote': 'Anything you create here is stored only in this browser.',
   'welcome.languageLabel': 'Desktop language',
   'welcome.tip': 'Tip: double click the icons and use the Start button to see every program.',
+  'welcome.tipTouch': 'Tip: tap an icon to open it and use the Start button to see every program.',
 
   'wallpaper.title': 'Desktop background',
   'wallpaper.blueRings': 'Blue rings (recreation)',

@@ -73,6 +73,21 @@ export function Taskbar({ startOpen, onToggleStart }: TaskbarProps) {
 
         <span className="taskbar-divider" aria-hidden="true" />
 
+        {/* Compact mode shows one full screen window at a time, so the way
+            back to the desktop needs a button of its own. */}
+        {wm.compact && (
+          <button
+            type="button"
+            className="task-button task-button--desktop"
+            aria-pressed={wm.activeId === null}
+            title={t('window.minimizeAll')}
+            onClick={() => wm.minimizeAll()}
+          >
+            <Icon id="computer" size={16} />
+            <span className="task-button-label">{t('folder.desktop')}</span>
+          </button>
+        )}
+
         <div className="taskbar-buttons">
           {windows.map((window) => {
             const isActive = window.id === wm.activeId;

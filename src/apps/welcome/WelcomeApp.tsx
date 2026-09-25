@@ -5,9 +5,13 @@ import { isLocale, LOCALE_LABELS, LOCALES, useI18n } from '../../core/i18n/I18nP
 import { usePreferences } from '../../core/prefs/PreferencesProvider';
 import { Button } from '../../ui/Button';
 import { Checkbox } from '../../ui/Checkbox';
-import { GroupBox } from '../../ui/GroupBox';
 import { Icon } from '../../ui/Icon';
 import { Select } from '../../ui/Select';
+
+/** Touch screens open desktop icons with a single tap, so the tip changes. */
+function touchScreen(): boolean {
+  return typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
+}
 
 /**
  * First visit window: who the desktop belongs to, the shortcut to the rest of
@@ -34,18 +38,16 @@ export function WelcomeApp({ windowId }: AppRenderProps) {
       <div className="w95-scroll app-welcome-body">
         <p className="app-welcome-intro">{t('welcome.intro')}</p>
 
-        <GroupBox title={t('desktop.open')} className="app-welcome-group">
-          <div className="u-row app-welcome-actions">
-            <Button primary onClick={() => launch({ appId: 'projects' })}>
-              {t('welcome.exploreProjects')}
-            </Button>
-            <Button onClick={() => launch({ appId: 'about' })}>{t('welcome.aboutMe')}</Button>
-            <Button onClick={() => launch({ appId: 'mail' })}>{t('welcome.contact')}</Button>
-            <Button onClick={() => launch({ appId: 'help', params: { topicId: 'welcome' } })}>
-              {t('start.help')}
-            </Button>
-          </div>
-        </GroupBox>
+        <div className="u-row app-welcome-actions">
+          <Button primary onClick={() => launch({ appId: 'projects' })}>
+            {t('welcome.exploreProjects')}
+          </Button>
+          <Button onClick={() => launch({ appId: 'about' })}>{t('welcome.aboutMe')}</Button>
+          <Button onClick={() => launch({ appId: 'mail' })}>{t('welcome.contact')}</Button>
+          <Button onClick={() => launch({ appId: 'help', params: { topicId: 'welcome' } })}>
+            {t('start.help')}
+          </Button>
+        </div>
 
         {/* The switch stays one row below the actions instead of leading them. */}
         <div className="u-row app-welcome-language">
@@ -59,8 +61,9 @@ export function WelcomeApp({ windowId }: AppRenderProps) {
           />
         </div>
 
-        <p className="app-welcome-note u-muted">{t('welcome.storageNote')}</p>
-        <p className="app-welcome-note u-muted">{t('welcome.tip')}</p>
+        <p className="app-welcome-note u-muted">
+          {t(touchScreen() ? 'welcome.tipTouch' : 'welcome.tip')} {t('welcome.storageNote')}
+        </p>
       </div>
 
       <div className="app-welcome-footer">

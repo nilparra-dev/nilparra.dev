@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
+import { installPixelPerfectScale } from './ui/scale';
 import './styles/reset.css';
 import './styles/cursors.generated.css';
 import './styles/tokens.css';
@@ -37,6 +38,8 @@ if (!container) throw new Error('Missing #root container');
     document.documentElement.style.visibility = 'hidden';
   }
 })();
+
+installPixelPerfectScale();
 
 createRoot(container).render(
   <StrictMode>

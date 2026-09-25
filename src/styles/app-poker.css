@@ -289,7 +289,7 @@
 
 .poker-setup-hint {
   max-width: 56ch;
-  color: var(--w95-gray);
+  color: var(--w95-text-secondary);
   line-height: 1.35;
 }
 

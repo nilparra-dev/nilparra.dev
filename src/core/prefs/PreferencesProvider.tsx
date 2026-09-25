@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { detectLocale, isLocale, type Locale } from '../i18n/I18nProvider';
+import { DEFAULT_LOCALE, isLocale, type Locale } from '../i18n/I18nProvider';
 import { readStored, writeStored } from '../persist/storage';
 import { DEFAULT_WALLPAPER_ID, WALLPAPERS } from './wallpapers';
 
@@ -26,7 +26,7 @@ export interface Preferences {
 }
 
 export const DEFAULT_PREFERENCES: Preferences = {
-  locale: 'es',
+  locale: DEFAULT_LOCALE,
   wallpaperId: DEFAULT_WALLPAPER_ID,
   soundsEnabled: false,
   volume: 60,
@@ -43,7 +43,7 @@ export function sanitizePreferences(input: unknown): Preferences {
   const source = (input ?? {}) as Partial<Preferences>;
   const wallpaperIds = new Set(WALLPAPERS.map((wallpaper) => wallpaper.id));
   return {
-    locale: isLocale(source.locale) ? source.locale : detectLocale(),
+    locale: isLocale(source.locale) ? source.locale : DEFAULT_LOCALE,
     wallpaperId:
       typeof source.wallpaperId === 'string' && wallpaperIds.has(source.wallpaperId)
         ? source.wallpaperId
@@ -103,7 +103,7 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const reset = useCallback(() => {
-    setPreferences({ ...DEFAULT_PREFERENCES, locale: detectLocale() });
+    setPreferences({ ...DEFAULT_PREFERENCES });
   }, []);
 
   const value = useMemo<PreferencesValue>(

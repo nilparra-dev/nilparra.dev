@@ -191,21 +191,21 @@ export const PROJECTS: ProjectContent[] = [
     },
     highlights: {
       es: [
-        'Datos profesionales de los mejores proveedores del sector: eventos, tracking de jugadores, alineaciones y xG',
+        'Datos profesionales de proveedores comerciales, los mismos que usan los clubes: eventos, tracking de jugadores, alineaciones y xG',
         'Pipeline de datos idempotente, con cada respuesta guardada en bruto y reconciliada hasta que el proveedor deja de corregirla',
         'Variables por temporada validadas en el tiempo para evitar fugas de información',
         'Modelos Dixon-Coles y LightGBM ajustados con Optuna, con calibración y backtest',
         'Servidor Linux con Docker y PostgreSQL, y cada jornada automatizada con Airflow y systemd',
       ],
       ca: [
-        'Dades professionals dels millors proveïdors del sector: esdeveniments, tracking de jugadors, alineacions i xG',
+        'Dades professionals de proveïdors comercials, les mateixes que fan servir els clubs: esdeveniments, tracking de jugadors, alineacions i xG',
         'Pipeline de dades idempotent, amb cada resposta desada en brut i reconciliada fins que el proveïdor deixa de corregir-la',
         'Variables per temporada validades en el temps per evitar fuites d’informació',
         'Models Dixon-Coles i LightGBM ajustats amb Optuna, amb calibratge i backtest',
         'Servidor Linux amb Docker i PostgreSQL, i cada jornada automatitzada amb Airflow i systemd',
       ],
       en: [
-        'Professional data from the best providers in the industry: events, player tracking, lineups and xG',
+        'Professional data from commercial providers, the same kind clubs use: events, player tracking, lineups and xG',
         'Idempotent data pipeline: every response is stored raw and reconciled until the provider stops correcting it',
         'Per-season features validated point in time to avoid information leaks',
         'Dixon-Coles and LightGBM models tuned with Optuna, with calibration and backtesting',
@@ -215,7 +215,7 @@ export const PROJECTS: ProjectContent[] = [
     description: {
       es: [
         'Antevue es un proyecto de investigación sobre cómo predecir mejor los partidos de fútbol con técnicas de aprendizaje automático, y sobre qué información del juego mejora de verdad una previsión. No es solo un modelo: es un sistema completo que se despliega, se automatiza y se mantiene en un servidor Linux.',
-        'Trabaja con datos profesionales de los mejores proveedores del sector, el mismo tipo de datos que usan los clubes y los equipos de análisis. Los datos de eventos registran cada pase, tiro o recuperación con su posición en el campo; los datos de tracking siguen la posición de todos los jugadores y del balón varias veces por segundo; y el xG (goles esperados) estima la probabilidad de que un tiro acabe en gol. A eso se suman las alineaciones de cada partido.',
+        'Trabaja con datos profesionales de proveedores comerciales, el mismo tipo de datos que usan los clubes y los equipos de análisis. Los datos de eventos registran cada pase, tiro o recuperación con su posición en el campo; los datos de tracking siguen la posición de todos los jugadores y del balón varias veces por segundo; y el xG (goles esperados) estima la probabilidad de que un tiro acabe en gol. A eso se suman las alineaciones de cada partido.',
         'La parte de datos está pensada para ser fiable: cada respuesta del proveedor se guarda en bruto con su hash, los procesos de lectura son idempotentes (repetirlos no duplica ni estropea nada) y un ciclo de reconciliación vuelve a pedir los partidos ya jugados hasta que el proveedor deja de corregirlos.',
         'Las variables se construyen por temporada con validación de punto en el tiempo, para que el modelo nunca aprenda de información que todavía no existía antes del partido. Un registro anota cuándo está disponible cada variable, su riesgo de fuga de información y si puede usarse para entrenar, y el entrenamiento se bloquea hasta que el conjunto pasa esas comprobaciones.',
         'El modelo de goles es Dixon-Coles, un modelo estadístico clásico basado en la distribución de Poisson que corrige los resultados cortos y da más peso a los partidos recientes. Los córners, las tarjetas y las estadísticas de jugadores usan gradient boosting con LightGBM, con los hiperparámetros ajustados con Optuna, y cada modelo pasa calibración y backtest antes de ponerse en producción.',
@@ -226,7 +226,7 @@ export const PROJECTS: ProjectContent[] = [
       ],
       ca: [
         'Antevue és un projecte de recerca sobre com predir millor els partits de futbol amb tècniques d’aprenentatge automàtic, i sobre quina informació del joc millora de veritat una previsió. No és només un model: és un sistema complet que es desplega, s’automatitza i es manté en un servidor Linux.',
-        'Treballa amb dades professionals dels millors proveïdors del sector, el mateix tipus de dades que fan servir els clubs i els equips d’anàlisi. Les dades d’esdeveniments registren cada passada, xut o recuperació amb la seva posició al camp; les dades de tracking segueixen la posició de tots els jugadors i de la pilota diverses vegades per segon; i l’xG (gols esperats) estima la probabilitat que un xut acabi en gol. A això s’hi sumen les alineacions de cada partit.',
+        'Treballa amb dades professionals de proveïdors comercials, el mateix tipus de dades que fan servir els clubs i els equips d’anàlisi. Les dades d’esdeveniments registren cada passada, xut o recuperació amb la seva posició al camp; les dades de tracking segueixen la posició de tots els jugadors i de la pilota diverses vegades per segon; i l’xG (gols esperats) estima la probabilitat que un xut acabi en gol. A això s’hi sumen les alineacions de cada partit.',
         'La part de dades està pensada per ser fiable: cada resposta del proveïdor es desa en brut amb el seu hash, els processos de lectura són idempotents (repetir-los no duplica ni espatlla res) i un cicle de reconciliació torna a demanar els partits ja jugats fins que el proveïdor deixa de corregir-los.',
         'Les variables es construeixen per temporada amb validació de punt en el temps, perquè el model no aprengui mai d’informació que encara no existia abans del partit. Un registre anota quan està disponible cada variable, el seu risc de fuita d’informació i si es pot fer servir per entrenar, i l’entrenament es bloqueja fins que el conjunt passa aquestes comprovacions.',
         'El model de gols és Dixon-Coles, un model estadístic clàssic basat en la distribució de Poisson que corregeix els resultats curts i dona més pes als partits recents. Els còrners, les targetes i les estadístiques de jugadors fan servir gradient boosting amb LightGBM, amb els hiperparàmetres ajustats amb Optuna, i cada model passa calibratge i backtest abans de posar-se en producció.',
@@ -237,7 +237,7 @@ export const PROJECTS: ProjectContent[] = [
       ],
       en: [
         'Antevue is a research project on how to forecast football matches better with machine learning, and on which information about the game really improves a forecast. It is more than a model: it is a complete system that is deployed, automated and maintained on a Linux server.',
-        'It works with professional data from the best providers in the industry, the same kind of data clubs and analysis teams use. Event data records every pass, shot or recovery with its position on the pitch; tracking data follows every player and the ball several times per second; and xG (expected goals) estimates how likely a shot is to end in a goal. Lineups for every match complete the picture.',
+        'It works with professional data from commercial providers, the same kind of data clubs and analysis teams use. Event data records every pass, shot or recovery with its position on the pitch; tracking data follows every player and the ball several times per second; and xG (expected goals) estimates how likely a shot is to end in a goal. Lineups for every match complete the picture.',
         'The data side is built to be reliable: every provider response is stored raw with its hash, the parsers are idempotent (running them again never duplicates or breaks anything) and a reconciliation loop re-fetches finished matches until the provider stops correcting them.',
         'Features are built per season with point-in-time validation, so the model never learns from information that did not exist yet before the match. A registry records when each feature becomes available, its leakage risk and whether it can be used for training, and training stays blocked until the set passes those checks.',
         'The goals model is Dixon-Coles, a classic statistical model based on the Poisson distribution that corrects low scores and gives more weight to recent matches. Corners, cards and player statistics use gradient boosting with LightGBM, with hyperparameters tuned by Optuna, and every model goes through calibration and backtesting before it reaches production.',

@@ -6,15 +6,20 @@ import { PLACEHOLDER } from './types';
 
 describe('static profile html', () => {
   it('carries the name, the projects and every contact link', () => {
-    const html = staticProfileHtml(PROFILE, PROJECTS);
+    const html = staticProfileHtml(PROFILE, PROJECTS, 'en');
     expect(html).toContain(`<h1>${PROFILE.displayName}</h1>`);
     for (const project of PROJECTS) expect(html).toContain(`href="#projects/${project.slug}"`);
     for (const link of PROFILE.links) expect(html).toContain(`href="${link.url}"`);
   });
 
+  it('is written in the language it is asked for', () => {
+    expect(staticProfileHtml(PROFILE, PROJECTS, 'en')).toContain('<main class="static-profile" lang="en">');
+    expect(staticProfileHtml(PROFILE, PROJECTS, 'es')).toContain('Sobre mí');
+  });
+
   it('escapes the content instead of trusting it as markup', () => {
     const profile: ProfileContent = { ...PROFILE, displayName: '<script>alert("x")</script>' };
-    const html = staticProfileHtml(profile, []);
+    const html = staticProfileHtml(profile, [], 'en');
     expect(html).not.toContain('<script>');
     expect(html).toContain('&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;');
   });
@@ -22,10 +27,10 @@ describe('static profile html', () => {
   it('leaves placeholders and placeholder projects out', () => {
     const profile: ProfileContent = {
       ...PROFILE,
-      bio: { es: [`${PLACEHOLDER} bio`], ca: [], en: [] },
+      bio: { es: [], ca: [], en: [`${PLACEHOLDER} bio`] },
     };
     const projects = PROJECTS.map((project) => ({ ...project, status: 'placeholder' as const }));
-    const html = staticProfileHtml(profile, projects);
+    const html = staticProfileHtml(profile, projects, 'en');
     expect(html).not.toContain(PLACEHOLDER);
     expect(html).not.toContain('#projects/');
   });

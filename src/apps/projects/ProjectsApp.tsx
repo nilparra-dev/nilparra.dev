@@ -5,6 +5,7 @@ import { useAppLauncher } from '../../core/apps/launcher';
 import type { ProjectContent } from '../../core/content';
 import { PLACEHOLDER, PROFILE, PROJECTS, TECHNOLOGIES, isPlaceholder, pick } from '../../core/content';
 import { useDialogs } from '../../core/dialogs/DialogProvider';
+import { nodeDisplayName } from '../../core/fs/display';
 import { useVfs } from '../../core/fs/VfsProvider';
 import { useI18n } from '../../core/i18n/I18nProvider';
 import { useWindowManager } from '../../core/window/WindowManagerProvider';
@@ -226,7 +227,7 @@ export function ProjectsApp({ windowId, params }: AppRenderProps) {
               launch({
                 appId: 'explorer',
                 params: { folderId: projects?.id ?? portfolio },
-                title: projects?.name ?? t('folder.portfolio'),
+                title: projects ? nodeDisplayName(projects, t) : t('folder.portfolio'),
                 docKey: `explorer:${projects?.id ?? portfolio}`,
               });
             },

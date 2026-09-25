@@ -66,6 +66,10 @@ export const es = {
   'folder.pictures': 'Imágenes',
   'folder.recycleBin': 'Papelera de reciclaje',
   'folder.drive': 'Disco local (C:)',
+  'seed.projectsFolder': 'Proyectos',
+  'seed.aboutFile': 'Sobre-mi.txt',
+  'seed.contactFile': 'Contacto.txt',
+  'seed.welcomeFile': 'Bienvenida.txt',
 
   /* --- Desktop ----------------------------------------------------- */
   'desktop.open': 'Abrir',
@@ -290,6 +294,7 @@ export const es = {
   'about.inProgress': 'En curso',
   'about.experience': 'Experiencia',
   'about.skills': 'Conocimientos',
+  'about.languages': 'Idiomas',
   'about.extras': 'Otros datos',
   'about.cv': 'Currículum',
   'about.downloadCv': 'Descargar el CV en PDF',

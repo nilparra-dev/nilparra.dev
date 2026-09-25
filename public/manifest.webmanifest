@@ -1,8 +1,8 @@
 {
   "name": "Nil Parra Luna",
   "short_name": "Nil Parra",
-  "description": "Portfolio de Nil Parra Luna en forma de escritorio interactivo inspirado en Windows 95.",
-  "lang": "es",
+  "description": "Portfolio of Nil Parra Luna as an interactive desktop inspired by Windows 95.",
+  "lang": "en",
   "dir": "ltr",
   "start_url": "/",
   "scope": "/",

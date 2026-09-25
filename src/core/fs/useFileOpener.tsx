@@ -127,7 +127,7 @@ export function useFileOpener() {
       launch({
         appId,
         params: { fileId: current.id },
-        title: `${current.name} - ${t(appNameKey(appId) ?? 'app.explorer')}`,
+        title: `${nodeDisplayName(current, t)} - ${t(appNameKey(appId) ?? 'app.explorer')}`,
         docKey: `${appId}:${current.id}`,
       });
     },

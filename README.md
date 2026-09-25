@@ -28,7 +28,7 @@ manager.
 - Play Klondike Solitaire and no-limit Texas Hold'em against computer opponents.
 - Search the web from the Internet window. Results appear inside the window and each link opens
   in a real browser tab.
-- Switch the interface between Spanish, Catalan and English.
+- Read it in English, the default, or switch the interface to Spanish or Catalan.
 - Link straight to a window: `#projects`, `#projects/wooster`, `#about` and `#contact` open it on
   top of the desktop, and the Projects window copies the link of the project on screen.
 

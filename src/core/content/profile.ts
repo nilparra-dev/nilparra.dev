@@ -44,6 +44,13 @@ export interface SkillEntry {
   level?: number;
 }
 
+export interface LanguageEntry {
+  /** BCP 47 tag, used by the structured data. */
+  code: string;
+  name: Localized<string>;
+  level: Localized<string>;
+}
+
 /** Skills shown together under one heading, such as networks or databases. */
 export interface SkillGroup {
   title: Localized<string>;
@@ -67,6 +74,7 @@ export interface ProfileContent {
   studies: StudyEntry[];
   experience: ExperienceEntry[];
   skills: SkillGroup[];
+  languages: LanguageEntry[];
   /** Free-form extras shown next to the CV (languages, certificates…). */
   extras: Localized<string[]>;
 }
@@ -256,6 +264,27 @@ export const PROFILE: ProfileContent = {
     {
       title: { es: 'Empresa', ca: 'Empresa', en: 'Business software' },
       skills: [{ technology: 'odoo' }],
+    },
+  ],
+  languages: [
+    {
+      code: 'es',
+      name: { es: 'Castellano', ca: 'Castellà', en: 'Spanish' },
+      level: { es: 'Nativo', ca: 'Natiu', en: 'Native' },
+    },
+    {
+      code: 'ca',
+      name: { es: 'Catalán', ca: 'Català', en: 'Catalan' },
+      level: { es: 'Nativo', ca: 'Natiu', en: 'Native' },
+    },
+    {
+      code: 'en',
+      name: { es: 'Inglés', ca: 'Anglès', en: 'English' },
+      level: {
+        es: 'Avanzado, en torno a un C1 (sin certificar)',
+        ca: 'Avançat, al voltant d’un C1 (sense certificar)',
+        en: 'Advanced, around C1 (not certified)',
+      },
     },
   ],
   extras: {

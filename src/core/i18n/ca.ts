@@ -60,6 +60,10 @@ export const ca: Catalog = {
   'folder.pictures': 'Imatges',
   'folder.recycleBin': 'Paperera de reciclatge',
   'folder.drive': 'Disc local (C:)',
+  'seed.projectsFolder': 'Projectes',
+  'seed.aboutFile': 'Sobre-mi.txt',
+  'seed.contactFile': 'Contacte.txt',
+  'seed.welcomeFile': 'Benvinguda.txt',
 
   'desktop.open': 'Obre',
   'desktop.openWith': 'Obre amb…',
@@ -269,6 +273,7 @@ export const ca: Catalog = {
   'about.inProgress': 'En curs',
   'about.experience': 'Experiència',
   'about.skills': 'Coneixements',
+  'about.languages': 'Idiomes',
   'about.extras': 'Altres dades',
   'about.cv': 'Currículum',
   'about.downloadCv': 'Descarrega el CV en PDF',

@@ -94,6 +94,41 @@
   box-shadow: inset 0 1px 0 var(--w95-white);
 }
 
+/* Compact mode fills the screen with the window. The welcome is a short
+ * dialog, so it becomes a centred column instead of stretching: the auto
+ * margins centre it while there is room and collapse when there is not, so
+ * the body still scrolls on a short screen. The shortcuts become a column of
+ * touch sized buttons. */
+@media (pointer: coarse), (max-width: 720px) {
+  .window--maximized .app-welcome > * {
+    width: 100%;
+    max-width: 560px;
+    margin-inline: auto;
+  }
+
+  .window--maximized .app-welcome-head {
+    margin-top: auto;
+  }
+
+  .window--maximized .app-welcome-body {
+    flex: 0 1 auto;
+  }
+
+  .window--maximized .app-welcome-footer {
+    margin-bottom: auto;
+  }
+
+  .window--maximized .app-welcome-actions {
+    flex-direction: column;
+    align-items: stretch;
+    max-width: 360px;
+  }
+
+  .window--maximized .app-welcome-actions .btn {
+    height: 44px;
+  }
+}
+
 /* ------------------------------------------------------------------ *
  * Help
  * ------------------------------------------------------------------ */

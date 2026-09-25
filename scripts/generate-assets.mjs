@@ -13,7 +13,7 @@
  *   src/styles/cursors.generated.css      ready to use `cursor` values (1x)
  *   src/theme/patterns.generated.ts       repeating SVG wallpaper tiles
  *   src/assets/generated/*.ts             static imports typed for Vite
- *   public/favicon.png                    32x32 app icon
+ *   public/favicon.png                    32x32 site logo (scripts/art/logo.mjs)
  *   public/favicon.ico                    16/32/48 Windows icon
  *   public/favicon.svg                    scalable copy of the same art
  *   public/apple-touch-icon.png           180x180 icon for iOS
@@ -29,6 +29,7 @@ import { createCanvas, downscale } from './lib/raster.mjs';
 import { blit, encodePNG, scaleUp } from './lib/png.mjs';
 import { ICONS, SMALL_ICONS } from './art/icons.mjs';
 import { ICONS_16 } from './art/icons16.mjs';
+import { drawLogo, drawLogo16 } from './art/logo.mjs';
 import { CURSORS } from './art/cursors.mjs';
 import { renderPattern, PATTERNS } from './art/patterns.mjs';
 
@@ -374,8 +375,9 @@ export function patternBackground(id: string): string {
  * --------------------------------------------------------------- */
 
 const faviconArt = createCanvas(32, 32);
-ICONS.computer(faviconArt);
-const faviconArt16 = drawIcon16('computer');
+drawLogo(faviconArt);
+const faviconArt16 = createCanvas(16, 16);
+drawLogo16(faviconArt16);
 writePNG('public/favicon.png', faviconArt);
 write('public/favicon.svg', svgFromCanvas(faviconArt));
 

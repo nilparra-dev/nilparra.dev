@@ -114,6 +114,20 @@ body,
   cursor: var(--cursor-arrow);
 }
 
+/* The browser stylesheet gives form controls the system pointers (the native
+ * I-beam in text boxes). Element selectors keep any class rule in charge. */
+button,
+select,
+summary,
+label {
+  cursor: inherit;
+}
+
+input,
+textarea {
+  cursor: var(--cursor-text);
+}
+
 img.pixel {
   image-rendering: pixelated;
   -ms-interpolation-mode: nearest-neighbor;

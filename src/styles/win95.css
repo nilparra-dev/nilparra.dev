@@ -117,7 +117,7 @@
 .btn:disabled {
   color: var(--w95-disabled-text);
   text-shadow: 1px 1px 0 var(--w95-disabled-shadow);
-  cursor: default;
+  cursor: var(--cursor-arrow);
 }
 
 /* Dialog default button: the extra black ring of the original. */

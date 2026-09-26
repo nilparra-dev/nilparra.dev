@@ -26,7 +26,7 @@ flowchart LR
 
 | Control | Where | Threat it addresses |
 | --- | --- | --- |
-| Content-Security-Policy | `public/_headers`, `index.html` | XSS payload exfiltration, third-party script injection, `object`/`base` abuse. `script-src 'self'` only; there is no inline script anywhere in the bundle. Sent as a header in production; the meta copy covers `vite dev` and `vite preview`, and `src/csp.test.ts` keeps both equal. |
+| Content-Security-Policy | `public/_headers`, `index.html` | XSS payload exfiltration, third-party script injection, `object`/`base` abuse. `script-src 'self'` only; there is no inline script anywhere in the bundle. Trusted Types (`require-trusted-types-for 'script'; trusted-types 'none'`) makes the browser reject any HTML string written to the DOM, even from a dependency. Sent as a header in production; the meta copy covers `vite dev` and `vite preview`, and `src/csp.test.ts` keeps both equal. |
 | Anti-framing headers | `public/_headers` | Clickjacking. `frame-ancestors 'none'` and `X-Frame-Options: DENY`. |
 | Frame guard | `src/main.tsx` | Clickjacking on hosts that do not send the headers above: breaks out of hostile frames and blanks the page when navigation is impossible. |
 | Transport and browser policy headers | `public/_headers` | HSTS (`includeSubDomains; preload`), `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Cross-Origin-Opener-Policy: same-origin` and a `Permissions-Policy` that turns off camera, microphone, geolocation, payment, USB and Topics. |
@@ -47,8 +47,13 @@ flowchart LR
   it, and is limited to editing Workers on one account and one zone. The `production`
   environment only accepts deployments from `main`, and every push there publishes.
 - **Audit gate**: `npm audit --omit=dev` runs in CI; vulnerabilities fail the build.
-- **Protected main**: changes reach production only through pull requests with a green
-  CI run.
+- **Code scanning**: CodeQL (GitHub default setup) analyses the TypeScript and the
+  workflows on every pull request and weekly.
+- **OpenSSF Scorecard**: `.github/workflows/scorecard.yml` grades the supply-chain
+  practices on every push to `main` and weekly; the findings go to the Security tab and
+  the score to the README badge.
+- **Protected main**: changes reach production only through pull requests, and the CI
+  check is required before merging.
 
 ## Production setup for nilparra.dev
 

@@ -1,0 +1,42 @@
+name: Scorecard
+
+# OpenSSF Scorecard: grades the supply-chain practices of the repository
+# (pinned actions, branch protection, token permissions, dependency updates,
+# code scanning…). The findings land in the Security tab and the score is
+# published to the badge of the README.
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '17 6 * * 1'
+  # Branch protection changes are not pushes; this reruns the grade after one.
+  branch_protection_rule:
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  analysis:
+    runs-on: ubuntu-latest
+    permissions:
+      # Upload the findings to code scanning.
+      security-events: write
+      # Sign the published results, which the badge reads.
+      id-token: write
+    steps:
+      # Pinned by commit: tags are mutable, a compromised tag would run code
+      # inside CI. Dependabot keeps the pins up to date.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - uses: ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc # v2.4.4
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+
+      - uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+        with:
+          sarif_file: results.sarif

@@ -4,6 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/nilparra-dev/nilparra.dev/actions/workflows/ci.yml"><img alt="CI status" src="https://github.com/nilparra-dev/nilparra.dev/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://scorecard.dev/viewer/?uri=github.com/nilparra-dev/nilparra.dev"><img alt="OpenSSF Scorecard" src="https://api.scorecard.dev/projects/github.com/nilparra-dev/nilparra.dev/badge"></a>
   <img alt="MIT licence" src="https://img.shields.io/badge/license-MIT-blue.svg">
 </p>
 

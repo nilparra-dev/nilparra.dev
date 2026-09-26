@@ -19,8 +19,9 @@ const base = process.env.VITE_BASE ?? '/';
  * Canonical site, used for the absolute addresses that search engines and
  * social networks need (canonical, og:url, og:image and the structured data).
  * `%BASE_URL%` only carries the path, so the domain is written down here and
- * nowhere else; `public/robots.txt` and `public/sitemap.xml` mirror it and the
- * deploy workflow can override it with the SITE_URL repository variable.
+ * nowhere else; `public/robots.txt`, `public/sitemap.xml` and the route in
+ * `wrangler.jsonc` mirror it, and the deploy workflow can override it with the
+ * SITE_URL repository variable.
  */
 const siteUrl = (process.env.VITE_SITE_URL ?? 'https://nilparra.dev').replace(/\/+$/, '');
 

@@ -1,0 +1,22 @@
+// Cloudflare Workers with static assets: `dist/` is served as is, there is no
+// Worker script. Deployed by .github/workflows/deploy.yml (`wrangler deploy`).
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "nilparra-dev",
+  "compatibility_date": "2026-09-25",
+  "assets": {
+    "directory": "./dist",
+    // Unknown paths answer with index.html and a 200 status. The deep links
+    // live in the hash (src/core/apps/deepLink.ts), and the canonical tag keeps
+    // any other path from being indexed as a copy of the landing page.
+    "not_found_handling": "single-page-application"
+  },
+  // The canonical domain mirrors VITE_SITE_URL in vite.config.ts. Cloudflare
+  // creates the DNS record and the certificate for it on deploy. www is not a
+  // route: a redirect rule of the zone sends it to the apex (see README).
+  "routes": [{ "pattern": "nilparra.dev", "custom_domain": true }],
+  // Only the canonical domain serves the site: no *.workers.dev copy and no
+  // preview hosts that search engines could find.
+  "workers_dev": false,
+  "preview_urls": false
+}

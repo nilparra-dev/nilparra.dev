@@ -26,9 +26,11 @@ npm run build
   marked as placeholders on purpose.
 - Icons, cursors, patterns and the browser icons (favicon, ICO, SVGs, PWA sizes) are generated
   from `scripts/`. Run `npm run assets` after touching them and commit the regenerated files.
-- The canonical domain is written down once, as `VITE_SITE_URL` in `vite.config.ts`, and inlined
-  into `index.html` at build time. The route in `wrangler.jsonc`, `public/robots.txt` and
-  `public/sitemap.xml` mirror it: change all of them together.
+- The canonical domain is `VITE_SITE_URL`, inlined into `index.html` at build time. Production
+  builds take it from `.github/workflows/deploy.yml` (the `SITE_URL` repository variable, else the
+  fallback written there); `vite.config.ts` holds the default for local builds. The route in
+  `wrangler.jsonc`, `public/robots.txt` and `public/sitemap.xml` mirror it: change all of them
+  together.
 - The site is served by Cloudflare Workers static assets (`wrangler.jsonc`). Response headers live
   in `public/_headers`; its Content-Security-Policy must stay equal to the meta policy of
   `index.html` plus `frame-ancestors`, and `src/csp.test.ts` fails when they drift. The policy

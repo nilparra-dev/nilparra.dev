@@ -1,25 +1,23 @@
 name: Deploy to Cloudflare
 
-# Manual publish to Cloudflare Workers (static assets): Actions -> Deploy to
-# Cloudflare -> Run workflow. Nothing is published automatically until the
-# site is launched. To deploy on every push to main, restore this trigger:
-#
-#   on:
-#     push:
-#       branches: [main]
-#     workflow_dispatch:
+# Publishes to Cloudflare Workers (static assets) on every push to main, that
+# is, on every merged pull request. It can also be run by hand to redeploy:
+# Actions -> Deploy to Cloudflare -> Run workflow. Deploys queue instead of
+# cancelling each other, so the last push always ends up published.
 #
 # wrangler.jsonc says what is served and on which domain; public/_headers
 # carries the security and cache headers. The site is fully static: no
 # backend and no Worker script.
 #
-# Credentials live in the "production" environment of the repository, so only
-# this job can read them:
+# Credentials live in the "production" environment of the repository, which
+# only accepts deployments from main, so only this job can read them:
 #   - CLOUDFLARE_API_TOKEN: a token limited to "Edit Cloudflare Workers" on
 #     the account and the nilparra.dev zone.
 #   - CLOUDFLARE_ACCOUNT_ID: the account that owns the Worker.
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:

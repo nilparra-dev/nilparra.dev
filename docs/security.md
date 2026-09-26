@@ -44,8 +44,8 @@ flowchart LR
   compromised action tag cannot inject code into the deployment.
 - **Least-privilege deployment**: the deploy workflow has `contents: read` only. The
   Cloudflare token lives in the `production` environment, so no pull request job can read
-  it, and is limited to editing Workers on one account and one zone. Publishing is a manual
-  dispatch while the site is not public.
+  it, and is limited to editing Workers on one account and one zone. The `production`
+  environment only accepts deployments from `main`, and every push there publishes.
 - **Audit gate**: `npm audit --omit=dev` runs in CI; vulnerabilities fail the build.
 - **Protected main**: changes reach production only through pull requests with a green
   CI run.

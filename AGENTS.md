@@ -37,8 +37,8 @@ npm run build
   hand-write JSON-LD or portfolio text into `index.html`. `index.html` must keep exactly one
   `%STRUCTURED_DATA%` and one `%STATIC_PROFILE%` marker and at least one `%SITE_URL%`; the build
   fails without them, because a stray marker would be visible on the page.
-- The deploy workflow is manual on purpose while the site is not public. Do not wire it to `push`
-  without being asked.
+- Every push to `main` deploys the site to production (`.github/workflows/deploy.yml`): a merged
+  pull request is live a minute later.
 
 ## Map
 

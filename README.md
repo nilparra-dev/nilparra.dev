@@ -83,9 +83,9 @@ npm run preview:cloudflare  # the build served as in production, headers include
 - `public/_headers` adds the security headers (the Content-Security-Policy with
   `frame-ancestors`, HSTS, `X-Frame-Options`, `Permissions-Policy`…) and caches `/assets/*` for a
   year, since those file names change with their contents.
-- `.github/workflows/deploy.yml` runs the tests, builds and calls `wrangler deploy`. It is
-  triggered by hand while the site is not public (**Actions → Deploy to Cloudflare → Run
-  workflow**) and reads `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` from the `production`
+- `.github/workflows/deploy.yml` runs the tests, builds and calls `wrangler deploy` on every push
+  to `main`, so each merged pull request is published. It can also be run by hand (**Actions →
+  Deploy to Cloudflare → Run workflow**). It reads `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` from the `production`
   environment of the repository. The token only needs the *Edit Cloudflare Workers* template,
   limited to the account and the `nilparra.dev` zone.
 

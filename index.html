@@ -16,10 +16,10 @@
     <link rel="canonical" href="%SITE_URL%/" />
 
     <!--
-      Content-Security-Policy. GitHub Pages cannot send response headers, so
-      the meta element is the only delivery channel and frame-ancestors cannot
-      be expressed in it (the frame guard in main.tsx covers that hole).
-      Allowed sources, nothing else:
+      Content-Security-Policy. Production also sends it as a header from
+      public/_headers, with frame-ancestors added (a meta element cannot carry
+      it); this meta is the policy under `vite dev` and `vite preview`.
+      csp.test.ts keeps both copies identical. Allowed sources, nothing else:
         - 'self' and blob: for images, media and frames: the virtual disk serves
           imported files and PDFs through object URLs of our own origin.
         - https://api.tavily.com: the keyless search endpoint of the Internet

@@ -1,48 +1,43 @@
-name: Deploy to GitHub Pages
+name: Deploy to Cloudflare
 
-# Manual publish to GitHub Pages: Actions -> Deploy to GitHub Pages -> Run
-# workflow. Nothing is published automatically until the site is launched.
+# Manual publish to Cloudflare Workers (static assets): Actions -> Deploy to
+# Cloudflare -> Run workflow. Nothing is published automatically until the
+# site is launched. To deploy on every push to main, restore this trigger:
 #
-#   - To deploy on every push to main, restore this trigger:
+#   on:
+#     push:
+#       branches: [main]
+#     workflow_dispatch:
 #
-#       on:
-#         push:
-#           branches: [main]
-#         workflow_dispatch:
+# wrangler.jsonc says what is served and on which domain; public/_headers
+# carries the security and cache headers. The site is fully static: no
+# backend and no Worker script.
 #
-#   - Custom domain (the current setup, https://nilparra.dev/) -> nothing to
-#     set: BASE_PATH and SITE_URL fall back to "/" and https://nilparra.dev in
-#     the env block below, and public/CNAME carries the domain into the
-#     artifact. The domain must also be configured in Settings -> Pages so
-#     GitHub can issue the certificate and enforce HTTPS.
-#   - Project site (https://<owner>.github.io/<repo>/) -> set the repository
-#     variables BASE_PATH to "/<repo>/" and SITE_URL to that address, so the
-#     canonical URL, the social tags and the structured data match where the
-#     site is really served.
-#
-# The site is fully static: no backend, no secrets, no server side rendering.
+# Credentials live in the "production" environment of the repository, so only
+# this job can read them:
+#   - CLOUDFLARE_API_TOKEN: a token limited to "Edit Cloudflare Workers" on
+#     the account and the nilparra.dev zone.
+#   - CLOUDFLARE_ACCOUNT_ID: the account that owns the Worker.
 
 on:
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: deploy
+  cancel-in-progress: false
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
-    env:
-      BASE_PATH: ${{ vars.BASE_PATH || '/' }}
-      SITE_URL: ${{ vars.SITE_URL || 'https://nilparra.dev' }}
+    environment:
+      name: production
+      url: https://nilparra.dev/
     steps:
       # Pinned by commit: tags are mutable, a compromised tag would run code
-      # inside CI with pages permissions. Dependabot keeps the pins up to date.
+      # inside CI next to the deploy token. Dependabot keeps the pins up to date.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
@@ -61,32 +56,13 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          # Vite reads VITE_BASE and VITE_SITE_URL; the BASE_PATH/SITE_URL names
-          # keep the workflow readable.
-          VITE_BASE: ${{ env.BASE_PATH }}
-          VITE_SITE_URL: ${{ env.SITE_URL }}
+          # The SITE_URL repository variable overrides the canonical domain of
+          # vite.config.ts; routes in wrangler.jsonc must then change with it.
+          VITE_SITE_URL: ${{ vars.SITE_URL || 'https://nilparra.dev' }}
 
-      # Reloading a deep link on Pages must not 404: the app is a single page,
-      # so index.html answers for unknown paths as well. Pages still answers
-      # with a 404 status, so the copy is marked noindex: it must never be
-      # indexed as a second copy of the landing page.
-      - name: Add the SPA fallback
-        run: |
-          node -e "const fs=require('fs');const html=fs.readFileSync('dist/index.html','utf8');fs.writeFileSync('dist/404.html',html.replace('</head>','<meta name=\"robots\" content=\"noindex\" /></head>'))"
-          touch dist/.nojekyll
-
-      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
-
-      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
-        with:
-          path: dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5
+      # wrangler comes from the lockfile, like every other tool of the build.
+      - name: Deploy
+        run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

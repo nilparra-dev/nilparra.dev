@@ -6,23 +6,25 @@ disk lives in the browser's IndexedDB and only leaves the browser when the visit
 
 ## Controls shipped with the site
 
-- **Content-Security-Policy** (`index.html`, meta element): scripts only from the site itself,
-  no inline scripts, `object-src 'none'`, connections limited to the site and the Tavily search
-  endpoint. GitHub Pages cannot send response headers, so the meta element is the only channel.
+- **Content-Security-Policy** (`public/_headers`, response header, mirrored as a meta element in
+  `index.html`): scripts only from the site itself, no inline scripts, `object-src 'none'`,
+  `frame-ancestors 'none'`, connections limited to the site and the Tavily search endpoint.
+- **Security headers** (`public/_headers`): HSTS with preload, `X-Frame-Options: DENY`,
+  `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Cross-Origin-Opener-Policy` and a
+  restrictive `Permissions-Policy`.
 - **Sandboxed frames**: every `<iframe>` is sandboxed. The Internet window allows only
   scripts, same-origin access and forms in the framed third-party site; popups and top-level
   navigation remain blocked. The PDF viewer of the virtual disk runs fully sandboxed because its
   `blob:` URL shares the site's origin.
-- **Clickjacking guard** (`src/main.tsx`): Pages cannot send `X-Frame-Options`, so the app breaks
-  out of a frame or hides itself while framed. `frame-ancestors` cannot be expressed in a meta
-  CSP; this guard is the substitute.
+- **Clickjacking guard** (`src/main.tsx`): on top of the headers, the app breaks out of a frame or
+  hides itself while framed, which also covers hosts that do not send them.
 - **Defensive persistence**: every record read back from IndexedDB and every value read back from
   `localStorage` is revalidated against the current schema; malformed or tampered records are
   dropped instead of executed.
 - **Pinned CI actions**: every GitHub Action is pinned by commit SHA, not by a mutable tag.
-- **No secrets**: there is nothing to leak. Search is keyless, deploy runs without credentials
-  beyond the built-in `GITHUB_TOKEN` (least privilege: `contents: read`, `pages: write`,
-  `id-token: write`).
+- **No secrets in the site**: there is nothing to leak. Search is keyless. The only credential is
+  the deploy token, kept in the `production` environment of the repository and limited to editing
+  Workers on one account and one zone; the workflow itself only has `contents: read`.
 
 ## Reporting a vulnerability
 

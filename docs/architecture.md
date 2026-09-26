@@ -96,7 +96,7 @@ written by hand:
 
 - `%SITE_URL%`, the canonical domain. `%BASE_URL%` only carries the path, and social networks and
   search engines need the scheme and the host. The domain is written once, as `VITE_SITE_URL`,
-  and `public/CNAME`, `public/robots.txt` and `public/sitemap.xml` mirror it.
+  and the route in `wrangler.jsonc`, `public/robots.txt` and `public/sitemap.xml` mirror it.
 - `%STRUCTURED_DATA%`, a `ProfilePage` with a `Person` inside, built from `PROFILE`, `studies`,
   `links` and `skills`. Generating it means the description a crawler reads cannot drift from the
   one the desktop shows, and optional sections simply do not appear while their content is empty.
@@ -110,13 +110,14 @@ written by hand:
 The plugin fails the build when a marker is missing or duplicated: a literal marker would be
 visible text to the visitor, and silent structured data is worse than a broken build.
 
-The `404.html` that the Pages workflow copies from `index.html` is marked `noindex`, since Pages
-answers unknown paths with a 404 status and the copy must never compete with the landing page.
+Cloudflare answers unknown paths with `index.html` and a 200 status (`not_found_handling` in
+`wrangler.jsonc`). The canonical tag points every such copy back at the root, so none of them
+competes with the landing page.
 
 ## Security
 
 Security controls and the production hardening plan are documented in [security.md](security.md):
-the CSP meta and frame guard, the sandboxed embeds, the storage normalisation and the pipeline
+the CSP header and meta, the frame guard, the sandboxed embeds, the storage normalisation and the pipeline
 rules (pinned actions, audit gate, least-privilege deployment).
 
 ## Tests and CI

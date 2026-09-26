@@ -10,8 +10,8 @@ import type { LaunchOptions } from './launcher';
  *   #about               the About me window
  *   #contact             the mail window
  *
- * The hash is the only place the site can keep them: GitHub Pages serves one
- * static page and answers every other path with the 404 copy.
+ * The hash is the only place the site can keep them: there is no router, and
+ * the host answers every other path with the same index.html.
  */
 export function parseDeepLink(hash: string): LaunchOptions | null {
   const [section, detail, ...rest] = hash

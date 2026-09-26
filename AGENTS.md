@@ -27,15 +27,18 @@ npm run build
 - Icons, cursors, patterns and the browser icons (favicon, ICO, SVGs, PWA sizes) are generated
   from `scripts/`. Run `npm run assets` after touching them and commit the regenerated files.
 - The canonical domain is written down once, as `VITE_SITE_URL` in `vite.config.ts`, and inlined
-  into `index.html` at build time. `public/CNAME`, `public/robots.txt` and `public/sitemap.xml`
-  mirror it: change all of them together.
+  into `index.html` at build time. The route in `wrangler.jsonc`, `public/robots.txt` and
+  `public/sitemap.xml` mirror it: change all of them together.
+- The site is served by Cloudflare Workers static assets (`wrangler.jsonc`). Response headers live
+  in `public/_headers`; its Content-Security-Policy must stay equal to the meta policy of
+  `index.html` plus `frame-ancestors`, and `src/csp.test.ts` fails when they drift.
 - The structured data and the plain HTML copy inside `#root` are generated from
   `src/core/content/` by the seo plugin, so they can never contradict the desktop. Never
   hand-write JSON-LD or portfolio text into `index.html`. `index.html` must keep exactly one
   `%STRUCTURED_DATA%` and one `%STATIC_PROFILE%` marker and at least one `%SITE_URL%`; the build
   fails without them, because a stray marker would be visible on the page.
-- The Pages workflow is manual on purpose while the site is not public. Do not wire it back to
-  `push` without being asked.
+- The deploy workflow is manual on purpose while the site is not public. Do not wire it to `push`
+  without being asked.
 
 ## Map
 
@@ -48,5 +51,6 @@ npm run build
 | `src/apps/` | one folder per application |
 | `src/ui/` | shared Windows 95 controls |
 | `scripts/` | generated artwork |
-| `public/` | static assets: icons, wallpapers, logos and the SEO files |
+| `public/` | static assets: icons, wallpapers, logos, the SEO files and `_headers` |
+| `wrangler.jsonc` | Cloudflare deployment: assets directory, SPA fallback, domain |
 | `docs/architecture.md` | how the runtime fits together |

@@ -47,8 +47,7 @@ manager.
   browser icons made from it (ICO, SVG, apple-touch and the PWA sizes); `npm run assets` rebuilds
   them and writes review sheets to compare against period references.
 - The landing page carries the whole metadata set: Open Graph and X cards with a real preview
-  image, `canonical`, `robots.txt`, a one-URL `sitemap.xml`, a web manifest and `noindex` on the
-  Pages fallback. The `ProfilePage` structured data and a plain HTML copy of the portfolio (for
+  image, `canonical`, `robots.txt`, a one-URL `sitemap.xml` and a web manifest. The `ProfilePage` structured data and a plain HTML copy of the portfolio (for
   link previews, crawlers that skip JavaScript and visitors without it) are built from
   `src/core/content/` during the build, so they can never contradict what the desktop shows.
 - Klondike and Hold'em run on plain TypeScript engines with tests. The poker engine handles hand
@@ -70,21 +69,34 @@ npm run dev      # development server at http://localhost:5173
 npm run build    # type check plus static build in dist/
 npm test         # test suite
 npm run tunnel   # public https address for the dev server, to try it on a phone
+npm run preview:cloudflare  # the build served as in production, headers included
 ```
 
 ## Deployment
 
-`npm run build` writes everything to `dist/`, ready for any static host. The repository ships a
-GitHub Actions workflow that publishes it to GitHub Pages at **https://nilparra.dev/**; it is
-triggered by hand while the site is not public (**Actions → Deploy to GitHub Pages → Run
-workflow**). The custom domain comes from `public/CNAME` and has to be configured in
-Settings → Pages as well, so GitHub can issue the certificate and enforce HTTPS.
+`npm run build` writes everything to `dist/`, ready for any static host. Production is
+**https://nilparra.dev/**, served by Cloudflare Workers static assets with no Worker script:
+
+- `wrangler.jsonc` sets the assets directory, the single-page fallback (unknown paths answer with
+  `index.html`) and the custom domain, for which Cloudflare creates the DNS record and the
+  certificate.
+- `public/_headers` adds the security headers (the Content-Security-Policy with
+  `frame-ancestors`, HSTS, `X-Frame-Options`, `Permissions-Policy`…) and caches `/assets/*` for a
+  year, since those file names change with their contents.
+- `.github/workflows/deploy.yml` runs the tests, builds and calls `wrangler deploy`. It is
+  triggered by hand while the site is not public (**Actions → Deploy to Cloudflare → Run
+  workflow**) and reads `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` from the `production`
+  environment of the repository. The token only needs the *Edit Cloudflare Workers* template,
+  limited to the account and the `nilparra.dev` zone.
+
+`www.nilparra.dev` is not a route of the Worker. In the Cloudflare zone it is a proxied
+`AAAA www → 100::` record with a redirect rule (template *Redirect from WWW to root*) that sends
+it to the apex with a 301.
 
 The canonical domain is written down in one place, `VITE_SITE_URL` in `vite.config.ts`, which
-fills in the `canonical`, the Open Graph tags and the structured data during the build.
-`public/CNAME`, `public/robots.txt` and `public/sitemap.xml` mirror it, so change all four
-together, or set the `SITE_URL` repository variable to override it. Hosting under a subdirectory
-instead (a GitHub Pages project site) also needs the `BASE_PATH` repository variable.
+fills in the `canonical`, the Open Graph tags and the structured data during the build. The route
+in `wrangler.jsonc`, `public/robots.txt` and `public/sitemap.xml` mirror it, so change all four
+together. The `SITE_URL` repository variable overrides it for the build only.
 
 `main` is protected. Changes go through pull requests that pass CI, and commit messages are
 written in English.

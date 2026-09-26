@@ -16,6 +16,7 @@
     "prebuild": "npm run assets",
     "build": "tsc && vite build",
     "preview": "vite preview",
+    "preview:cloudflare": "npm run build && wrangler dev",
     "demo": "npm run build && node scripts/record-demo.mjs",
     "typecheck": "tsc",
     "test": "vitest run",
@@ -38,6 +39,7 @@
     "playwright-core": "^1.63.0",
     "typescript": "~7.0.2",
     "vite": "^8.3.0",
-    "vitest": "^5.0.1"
+    "vitest": "^5.0.1",
+    "wrangler": "^4.141.0"
   }
 }

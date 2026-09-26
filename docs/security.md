@@ -12,22 +12,24 @@ flowchart LR
   subgraph Build["Build (trusted inputs only)"]
     REPO[Repository] --> CI[CI: npm ci + audit + tests]
     CI --> ART[dist/ artifact]
-    ART --> PAGES[GitHub Pages]
+    ART --> EDGE[Cloudflare static assets + _headers]
   end
   subgraph Runtime["Runtime (visitor's browser)"]
-    CSP[CSP meta + frame guard] --> REACT[React text-only rendering]
+    CSP[CSP header + frame guard] --> REACT[React text-only rendering]
     REACT --> VFS[(IndexedDB)]
     REACT --> IFRAME[ Sandboxed third-party iframes ]
   end
-  PAGES --> CSP
+  EDGE --> CSP
 ```
 
 ## Runtime controls
 
 | Control | Where | Threat it addresses |
 | --- | --- | --- |
-| Content-Security-Policy meta | `index.html` | XSS payload exfiltration, third-party script injection, `object`/`base` abuse. `script-src 'self'` only; there is no inline script anywhere in the bundle. |
-| Frame guard | `src/main.tsx` | Clickjacking. Pages cannot send `X-Frame-Options`/`frame-ancestors`, so a client-side guard breaks out of hostile frames and blanks the page when navigation is impossible. |
+| Content-Security-Policy | `public/_headers`, `index.html` | XSS payload exfiltration, third-party script injection, `object`/`base` abuse. `script-src 'self'` only; there is no inline script anywhere in the bundle. Sent as a header in production; the meta copy covers `vite dev` and `vite preview`, and `src/csp.test.ts` keeps both equal. |
+| Anti-framing headers | `public/_headers` | Clickjacking. `frame-ancestors 'none'` and `X-Frame-Options: DENY`. |
+| Frame guard | `src/main.tsx` | Clickjacking on hosts that do not send the headers above: breaks out of hostile frames and blanks the page when navigation is impossible. |
+| Transport and browser policy headers | `public/_headers` | HSTS (`includeSubDomains; preload`), `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Cross-Origin-Opener-Policy: same-origin` and a `Permissions-Policy` that turns off camera, microphone, geolocation, payment, USB and Topics. |
 | Sandboxed embeds | `InternetApp`, `ViewerApp` | Third-party sites and `blob:` documents run without `allow-top-navigation`/`allow-popups`, so they cannot escape or act as the site. |
 | Text-only rendering | all apps | File contents, web results and profile data are always rendered as React text nodes, never as HTML. The codebase contains no `dangerouslySetInnerHTML`, `eval` or `document.write`. |
 | Scheme allowlist for navigation | `useFileOpener` | Shortcuts and URLs are validated as `http(s)` (or the shortcut's own types) before `window.open`, blocking `javascript:`/`data:` pivots. |
@@ -40,46 +42,34 @@ flowchart LR
   lockfile; Dependabot keeps it current.
 - **Pinned actions**: every GitHub Actions step is pinned to a full commit SHA, so a
   compromised action tag cannot inject code into the deployment.
-- **Least-privilege deployment**: the Pages workflow requests only `pages: write` and
-  `id-token: write`, and publishes through a manual dispatch while the site is not public.
+- **Least-privilege deployment**: the deploy workflow has `contents: read` only. The
+  Cloudflare token lives in the `production` environment, so no pull request job can read
+  it, and is limited to editing Workers on one account and one zone. Publishing is a manual
+  dispatch while the site is not public.
 - **Audit gate**: `npm audit --omit=dev` runs in CI; vulnerabilities fail the build.
 - **Protected main**: changes reach production only through pull requests with a green
   CI run.
 
-## Production hardening for nilparra.dev
+## Production setup for nilparra.dev
 
-The Pages origin (`*.github.io`) cannot send response headers. Serving the custom
-domain through Cloudflare (free tier) in front of Pages closes that gap:
-
-1. **Headers at the edge** (Transform Rules / response header rules):
-   - `Content-Security-Policy` — move the meta policy to a real header and drop
-     `style-src 'unsafe-inline'` once styles are extracted; keep the meta as fallback.
-   - `X-Frame-Options: DENY` and `Cross-Origin-Opener-Policy: same-origin` — real
-     clickjacking and window-reference defences, on top of the frame guard.
-   - `Referrer-Policy: strict-origin-when-cross-origin` (already implicit in the embeds,
-     which set `referrerPolicy="no-referrer"`), `X-Content-Type-Options: nosniff`,
-     `Permissions-Policy: camera=(), microphone=(), geolocation=()`.
-   - `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload` once the
-     domain is stable.
-2. **DNS/DNSSEC and TLS**: DNSSEC at the registrar and the Cloudflare proxy on. The
-   apex domain cannot carry a `CNAME`, so it points at GitHub Pages with the four
-   `A` records (`185.199.108.153` to `185.199.111.153`) and the four matching `AAAA`
-   records; `www` can be a `CNAME` to `nilparra-dev.github.io`. Pages issues a valid
-   certificate for the custom domain, so TLS mode "Full (strict)" works once that
-   certificate exists. Turn the proxy on only after it has been issued: the
-   certificate check needs to reach GitHub directly. `.dev` is on the browsers' HSTS
-   preload list as a whole, so the site is HTTPS only whatever the headers say.
-3. **Caching**: Pages answers every file with `Cache-Control: max-age=600`, hashed
-   assets included. An edge cache rule can mark `/assets/*` as immutable, because
-   their names change with their contents; the HTML is only forwarded, never
-   rewritten.
-4. **Monitoring**: Cloudflare Web Analytics is cookieless, so it needs no consent
+1. **Hosting**: Cloudflare Workers static assets (`wrangler.jsonc`), with no Worker
+   script. Only the custom domain serves the site: `workers_dev` and `preview_urls` are
+   off, so there is no second public host.
+2. **Headers**: `public/_headers` (see the runtime controls above). The remaining step is
+   dropping `style-src 'unsafe-inline'` once the inline styles are extracted.
+3. **DNS, DNSSEC and TLS**: the zone lives in Cloudflare, with DNSSEC signed there and
+   the DS record at the registrar. Cloudflare creates the apex record and its certificate
+   when the Worker's custom domain is attached. `www` is a proxied placeholder record with
+   a redirect rule to the apex. `.dev` is on the browsers' HSTS preload list as a whole,
+   so the site is HTTPS only whatever the headers say.
+4. **Caching**: `/assets/*` is `immutable` for a year, because Vite names those files
+   after their contents; `index.html` is always revalidated.
+5. **Monitoring**: Cloudflare Web Analytics is cookieless, so it needs no consent
    banner. Its beacon is a third-party script: adopting it means adding
    `https://static.cloudflareinsights.com` to `script-src` and
-   `https://cloudflareinsights.com` to `connect-src`.
-5. **Domain control**: verify `nilparra.dev` for the `nilparra-dev` organisation in
-   GitHub settings, so no other account can publish a Pages site under it if the
-   repository is ever deleted or renamed.
+   `https://cloudflareinsights.com` to `connect-src`, in both copies of the policy.
+6. **Mail**: the domain receives mail through Proton (MX, SPF, DKIM and DMARC records in
+   the zone); none of them may be proxied.
 
 ## Incident and maintenance posture
 

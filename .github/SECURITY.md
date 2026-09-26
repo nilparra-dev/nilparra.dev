@@ -30,8 +30,9 @@ disk lives in the browser's IndexedDB and only leaves the browser when the visit
 
 Please do not open a public issue. Report it privately from the repository's **Security** tab
 (**Report a vulnerability**), or write to nil@nilparra.dev, with the details and, when possible,
-a minimal reproduction. I read every report and reply as soon as I can. There is no bug
-bounty.
+a minimal reproduction. The site publishes the same contact at
+https://nilparra.dev/.well-known/security.txt. I read every report and reply as soon as I can.
+There is no bug bounty.
 
 ## Scope
 

@@ -75,6 +75,9 @@ flowchart LR
 
 - **Reporting**: `.github/SECURITY.md` asks for private reports, through GitHub's
   private vulnerability reporting or by email, instead of public issues.
+  `https://nilparra.dev/.well-known/security.txt` (RFC 9116) points at the same channel.
+  The build writes it (`src/core/content/securityTxt.ts`) with an `Expires` date a year
+  after the build, so every deploy keeps it valid.
 - **Secrets**: none exist by design. If one is ever needed (e.g. a paid search API), it
   must live behind a serverless proxy on the domain, never in the bundle — the CSP's
   `connect-src` would then list only that proxy.

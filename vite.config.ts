@@ -2,6 +2,7 @@ import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { PROFILE } from './src/core/content/profile';
 import { PROJECTS } from './src/core/content/projects';
+import { SECURITY_TXT_PATH, securityTxt } from './src/core/content/securityTxt';
 import { staticProfileHtml } from './src/core/content/staticHtml';
 import { TECHNOLOGIES } from './src/core/content/technologies';
 import { pick } from './src/core/content/types';
@@ -147,9 +148,20 @@ function seoPlugin(): Plugin {
   };
 }
 
+/** Emits `/.well-known/security.txt`, dated from the build (see securityTxt.ts). */
+function securityTxtPlugin(): Plugin {
+  return {
+    name: 'nilparra-security-txt',
+    apply: 'build',
+    generateBundle() {
+      this.emitFile({ type: 'asset', fileName: SECURITY_TXT_PATH, source: securityTxt(siteUrl, new Date()) });
+    },
+  };
+}
+
 export default defineConfig({
   base,
-  plugins: [react(), seoPlugin()],
+  plugins: [react(), seoPlugin(), securityTxtPlugin()],
   build: {
     target: 'es2022',
     outDir: 'dist',

@@ -29,10 +29,13 @@
         - 'unsafe-inline' styles: the generated stylesheets and the inline
           style attributes of the shell need it; there is no other inline
           script, so script-src stays strict ('self' only).
+        - Trusted Types: the browser refuses any HTML string written into the
+          DOM (innerHTML and friends), and no policy may be created to allow
+          one. The app only ever renders React text nodes.
     -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https://api.tavily.com; frame-src https: blob:; object-src 'none'; base-uri 'self'; form-action 'none'"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https://api.tavily.com; frame-src https: blob:; object-src 'none'; base-uri 'self'; form-action 'none'; require-trusted-types-for 'script'; trusted-types 'none'"
     />
 
     <!--

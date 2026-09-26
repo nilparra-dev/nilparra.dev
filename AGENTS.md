@@ -31,7 +31,8 @@ npm run build
   `public/sitemap.xml` mirror it: change all of them together.
 - The site is served by Cloudflare Workers static assets (`wrangler.jsonc`). Response headers live
   in `public/_headers`; its Content-Security-Policy must stay equal to the meta policy of
-  `index.html` plus `frame-ancestors`, and `src/csp.test.ts` fails when they drift.
+  `index.html` plus `frame-ancestors`, and `src/csp.test.ts` fails when they drift. The policy
+  enforces Trusted Types: never write HTML strings into the DOM, render text through React.
 - The structured data and the plain HTML copy inside `#root` are generated from
   `src/core/content/` by the seo plugin, so they can never contradict the desktop. Never
   hand-write JSON-LD or portfolio text into `index.html`. `index.html` must keep exactly one

@@ -8,7 +8,8 @@ disk lives in the browser's IndexedDB and only leaves the browser when the visit
 
 - **Content-Security-Policy** (`public/_headers`, response header, mirrored as a meta element in
   `index.html`): scripts only from the site itself, no inline scripts, `object-src 'none'`,
-  `frame-ancestors 'none'`, connections limited to the site and the Tavily search endpoint.
+  `frame-ancestors 'none'`, Trusted Types (no HTML string can reach the DOM), connections limited
+  to the site and the Tavily search endpoint.
 - **Security headers** (`public/_headers`): HSTS with preload, `X-Frame-Options: DENY`,
   `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Cross-Origin-Opener-Policy` and a
   restrictive `Permissions-Policy`.
@@ -22,6 +23,8 @@ disk lives in the browser's IndexedDB and only leaves the browser when the visit
   `localStorage` is revalidated against the current schema; malformed or tampered records are
   dropped instead of executed.
 - **Pinned CI actions**: every GitHub Action is pinned by commit SHA, not by a mutable tag.
+- **Code scanning**: CodeQL on every pull request, and an OpenSSF Scorecard run on every push to
+  `main`.
 - **No secrets in the site**: there is nothing to leak. Search is keyless. The only credential is
   the deploy token, kept in the `production` environment of the repository and limited to editing
   Workers on one account and one zone; the workflow itself only has `contents: read`.

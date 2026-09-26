@@ -13,7 +13,7 @@
   <a href=".github/SECURITY.md">Security</a>
 </p>
 
-<p align="center"><img alt="Opening the Start menu, playing Solitaire and drawing in Paint" src="docs/desktop.gif"></p>
+<p align="center"><img alt="Reading About me, browsing the projects, copying the contact address and playing Solitaire" src="docs/desktop.gif"></p>
 
 Open the site and Windows 95 boots: windows, a Start menu, a taskbar and a virtual disk. My CV,
 my projects and my contact details live there as files. Everything runs in the browser, with no

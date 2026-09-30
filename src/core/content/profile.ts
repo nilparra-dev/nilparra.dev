@@ -199,9 +199,9 @@ export const PROFILE: ProfileContent = {
       company: 'iDiomund, SL',
       companyLogo: 'experience/idiomund.png',
       description: {
-        es: 'Puesta a punto de equipos informáticos para la venta: desmontaje, sustitución y ampliación de componentes como la memoria RAM, configuración de los equipos y diagnóstico y reparación de averías. Además, preparación y seguimiento de pedidos en el ERP Odoo y mantenimiento del catálogo de productos, incluidas sus fotografías. Blanes, presencial.',
-        ca: 'Posada a punt d’equips informàtics per a la venda: desmuntatge, substitució i ampliació de components com la memòria RAM, configuració dels equips i diagnòstic i reparació d’avaries. A més, preparació i seguiment de comandes a l’ERP Odoo i manteniment del catàleg de productes, incloses les fotografies. Blanes, presencial.',
-        en: 'Prepared computers for sale: disassembly, component replacement and upgrades such as RAM, system configuration, and fault diagnosis and repair. Also prepared and tracked orders in the Odoo ERP and maintained the product catalogue, including its photos. Blanes, on-site.',
+        es: 'Puesta a punto de equipos informáticos para la venta: desmontaje, sustitución y ampliación de componentes como la memoria RAM, configuración de los equipos y diagnóstico y reparación de averías. Documentación del estado de cada equipo configurado en el ERP Odoo, junto con la preparación y el seguimiento de los pedidos. Blanes, presencial.',
+        ca: 'Posada a punt d’equips informàtics per a la venda: desmuntatge, substitució i ampliació de components com la memòria RAM, configuració dels equips i diagnòstic i reparació d’avaries. Documentació de l’estat de cada equip configurat a l’ERP Odoo, juntament amb la preparació i el seguiment de les comandes. Blanes, presencial.',
+        en: 'Prepared computers for sale: disassembly, component replacement and upgrades such as RAM, system configuration, and fault diagnosis and repair. Documented the state of each configured computer in the Odoo ERP, alongside preparing and tracking orders. Blanes, on-site.',
       },
     },
   ],

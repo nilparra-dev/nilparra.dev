@@ -256,6 +256,7 @@ function normalizeShortcut(input: unknown): FsNode['shortcut'] {
   if (raw.type === 'url') {
     return typeof raw.url === 'string' && raw.url ? { type: 'url', url: raw.url } : null;
   }
+  if (raw.type === 'cv') return { type: 'cv' };
   if (raw.type === 'node') {
     return typeof raw.nodeId === 'string' && raw.nodeId ? { type: 'node', nodeId: raw.nodeId } : null;
   }

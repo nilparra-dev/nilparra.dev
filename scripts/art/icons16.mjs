@@ -13,6 +13,7 @@ import {
   ellipseRing,
   fillEllipse,
   frame,
+  getPixel,
   hLine,
   rect,
   setPixel,
@@ -20,6 +21,7 @@ import {
   text,
   vLine,
 } from '../lib/raster.mjs';
+import { BRAND_COLOURS } from './icons.mjs';
 
 /** Stamp a full 16x16 sprite, rejecting rows that would shift the art. */
 function sprite(c, rows) {
@@ -685,6 +687,68 @@ const dialogError = (c) => {
   }
 };
 
+/**
+ * Shades a black disc drawn as a sprite: the outer ring stays black, the inside
+ * takes the brand fill and its top-left rim the light shade.
+ */
+function shadeDisc(c, { fill, light }) {
+  const black = getPixel(c, 7, 0);
+  const inside = (x, y) => getPixel(c, x, y) !== null;
+  for (let y = 0; y < 16; y += 1) {
+    for (let x = 0; x < 16; x += 1) {
+      if (getPixel(c, x, y) !== black) continue;
+      if (!inside(x - 1, y) || !inside(x + 1, y) || !inside(x, y - 1) || !inside(x, y + 1)) continue;
+      const rim = !inside(x - 2, y) || !inside(x, y - 2);
+      setPixel(c, x, y, rim && x + y < 15 ? light : fill);
+    }
+  }
+}
+
+const github = (c) => {
+  sprite(c, [
+    '.....KKKKKK.....',
+    '...KKKKKKKKKK...',
+    '..KKWKKKKKKWKK..',
+    '.KKKWWKKKKWWKKK.',
+    '.KKKWWWWWWWWKKK.',
+    'KKKWWWWWWWWWWKKK',
+    'KKWWWWWWWWWWWWKK',
+    'KKWWWWWWWWWWWWKK',
+    'KKKWWWWWWWWWWKKK',
+    'KKKKWWWWWWWWKKKK',
+    'KKWKKKWWWWKKKKKK',
+    '.KWWKKWWWWKKKKK.',
+    '.KKKWWWWWWKKKKK.',
+    '..KKKKWWWWKKKK..',
+    '...KKKWWWWKKK...',
+    '.....KKKKKK.....',
+  ]);
+  shadeDisc(c, BRAND_COLOURS.github);
+};
+
+const linkedin = (c) => {
+  const { fill, light, dark } = BRAND_COLOURS.linkedin;
+  bevel(c, 0, 0, 16, 16, { fill, light, dark, outline: 'K' });
+  for (const [x, y] of [
+    [0, 0],
+    [15, 0],
+    [0, 15],
+    [15, 15],
+  ]) {
+    setPixel(c, x, y, null);
+  }
+  const letters = (dx, dy, value) => {
+    rect(c, 3 + dx, 3 + dy, 2, 2, value);
+    rect(c, 3 + dx, 6 + dy, 2, 7, value);
+    rect(c, 6 + dx, 6 + dy, 2, 7, value);
+    rect(c, 8 + dx, 6 + dy, 2, 1, value);
+    rect(c, 8 + dx, 7 + dy, 3, 1, value);
+    rect(c, 10 + dx, 8 + dy, 2, 5, value);
+  };
+  letters(1, 1, dark);
+  letters(0, 0, 'W');
+};
+
 /* ------------------------------------------------------------------ *
  * Registry: one entry per id of ICONS
  * ------------------------------------------------------------------ */
@@ -742,4 +806,6 @@ export const ICONS_16 = {
   'dialog-question': dialogQuestion,
   'dialog-warning': dialogWarning,
   'dialog-error': dialogError,
+  github,
+  linkedin,
 };

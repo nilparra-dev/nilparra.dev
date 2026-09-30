@@ -6,6 +6,7 @@ import { iconForNode, nodeDisplayName } from '../fs/display';
 import { useClipboardActions, useFileOpener } from '../fs/useFileOpener';
 import { useVfs } from '../fs/VfsProvider';
 import { ROOT_ID, type FsNode } from '../fs/types';
+import { shortcutKey } from '../fs/seedSync';
 import { isValidName } from '../fs/vfsUtils';
 import { useI18n } from '../i18n/I18nProvider';
 import type { MenuEntry } from '../../ui/menu/types';
@@ -13,21 +14,23 @@ import { menuSeparator } from '../../ui/menu/types';
 
 /**
  * Reading order of the desktop: the personal shortcuts lead (projects, about,
- * contact, welcome), then the external links, then whatever the visitor puts
+ * the CV, contact), then the profile links, then other app shortcuts (such as
+ * the welcome shortcut older disks still keep) and whatever the visitor puts
  * on the desktop. The system items close the list so the portfolio is what the
  * eye lands on first.
  */
-const PERSONAL_APPS = ['projects', 'about', 'mail', 'welcome'];
+const PERSONAL_SHORTCUTS = ['app:projects', 'app:about', 'cv', 'app:mail'];
 
 function desktopRank(node: FsNode): number {
   const target = node.shortcut;
-  if (target?.type === 'app') {
-    const index = PERSONAL_APPS.indexOf(target.appId);
+  const base = PERSONAL_SHORTCUTS.length;
+  if (target) {
+    const index = PERSONAL_SHORTCUTS.indexOf(shortcutKey(target));
     if (index >= 0) return index;
-    return PERSONAL_APPS.length;
+    if (target.type === 'url') return base;
+    if (target.type === 'app') return base + 1;
   }
-  if (target?.type === 'url') return PERSONAL_APPS.length + 1;
-  return node.kind === 'folder' ? PERSONAL_APPS.length + 2 : PERSONAL_APPS.length + 3;
+  return node.kind === 'folder' ? base + 2 : base + 3;
 }
 
 /**

@@ -75,6 +75,7 @@ export const ca: Catalog = {
   'desktop.delete': 'Elimina',
   'desktop.rename': 'Canvia el nom',
   'desktop.properties': 'Propietats',
+  'desktop.cvShortcut': 'Currículum',
   'desktop.new': 'Nou',
   'desktop.newFolder': 'Carpeta',
   'desktop.newDocument': 'Document de text',

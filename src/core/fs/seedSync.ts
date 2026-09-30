@@ -34,6 +34,7 @@ const LEGACY_OFFER = [
 export function shortcutKey(target: ShortcutTarget): string {
   if (target.type === 'app') return `app:${target.appId}`;
   if (target.type === 'url') return `url:${target.url}`;
+  if (target.type === 'cv') return 'cv';
   return `node:${target.nodeId}`;
 }
 

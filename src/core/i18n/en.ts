@@ -75,6 +75,7 @@ export const en: Catalog = {
   'desktop.delete': 'Delete',
   'desktop.rename': 'Rename',
   'desktop.properties': 'Properties',
+  'desktop.cvShortcut': 'Résumé (CV)',
   'desktop.new': 'New',
   'desktop.newFolder': 'Folder',
   'desktop.newDocument': 'Text document',

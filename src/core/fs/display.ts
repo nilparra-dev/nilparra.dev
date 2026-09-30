@@ -5,6 +5,7 @@
  */
 import type { IconId } from '../../assets/generated/icons';
 import { APP_CATALOG } from '../apps/catalog';
+import { PROFILE } from '../content/profile';
 import type { I18nValue } from '../i18n/I18nProvider';
 import { WELCOME_FILE_NAME } from './seed';
 import { ROOT_ID, type FsNode } from './types';
@@ -36,6 +37,7 @@ const SYSTEM_SHORTCUT_LABELS: Record<string, Parameters<Translate>[0]> = {
 function systemShortcutLabel(node: FsNode): Parameters<Translate>[0] | null {
   if (node.origin !== 'system' || node.deletedAt !== null) return null;
   if (node.createdAt !== node.updatedAt) return null;
+  if (node.shortcut?.type === 'cv') return 'desktop.cvShortcut';
   if (node.shortcut?.type !== 'app') return null;
   return SYSTEM_SHORTCUT_LABELS[node.shortcut.appId] ?? null;
 }
@@ -103,10 +105,17 @@ export function iconForNode(node: FsNode): IconId {
     if (node.systemKey) return SYSTEM_ICONS[node.systemKey] ?? 'folder';
     return node.origin === 'portfolio' ? 'folder' : 'folder';
   }
+  if (node.shortcut?.type === 'url') {
+    /* Profile links get their brand icon, also on disks seeded before it existed. */
+    const url = node.shortcut.url;
+    const profileLink = PROFILE.links.find((link) => link.url === url);
+    if (profileLink) return profileLink.icon;
+  }
   if (node.icon) return node.icon;
   if (node.shortcut) {
     if (node.shortcut.type === 'app') return APP_CATALOG[node.shortcut.appId]?.icon ?? 'doc-web';
     if (node.shortcut.type === 'url') return 'doc-web';
+    if (node.shortcut.type === 'cv') return 'doc-pdf';
     return node.shortcut.type === 'node' ? 'folder' : 'doc-web';
   }
   return iconForName(node.name);

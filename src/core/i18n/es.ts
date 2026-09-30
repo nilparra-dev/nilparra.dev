@@ -82,6 +82,7 @@ export const es = {
   'desktop.delete': 'Eliminar',
   'desktop.rename': 'Cambiar nombre',
   'desktop.properties': 'Propiedades',
+  'desktop.cvShortcut': 'Currículum',
   'desktop.new': 'Nuevo',
   'desktop.newFolder': 'Carpeta',
   'desktop.newDocument': 'Documento de texto',

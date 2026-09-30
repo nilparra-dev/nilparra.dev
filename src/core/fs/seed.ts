@@ -170,20 +170,23 @@ export function buildSeed(locale: Locale, now = Date.now()): SeedResult {
   return { nodes, folders };
 }
 
-/** Shortcuts the seed puts on the desktop: the personal apps, then the profile links. */
+/**
+ * Shortcuts the seed puts on the desktop: projects, about, the CV and contact,
+ * then the profile links. The welcome window opens by itself on the first
+ * visit and stays in the Start menu, so it no longer takes a desktop slot.
+ */
 export function seedShortcuts(desktopId: string, now = Date.now()): FsNode[] {
-  const apps: Array<{ name: string; appId: string; icon: FsNode['icon'] }> = [
-    { name: 'Mis proyectos.lnk', appId: 'projects', icon: APP_CATALOG.projects?.icon ?? 'projects' },
-    { name: 'Sobre mí.lnk', appId: 'about', icon: APP_CATALOG.about?.icon ?? 'about-me' },
-    { name: 'Contacto.lnk', appId: 'mail', icon: APP_CATALOG.mail?.icon ?? 'mail' },
-    { name: 'Bienvenida.lnk', appId: 'welcome', icon: APP_CATALOG.welcome?.icon ?? 'welcome' },
+  const app = (name: string, appId: string, icon: NonNullable<FsNode['icon']>) =>
+    shortcut(desktopId, name, { type: 'app', appId }, APP_CATALOG[appId]?.icon ?? icon, now);
+  const nodes = [
+    app('Mis proyectos.lnk', 'projects', 'projects'),
+    app('Sobre mí.lnk', 'about', 'about-me'),
   ];
-  const nodes = apps.map((app) =>
-    shortcut(desktopId, app.name, { type: 'app', appId: app.appId }, app.icon, now),
-  );
+  if (PROFILE.cvUrl) nodes.push(shortcut(desktopId, 'Currículum.lnk', { type: 'cv' }, 'doc-pdf', now));
+  nodes.push(app('Contacto.lnk', 'mail', 'mail'));
   for (const link of PROFILE.links) {
     if (!link.url.startsWith('http')) continue;
-    nodes.push(shortcut(desktopId, `${link.label}.url`, { type: 'url', url: link.url }, 'doc-web', now));
+    nodes.push(shortcut(desktopId, `${link.label}.url`, { type: 'url', url: link.url }, link.icon, now));
   }
   return nodes;
 }

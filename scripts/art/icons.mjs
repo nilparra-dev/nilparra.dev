@@ -557,9 +557,9 @@ const docPdf = (c) => {
     [10, 12, 11],
     [10, 15, 11],
   ]);
-  rect(c, 9, 20, 14, 6, 'R');
-  frame(c, 9, 20, 14, 6, 'K');
-  text(c, 'PDF', 12, 21, 'W');
+  rect(c, 9, 19, 15, 8, 'R');
+  frame(c, 9, 19, 15, 8, 'K');
+  text(c, 'PDF', 11, 21, 'W');
 };
 
 const docUnknown = (c) => {
@@ -780,6 +780,97 @@ const shortcut = (c) => {
 };
 
 /* ------------------------------------------------------------------ *
+ * Profile links
+ *
+ * Pixel renditions of the GitHub and LinkedIn marks, so the desktop shortcuts
+ * to those profiles read at a glance instead of as generic web pages.
+ * ------------------------------------------------------------------ */
+
+/** Brand colours, shaded like the rest of the set (light top-left, dark bottom-right). */
+export const BRAND_COLOURS = {
+  github: { fill: '#24292f', light: '#6e7781', dark: '#000000' },
+  linkedin: { fill: '#0a66c2', light: '#5a9be0', dark: '#004182' },
+};
+
+/** Bevelled square with two-pixel rounded corners, the base of the LinkedIn mark. */
+function roundedBadge(c, x, y, size, { fill, light, dark }) {
+  bevel(c, x, y, size, size, { fill, light, dark, outline: 'K' });
+  const last = size - 1;
+  for (const [cx, cy, dx, dy] of [
+    [x, y, 1, 1],
+    [x + last, y, -1, 1],
+    [x, y + last, 1, -1],
+    [x + last, y + last, -1, -1],
+  ]) {
+    setPixel(c, cx, cy, null);
+    setPixel(c, cx + dx, cy, null);
+    setPixel(c, cx, cy + dy, null);
+    setPixel(c, cx + dx, cy + dy, 'K');
+  }
+}
+
+/**
+ * Round disc filling the 32x32 canvas, centred between pixels so it has no
+ * one-pixel bumps at the top, bottom and sides: black rim, light inner edge
+ * at the top-left and dark inner edge at the bottom-right.
+ */
+function disc(c, { fill, light, dark }) {
+  const inside = (x, y) => x >= 0 && y >= 0 && x < 32 && y < 32 && (x - 15.5) ** 2 + (y - 15.5) ** 2 <= 15.6 ** 2;
+  const rim = (x, y) =>
+    inside(x, y) && (!inside(x - 1, y) || !inside(x + 1, y) || !inside(x, y - 1) || !inside(x, y + 1));
+  for (let y = 0; y < 32; y += 1) {
+    for (let x = 0; x < 32; x += 1) {
+      if (!inside(x, y)) continue;
+      if (rim(x, y)) setPixel(c, x, y, 'K');
+      else if ((rim(x - 1, y) || rim(x, y - 1)) && x + y < 31) setPixel(c, x, y, light);
+      else if ((rim(x + 1, y) || rim(x, y + 1)) && x + y > 31) setPixel(c, x, y, dark);
+      else setPixel(c, x, y, fill);
+    }
+  }
+}
+
+const github = (c) => {
+  disc(c, BRAND_COLOURS.github);
+  // Ears, symmetric around x = 15.5 like the disc.
+  rect(c, 8, 5, 2, 1, 'W');
+  rect(c, 22, 5, 2, 1, 'W');
+  rect(c, 8, 6, 3, 1, 'W');
+  rect(c, 21, 6, 3, 1, 'W');
+  rect(c, 8, 7, 4, 1, 'W');
+  rect(c, 20, 7, 4, 1, 'W');
+  // Head.
+  rect(c, 8, 8, 16, 1, 'W');
+  rect(c, 7, 9, 18, 1, 'W');
+  rect(c, 6, 10, 20, 7, 'W');
+  rect(c, 7, 17, 18, 1, 'W');
+  rect(c, 8, 18, 16, 1, 'W');
+  rect(c, 10, 19, 12, 1, 'W');
+  // Body, down to the rim.
+  rect(c, 12, 20, 8, 11, 'W');
+  // Tail curling up on the left.
+  rect(c, 4, 18, 2, 2, 'W');
+  rect(c, 4, 20, 3, 1, 'W');
+  rect(c, 5, 21, 7, 1, 'W');
+  rect(c, 7, 22, 5, 1, 'W');
+};
+
+const linkedin = (c) => {
+  const colours = BRAND_COLOURS.linkedin;
+  roundedBadge(c, 2, 2, 28, colours);
+  // "in", drawn twice: a dark copy one pixel down-right as the shadow, then white.
+  const letters = (dx, dy, value) => {
+    rect(c, 8 + dx, 7 + dy, 4, 4, value);
+    rect(c, 8 + dx, 13 + dy, 4, 12, value);
+    rect(c, 14 + dx, 13 + dy, 4, 12, value);
+    rect(c, 18 + dx, 13 + dy, 4, 1, value);
+    rect(c, 18 + dx, 14 + dy, 5, 1, value);
+    rect(c, 20 + dx, 15 + dy, 4, 10, value);
+  };
+  letters(1, 1, colours.dark);
+  letters(0, 0, 'W');
+};
+
+/* ------------------------------------------------------------------ *
  * Registry
  * ------------------------------------------------------------------ */
 
@@ -836,6 +927,8 @@ export const ICONS = {
   'dialog-question': dialogQuestion,
   'dialog-warning': dialogWarning,
   'dialog-error': dialogError,
+  github,
+  linkedin,
 };
 
 /** Icons drawn on a 16x16 canvas (taskbar buttons, tray, start button). */

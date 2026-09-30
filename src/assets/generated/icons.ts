@@ -52,6 +52,8 @@ import icon_dialog_info from './icons/dialog-info.png';
 import icon_dialog_question from './icons/dialog-question.png';
 import icon_dialog_warning from './icons/dialog-warning.png';
 import icon_dialog_error from './icons/dialog-error.png';
+import icon_github from './icons/github.png';
+import icon_linkedin from './icons/linkedin.png';
 import icon_computer_16 from './icons/computer-16.png';
 import icon_network_16 from './icons/network-16.png';
 import icon_drive_16 from './icons/drive-16.png';
@@ -104,6 +106,8 @@ import icon_dialog_info_16 from './icons/dialog-info-16.png';
 import icon_dialog_question_16 from './icons/dialog-question-16.png';
 import icon_dialog_warning_16 from './icons/dialog-warning-16.png';
 import icon_dialog_error_16 from './icons/dialog-error-16.png';
+import icon_github_16 from './icons/github-16.png';
+import icon_linkedin_16 from './icons/linkedin-16.png';
 import chrome_start_mark from './chrome/start-mark.png';
 import chrome_speaker from './chrome/speaker.png';
 import chrome_shortcut from './chrome/shortcut.png';
@@ -162,6 +166,8 @@ export const ICON_URLS = {
   'dialog-question': icon_dialog_question,
   'dialog-warning': icon_dialog_warning,
   'dialog-error': icon_dialog_error,
+  'github': icon_github,
+  'linkedin': icon_linkedin,
 } as const;
 
 export type IconId = keyof typeof ICON_URLS;
@@ -220,6 +226,8 @@ export const ICON_URLS_16 = {
   'dialog-question': icon_dialog_question_16,
   'dialog-warning': icon_dialog_warning_16,
   'dialog-error': icon_dialog_error_16,
+  'github': icon_github_16,
+  'linkedin': icon_linkedin_16,
 } as const;
 
 /** 16x16 glyphs for the taskbar, the tray and the start button. */

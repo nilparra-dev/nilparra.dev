@@ -1,5 +1,7 @@
 import { useCallback } from 'react';
-import { useT } from '../i18n/I18nProvider';
+import { PROFILE } from '../content/profile';
+import { pick } from '../content/types';
+import { useI18n, useT } from '../i18n/I18nProvider';
 import { useAppLauncher } from '../apps/launcher';
 import { appNameKey } from '../apps/catalog';
 import { useVfs } from './VfsProvider';
@@ -14,6 +16,7 @@ export type OpenTarget =
   | { kind: 'node'; node: FsNode }
   | { kind: 'app'; appId: string }
   | { kind: 'url'; url: string }
+  | { kind: 'cv' }
   | { kind: 'missing'; node: FsNode }
   | { kind: 'cycle'; node: FsNode };
 
@@ -30,6 +33,7 @@ export function resolveShortcutNode(
     if (current.kind === 'folder' || !current.shortcut) return { kind: 'node', node: current };
     if (current.shortcut.type === 'app') return { kind: 'app', appId: current.shortcut.appId };
     if (current.shortcut.type === 'url') return { kind: 'url', url: current.shortcut.url };
+    if (current.shortcut.type === 'cv') return { kind: 'cv' };
     const linked = lookup(current.shortcut.nodeId);
     if (!linked) return { kind: 'missing', node: current };
     current = linked;
@@ -44,7 +48,7 @@ export function resolveShortcutNode(
 export function useFileOpener() {
   const vfs = useVfs();
   const launch = useAppLauncher();
-  const t = useT();
+  const { t, locale } = useI18n();
   const dialogs = useDialogs();
   const openExternal = useOpenExternal();
 
@@ -69,6 +73,19 @@ export function useFileOpener() {
       }
       if (resolution.kind === 'app') {
         launch({ appId: resolution.appId });
+        return;
+      }
+      if (resolution.kind === 'cv') {
+        // Same-site PDF in the current language: it opens in a new tab straight away.
+        if (PROFILE.cvUrl) {
+          await openExternal(pick(PROFILE.cvUrl, locale));
+          return;
+        }
+        await dialogs.alert({
+          title: t('dialog.errorTitle'),
+          kind: 'error',
+          message: t('dialog.fileNotFound', { name: nodeDisplayName(node, t) }),
+        });
         return;
       }
       if (resolution.kind === 'url') {
@@ -131,7 +148,7 @@ export function useFileOpener() {
         docKey: `${appId}:${current.id}`,
       });
     },
-    [dialogs, launch, openExternal, t, vfs],
+    [dialogs, launch, locale, openExternal, t, vfs],
   );
 }
 

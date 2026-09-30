@@ -685,6 +685,35 @@ const dialogError = (c) => {
   }
 };
 
+const github = (c) =>
+  sprite(c, [
+    '.....KKKKKK.....',
+    '...KKKKKKKKKK...',
+    '..KKWKKKKKKWKK..',
+    '.KKKWWKKKKWWKKK.',
+    '.KKKWWWWWWWWKKK.',
+    'KKKWWWWWWWWWWKKK',
+    'KKKWWWWWWWWWWKKK',
+    'KKKWWWWWWWWWWKKK',
+    'KKKKWWWWWWWWKKKK',
+    'KKKKKKWWWWKKKKKK',
+    'KKWKKKWWWWKKKKKK',
+    '.KKWWKWWWWKKKKK.',
+    '.KKKKWWWWWKKKKK.',
+    '..KKKKWWWWKKKK..',
+    '...KKKWWWWKKK...',
+    '.....KKKKKK.....',
+  ]);
+
+const linkedin = (c) => {
+  bevel(c, 1, 1, 14, 14, { fill: 'N', light: 'B', dark: 'K', outline: 'K' });
+  rect(c, 4, 4, 2, 2, 'W');
+  rect(c, 4, 7, 2, 6, 'W');
+  rect(c, 7, 7, 2, 6, 'W');
+  rect(c, 7, 7, 4, 2, 'W');
+  rect(c, 10, 8, 2, 5, 'W');
+};
+
 /* ------------------------------------------------------------------ *
  * Registry: one entry per id of ICONS
  * ------------------------------------------------------------------ */
@@ -742,4 +771,6 @@ export const ICONS_16 = {
   'dialog-question': dialogQuestion,
   'dialog-warning': dialogWarning,
   'dialog-error': dialogError,
+  github,
+  linkedin,
 };

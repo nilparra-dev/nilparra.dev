@@ -8,7 +8,9 @@ export type NodeOrigin = 'system' | 'portfolio' | 'user';
 export type ShortcutTarget =
   | { type: 'app'; appId: string }
   | { type: 'url'; url: string }
-  | { type: 'node'; nodeId: string };
+  | { type: 'node'; nodeId: string }
+  /** The CV PDF in the interface language, resolved when it is opened. */
+  | { type: 'cv' };
 
 /**
  * One entry of the virtual disk.

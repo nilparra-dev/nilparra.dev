@@ -93,7 +93,8 @@ describe('shell', () => {
   it('translates the seeded desktop shortcuts when the language changes', async () => {
     render(<App />);
     const desktopEs = await screen.findByRole('listbox', { name: 'Escritorio' }, { timeout: 4000 });
-    expect(within(desktopEs).getByText('Bienvenida')).toBeTruthy();
+    expect(within(desktopEs).getByText('Sobre mí')).toBeTruthy();
+    expect(within(desktopEs).getByText('Currículum')).toBeTruthy();
 
     // The disk stays seeded in Spanish: only the interface language changes.
     cleanup();
@@ -103,9 +104,10 @@ describe('shell', () => {
     );
     render(<App />);
     const desktopEn = await screen.findByRole('listbox', { name: 'Desktop' }, { timeout: 4000 });
-    expect(within(desktopEn).getByText('Welcome')).toBeTruthy();
+    expect(within(desktopEn).getByText('About me')).toBeTruthy();
+    expect(within(desktopEn).getByText('Résumé (CV)')).toBeTruthy();
     expect(within(desktopEn).getByText('My projects')).toBeTruthy();
-    expect(within(desktopEn).queryByText('Bienvenida')).toBeNull();
+    expect(within(desktopEn).queryByText('Sobre mí')).toBeNull();
   });
 
   it('opens the GitHub shortcut inside the Internet window', async () => {

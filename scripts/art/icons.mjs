@@ -780,6 +780,56 @@ const shortcut = (c) => {
 };
 
 /* ------------------------------------------------------------------ *
+ * Profile links
+ *
+ * Pixel renditions of the GitHub and LinkedIn marks, so the desktop shortcuts
+ * to those profiles read at a glance instead of as generic web pages.
+ * ------------------------------------------------------------------ */
+
+const github = (c) => {
+  fillEllipse(c, 16, 16, 14, 14, 'K');
+  stamp(
+    c,
+    [
+      '.WW..........WW.',
+      '.WWW........WWW.',
+      '.WWWW......WWWW.',
+      '.WWWWWWWWWWWWWW.',
+      'WWWWWWWWWWWWWWWW',
+      'WWWWWWWWWWWWWWWW',
+      'WWWWWWWWWWWWWWWW',
+      'WWWWWWWWWWWWWWWW',
+      'WWWWWWWWWWWWWWWW',
+      'WWWWWWWWWWWWWWWW',
+      '.WWWWWWWWWWWWWW.',
+      '..WWWWWWWWWWWW..',
+      '....WWWWWWWW....',
+      '.....WWWWWW.....',
+      '.....WWWWWW.....',
+      'W....WWWWWW.....',
+      'WW...WWWWWW.....',
+      '.WW..WWWWWW.....',
+      '..WWWWWWWWW.....',
+      '...WWWWWWWW.....',
+      '.....WWWWWW.....',
+      '.....WWWWWW.....',
+    ],
+    8,
+    5,
+  );
+};
+
+const linkedin = (c) => {
+  bevel(c, 2, 2, 28, 28, { fill: 'N', light: 'B', dark: 'K', outline: 'K' });
+  rect(c, 8, 7, 4, 4, 'W');
+  rect(c, 8, 13, 4, 12, 'W');
+  rect(c, 14, 13, 4, 12, 'W');
+  rect(c, 14, 13, 8, 3, 'W');
+  rect(c, 20, 15, 4, 10, 'W');
+  setPixel(c, 22, 14, 'W');
+};
+
+/* ------------------------------------------------------------------ *
  * Registry
  * ------------------------------------------------------------------ */
 
@@ -836,6 +886,8 @@ export const ICONS = {
   'dialog-question': dialogQuestion,
   'dialog-warning': dialogWarning,
   'dialog-error': dialogError,
+  github,
+  linkedin,
 };
 
 /** Icons drawn on a 16x16 canvas (taskbar buttons, tray, start button). */

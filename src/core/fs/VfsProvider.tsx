@@ -13,7 +13,7 @@ import type { IconId } from '../../assets/generated/icons';
 import { createId } from '../ids';
 import { buildPortfolioSeed, buildSeed } from './seed';
 import { FsError, ROOT_ID, type FsBlob, type FsNode, type NodeWithPath, type ShortcutTarget, type SystemFolderKey } from './types';
-import { diskUsage, initializeNodes, putBlobs, putNodes, readBlobData, removeNodes, syncSeedNodes, warmUp, wipeDisk } from './vfs';
+import { createNodes, diskUsage, initializeNodes, putNodes, readBlobData, removeNodes, syncSeedNodes, warmUp, wipeDisk } from './vfs';
 import {
   childrenOf as childrenOfNodes,
   duplicateSubtree,
@@ -138,11 +138,10 @@ export function VfsProvider({ children }: { children: ReactNode }) {
   const commit = useCallback(
     async (
       changes: FsNode[],
-      options: { removals?: string[]; blobs?: FsBlob[]; blobRemovals?: string[] } = {},
+      options: { removals?: string[]; blobRemovals?: string[] } = {},
     ): Promise<boolean> => {
       setBusyCount((count) => count + 1);
       try {
-        if (options.blobs?.length) await putBlobs(options.blobs);
         if (changes.length) await putNodes(changes);
         if (options.removals?.length || options.blobRemovals?.length) {
           await removeNodes(options.removals ?? [], options.blobRemovals ?? []);
@@ -153,6 +152,24 @@ export function VfsProvider({ children }: { children: ReactNode }) {
       } catch (cause) {
         setError(cause instanceof FsError ? cause : new FsError('write', String(cause)));
         return false;
+      } finally {
+        setBusyCount((count) => Math.max(0, count - 1));
+      }
+    },
+    [apply, refreshUsage],
+  );
+
+  const create = useCallback(
+    async (input: Parameters<typeof createNodes>[0]): Promise<FsNode[]> => {
+      setBusyCount((count) => count + 1);
+      try {
+        const created = await createNodes(input);
+        apply(created);
+        void refreshUsage();
+        return created;
+      } catch (cause) {
+        setError(cause instanceof FsError ? cause : new FsError('write', String(cause)));
+        return [];
       } finally {
         setBusyCount((count) => Math.max(0, count - 1));
       }
@@ -214,44 +231,33 @@ export function VfsProvider({ children }: { children: ReactNode }) {
   const createFolder = useCallback(
     async (parentId: string, name?: string) => {
       const desired = name?.trim() || 'Nueva carpeta';
-      const finalName = uniqueName(
-        liveChildren(parentId).map((node) => node.name),
-        desired,
-      );
-      const node = makeFolder(parentId, finalName);
-      return (await commit([node])) ? node : null;
+      const [node] = await create({ nodes: [makeFolder(parentId, desired)] });
+      return node ?? null;
     },
-    [commit, liveChildren],
+    [create],
   );
 
   const createTextFile = useCallback(
     async (parentId: string, name: string, content: string) => {
-      const finalName = uniqueName(
-        liveChildren(parentId).map((node) => node.name),
-        name.trim() || 'Nuevo documento.txt',
-      );
-      const node = makeTextFile(parentId, finalName, content);
-      return (await commit([node])) ? node : null;
+      const [node] = await create({ nodes: [makeTextFile(parentId, name.trim() || 'Nuevo documento.txt', content)] });
+      return node ?? null;
     },
-    [commit, liveChildren],
+    [create],
   );
 
   const createShortcut = useCallback(
     async (parentId: string, name: string, target: ShortcutTarget, icon?: IconId | null) => {
-      const finalName = uniqueName(
-        liveChildren(parentId).map((node) => node.name),
-        name.endsWith('.lnk') ? name : `${name}.lnk`,
-      );
-      const node = makeShortcut(parentId, finalName, target, icon ?? null);
-      return (await commit([node])) ? node : null;
+      const desired = name.endsWith('.lnk') ? name : `${name}.lnk`;
+      const [node] = await create({ nodes: [makeShortcut(parentId, desired, target, icon ?? null)] });
+      return node ?? null;
     },
-    [commit, liveChildren],
+    [create],
   );
 
   const saveText = useCallback(
     async (id: string, content: string) => {
       const node = nodes.get(id);
-      if (!node || node.kind !== 'file') return false;
+      if (!node || node.kind !== 'file' || node.readonly) return false;
       return commit([
         {
           ...node,
@@ -327,9 +333,9 @@ export function VfsProvider({ children }: { children: ReactNode }) {
         }
       }
       if (!created.length) return false;
-      return commit(created, { blobs });
+      return (await create({ nodes: created, blobs })).length > 0;
     },
-    [commit, nodes],
+    [create, nodes],
   );
 
   const collectSubtree = useCallback(
@@ -428,12 +434,8 @@ export function VfsProvider({ children }: { children: ReactNode }) {
     async (parentId: string, files: File[]) => {
       const created: FsNode[] = [];
       const blobs: FsBlob[] = [];
-      const siblings = () => [
-        ...liveChildren(parentId).map((node) => node.name),
-        ...created.map((node) => node.name),
-      ];
       for (const file of files) {
-        const name = uniqueName(siblings(), file.name);
+        const name = file.name;
         const extension = extensionOf(name);
         const isText =
           isTextExtension(extension) ||
@@ -451,10 +453,9 @@ export function VfsProvider({ children }: { children: ReactNode }) {
         }
       }
       if (!created.length) return [];
-      const ok = await commit(created, { blobs });
-      return ok ? created : [];
+      return create({ nodes: created, blobs });
     },
-    [commit, liveChildren],
+    [create],
   );
 
   const exportNode = useCallback(

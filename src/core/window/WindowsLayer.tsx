@@ -43,21 +43,20 @@ export function WindowsLayer() {
     const previous = previousActive.current;
     previousActive.current = wm.activeId;
     if (!previous || previous === wm.activeId) return;
-    if (wm.windows.some((window) => window.id === previous)) return;
+    const previousWindow = wm.windows.find((window) => window.id === previous);
+    if (previousWindow && previousWindow.state !== 'minimized' && !wm.compact) return;
     if (wm.activeId) {
-      document.getElementById(`window-${wm.activeId}`)?.focus({ preventScroll: true });
+      const activeWindow = document.getElementById(`window-${wm.activeId}`);
+      if (!activeWindow?.contains(document.activeElement)) activeWindow?.focus({ preventScroll: true });
     } else {
       document.querySelector<HTMLElement>('.desktop-surface')?.focus({ preventScroll: true });
     }
-  }, [wm.activeId, wm.windows]);
-
-  const visible = wm.compact
-    ? wm.windows.filter((window) => window.id === wm.activeId)
-    : wm.windows.filter((window) => window.state !== 'minimized');
+  }, [wm.activeId, wm.compact, wm.windows]);
 
   return (
     <>
-      {visible.map((instance) => {
+      {/* Hidden windows stay mounted so drafts, games and close guards survive. */}
+      {wm.windows.map((instance) => {
         const Application = APP_COMPONENTS[instance.appId];
         if (!Application) return null;
         return (
@@ -65,6 +64,7 @@ export function WindowsLayer() {
             key={instance.id}
             instance={instance}
             active={instance.id === wm.activeId}
+            hidden={instance.state === 'minimized' || (wm.compact && instance.id !== wm.activeId)}
           >
             {/* Split applications own their loading and retry state. */}
             <Application windowId={instance.id} params={instance.params} />

@@ -16,6 +16,7 @@ const RESIZE_DIRECTIONS: ResizeDirection[] = ['n', 's', 'e', 'w', 'nw', 'ne', 's
 export interface WindowFrameProps {
   instance: WindowInstance;
   active: boolean;
+  hidden?: boolean;
   children: ReactNode;
 }
 
@@ -24,7 +25,7 @@ export interface WindowFrameProps {
  * system menu and keyboard move/size mode. The application renders its own
  * chrome (menu bar, client area, status bar) inside the body.
  */
-export function WindowFrame({ instance, active, children }: WindowFrameProps) {
+export function WindowFrame({ instance, active, hidden = false, children }: WindowFrameProps) {
   const wm = useWindowManager();
   const t = useT();
   const { open: openMenu, close: closeMenu } = useMenuLayer();
@@ -43,7 +44,7 @@ export function WindowFrame({ instance, active, children }: WindowFrameProps) {
   const minimum = { width: instance.minWidth, height: instance.minHeight };
 
   useEffect(() => {
-    if (interaction !== 'move' && interaction !== 'size') return;
+    if (hidden || (interaction !== 'move' && interaction !== 'size')) return;
     const onKeyDown = (event: KeyboardEvent) => {
       const step = event.shiftKey ? 1 : 8;
       const current = instance.rect;
@@ -94,7 +95,7 @@ export function WindowFrame({ instance, active, children }: WindowFrameProps) {
     };
     document.addEventListener('keydown', onKeyDown, true);
     return () => document.removeEventListener('keydown', onKeyDown, true);
-  }, [interaction, instance.id, instance.rect, instance.state, minimum.height, minimum.width, wm]);
+  }, [hidden, interaction, instance.id, instance.rect, instance.state, minimum.height, minimum.width, wm]);
 
   useEffect(() => {
     if (interaction) wm.announce(interaction === 'move' ? t('window.move') : t('window.size'));
@@ -245,11 +246,13 @@ export function WindowFrame({ instance, active, children }: WindowFrameProps) {
       }}
       id={`window-${instance.id}`}
       className={className}
+      hidden={hidden}
+      inert={hidden}
       role="dialog"
       aria-modal={false}
       aria-labelledby={`window-title-${instance.id}`}
       tabIndex={-1}
-      style={{ left: rect.x, top: rect.y, width: rect.width, height: rect.height, zIndex: instance.z }}
+      style={{ left: rect.x, top: rect.y, width: rect.width, height: rect.height, zIndex: instance.z, display: hidden ? 'none' : undefined }}
       onPointerDownCapture={() => {
         if (!active) {
           wm.focus(instance.id);

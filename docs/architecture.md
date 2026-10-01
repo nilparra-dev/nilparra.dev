@@ -37,6 +37,8 @@ A reducer over a single state tree. `windowManagerReducer` handles a small set o
 `setViewport`, `minimizeAll`, `closeAll`, `resetLayout` and `hydrate`. `layout.ts` cascades new
 windows and clamps them to the desktop, and `layoutPersistence.ts` saves the session, restores it
 on the next visit and drops windows of applications that no longer exist.
+Minimized windows and inactive windows on compact screens stay mounted, hidden and inert, so
+application state and unsaved-document guards survive switching windows.
 
 ## Virtual file system (`src/core/fs/`)
 
@@ -51,6 +53,9 @@ the visitor's first visit. A localStorage list of the shortcuts already offered 
 visitor deleted from coming back. On boot, `vfs.ts` repairs the copies an older non-atomic
 initialisation could leave behind in the same transaction as the seed sync, and only when the
 copies are untouched: the visitor's files are never touched.
+File and folder creation reserves sibling names inside the same IndexedDB transaction as the
+insertions. Imports and copies use this path too, with binary content committed alongside its
+metadata, so concurrent creations cannot reserve the same name from stale in-memory trees.
 
 ## Applications (`src/core/apps/`)
 

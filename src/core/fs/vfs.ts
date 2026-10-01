@@ -20,6 +20,7 @@ import { readStored, writeStored } from '../persist/storage';
 import { WELCOME_FILE_NAME } from './seed';
 import { planSeedSync } from './seedSync';
 import { FsError, type FsBlob, type FsNode, type SystemFolderKey } from './types';
+import { uniqueName } from './vfsUtils';
 
 /**
  * Texts the seed has written into the welcome note, one per language. A copy
@@ -299,6 +300,40 @@ export async function putNodes(nodes: FsNode[]): Promise<void> {
     const store = tx.objectStore(STORE_NODES);
     nodes.forEach((node) => store.put(node));
   });
+}
+
+/** Reserves sibling names and writes new nodes and their blobs in one transaction. */
+export async function createNodes({ nodes, blobs = [] }: { nodes: FsNode[]; blobs?: FsBlob[] }): Promise<FsNode[]> {
+  if (!nodes.length) return [];
+  const created: FsNode[] = [];
+  await write(blobs.length ? [STORE_NODES, STORE_BLOBS] : [STORE_NODES], (tx) => {
+    const store = tx.objectStore(STORE_NODES);
+    const all = store.getAll();
+    all.onsuccess = () => {
+      const namesByParent = new Map<string | null, string[]>();
+      for (const entry of all.result) {
+        const node = normalizeNode(entry);
+        if (!node || node.deletedAt !== null) continue;
+        const names = namesByParent.get(node.parentId) ?? [];
+        names.push(node.name);
+        namesByParent.set(node.parentId, names);
+      }
+      for (const node of nodes) {
+        const names = namesByParent.get(node.parentId) ?? [];
+        const name = uniqueName(names, node.name);
+        names.push(name);
+        namesByParent.set(node.parentId, names);
+        const saved = { ...node, name };
+        store.add(saved);
+        created.push(saved);
+      }
+      if (blobs.length) {
+        const content = tx.objectStore(STORE_BLOBS);
+        blobs.forEach((blob) => content.add(blob));
+      }
+    };
+  });
+  return created;
 }
 
 export async function putBlobs(blobs: FsBlob[]): Promise<void> {

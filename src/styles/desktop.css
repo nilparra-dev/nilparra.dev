@@ -473,3 +473,79 @@
     height: 34px;
   }
 }
+
+/* ------------------------------------------------------------------ *
+ * Pixel mascot: portrait above the tray with a tooltip style bubble
+ * ------------------------------------------------------------------ */
+
+.mascot {
+  position: absolute;
+  right: 12px;
+  bottom: calc(var(--w95-taskbar-height) + 6px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  /* Above the windows, below the taskbar, so it never covers the start menu. */
+  z-index: calc(var(--w95-z-windows) + 800);
+  pointer-events: none;
+}
+
+.mascot-face {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: var(--cursor-hand);
+  pointer-events: auto;
+  line-height: 0;
+  transition: transform 0.12s steps(2);
+}
+
+.mascot-face:hover {
+  transform: translateY(-2px);
+}
+
+.mascot-face:focus-visible {
+  outline: 1px dotted var(--w95-black);
+  outline-offset: 2px;
+}
+
+.mascot-bubble {
+  position: relative;
+  max-width: 240px;
+  padding: 8px 10px;
+  background: var(--w95-tooltip-bg);
+  border: 1px solid var(--w95-black);
+  box-shadow: 2px 2px 0 rgb(0 0 0 / 35%);
+  pointer-events: auto;
+}
+
+/* Tail pointing down at the face. */
+.mascot-bubble::after {
+  content: '';
+  position: absolute;
+  right: 22px;
+  bottom: -7px;
+  width: 8px;
+  height: 8px;
+  background: var(--w95-tooltip-bg);
+  border-right: 1px solid var(--w95-black);
+  border-bottom: 1px solid var(--w95-black);
+  transform: rotate(45deg);
+}
+
+.mascot-text {
+  margin: 0 0 8px;
+}
+
+.mascot-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.w95--reduce-motion .mascot-face {
+  transition: none;
+}

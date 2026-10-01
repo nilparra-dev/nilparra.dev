@@ -23,6 +23,8 @@ export interface Preferences {
   showExplorerTree: boolean;
   /** Links to other sites ask before opening a new tab. */
   confirmExternalLinks: boolean;
+  /** The pixel assistant in the bottom right corner of the desktop. */
+  showMascot: boolean;
 }
 
 export const DEFAULT_PREFERENCES: Preferences = {
@@ -36,6 +38,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
   autoArrangeIcons: true,
   showExplorerTree: true,
   confirmExternalLinks: true,
+  showMascot: true,
 };
 
 /** Defensive read: stored values can come from a modified or older client. */
@@ -78,6 +81,8 @@ export function sanitizePreferences(input: unknown): Preferences {
       typeof source.confirmExternalLinks === 'boolean'
         ? source.confirmExternalLinks
         : DEFAULT_PREFERENCES.confirmExternalLinks,
+    showMascot:
+      typeof source.showMascot === 'boolean' ? source.showMascot : DEFAULT_PREFERENCES.showMascot,
   };
 }
 

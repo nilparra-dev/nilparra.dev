@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import 'fake-indexeddb/auto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { App } from './App';
 
 /**
@@ -108,6 +108,56 @@ describe('shell', () => {
     expect(within(desktopEn).getByText('Résumé (CV)')).toBeTruthy();
     expect(within(desktopEn).getByText('My projects')).toBeTruthy();
     expect(within(desktopEn).queryByText('Sobre mí')).toBeNull();
+  });
+
+  it('shows the pixel assistant, which offers a shortcut when clicked', async () => {
+    window.sessionStorage.setItem('mascot-greeted', '1');
+    render(<App />);
+    await screen.findByRole('listbox', { name: 'Escritorio' }, { timeout: 4000 });
+
+    fireEvent.click(screen.getByRole('button', { name: /Asistente en píxeles/ }));
+    expect(screen.getByText('¿Quieres ver en qué he trabajado?')).toBeTruthy();
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Ver mis proyectos' }).at(-1)!);
+    expect(await screen.findByRole('dialog', { name: 'Mis proyectos' })).toBeTruthy();
+    expect(screen.queryByText('¿Quieres ver en qué he trabajado?')).toBeNull();
+  });
+
+  it('puts the pixel assistant to sleep after a minute without input and wakes it on touch', async () => {
+    window.sessionStorage.setItem('mascot-greeted', '1');
+    /* The idle check is a 5 second interval: grab it instead of waiting a real minute. */
+    const idleChecks: Array<() => void> = [];
+    const realSetInterval = window.setInterval.bind(window);
+    vi.spyOn(window, 'setInterval').mockImplementation(((handler: () => void, delay?: number) => {
+      if (delay === 5000) idleChecks.push(handler);
+      return realSetInterval(handler, delay);
+    }) as typeof window.setInterval);
+
+    render(<App />);
+    await screen.findByRole('listbox', { name: 'Escritorio' }, { timeout: 4000 });
+    const face = () => screen.getByRole('button', { name: /Asistente en píxeles/ }).querySelector('img')!;
+    expect(face().getAttribute('src')).not.toMatch(/sleep/);
+
+    const start = Date.now();
+    vi.spyOn(Date, 'now').mockReturnValue(start + 66_000);
+    act(() => idleChecks.forEach((check) => check()));
+    expect(face().getAttribute('src')).toMatch(/sleep/);
+
+    act(() => {
+      fireEvent.pointerDown(window);
+    });
+    expect(face().getAttribute('src')).not.toMatch(/sleep/);
+    vi.restoreAllMocks();
+  });
+
+  it('keeps the pixel assistant away when the preference is off', async () => {
+    window.localStorage.setItem(
+      'nilparra-win95:preferences',
+      JSON.stringify({ version: 1, data: { ...PREFERENCES, showMascot: false } }),
+    );
+    render(<App />);
+    await screen.findByRole('listbox', { name: 'Escritorio' }, { timeout: 4000 });
+    expect(screen.queryByRole('button', { name: /Asistente en píxeles/ })).toBeNull();
   });
 
   it('opens the GitHub shortcut inside the Internet window', async () => {

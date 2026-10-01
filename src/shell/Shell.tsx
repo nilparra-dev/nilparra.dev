@@ -9,6 +9,7 @@ import { usePreferences } from '../core/prefs/PreferencesProvider';
 import { WindowsLayer } from '../core/window/WindowsLayer';
 import { useWindowManager } from '../core/window/WindowManagerProvider';
 import { Desktop } from '../desktop/Desktop';
+import { Mascot } from '../desktop/Mascot';
 import { StartMenu } from '../desktop/StartMenu';
 import { Taskbar } from '../desktop/Taskbar';
 import { Button } from '../ui/Button';
@@ -197,6 +198,7 @@ export function Shell() {
     >
       <Desktop />
       <WindowsLayer />
+      <Mascot />
       <Taskbar startOpen={startOpen} onToggleStart={() => setStartOpen((current) => !current)} />
       {startOpen && (
         <StartMenu

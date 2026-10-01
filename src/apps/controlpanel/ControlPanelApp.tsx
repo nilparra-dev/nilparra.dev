@@ -161,6 +161,11 @@ export function ControlPanelApp({ windowId }: AppRenderProps) {
               onChange={(checked) => update({ confirmExternalLinks: checked })}
               label={t('cp.confirmExternal')}
             />
+            <Checkbox
+              checked={preferences.showMascot}
+              onChange={(checked) => update({ showMascot: checked })}
+              label={t('cp.showMascot')}
+            />
           </GroupBox>
         )}
 

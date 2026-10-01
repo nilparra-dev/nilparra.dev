@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from 'react';
 import type { AppRenderProps } from '../../core/apps/launcher';
+import { emitDesktopEvent } from '../../core/desktop/events';
 import { useDialogs } from '../../core/dialogs/DialogProvider';
 import { useI18n } from '../../core/i18n/I18nProvider';
 import type { TranslationKey } from '../../core/i18n/es';
@@ -204,6 +205,7 @@ export function SolitaireApp({ windowId }: AppRenderProps) {
       setAutoRunning(false);
       playSound('ding', soundOptions);
       wm.announce(t('sol.won', { score: finished.score }));
+      emitDesktopEvent({ type: 'game-won', game: 'solitaire' });
     } else {
       setGame(next);
     }

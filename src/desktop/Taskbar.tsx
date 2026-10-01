@@ -12,13 +12,15 @@ import { Tooltip } from '../ui/Tooltip';
 export interface TaskbarProps {
   startOpen: boolean;
   onToggleStart: () => void;
+  /** Receives the tray element where the mascot renders itself while tucked away. */
+  mascotSlotRef: (element: HTMLElement | null) => void;
 }
 
 /**
  * Taskbar: start button, one button per open window and the tray with the
- * volume control and the clock.
+ * mascot's slot, the volume control and the clock.
  */
-export function Taskbar({ startOpen, onToggleStart }: TaskbarProps) {
+export function Taskbar({ startOpen, onToggleStart, mascotSlotRef }: TaskbarProps) {
   const { t } = useI18n();
   const wm = useWindowManager();
   const { open: openMenu } = useMenuLayer();
@@ -116,6 +118,7 @@ export function Taskbar({ startOpen, onToggleStart }: TaskbarProps) {
         </div>
 
         <div className="taskbar-tray">
+          <span className="tray-slot" ref={mascotSlotRef} />
           <Tooltip text={t('tray.volume')}>
             <button
               type="button"

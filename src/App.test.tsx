@@ -3,6 +3,7 @@ import 'fake-indexeddb/auto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { App } from './App';
+import { emitDesktopEvent } from './core/desktop/events';
 
 /**
  * Smoke test of the whole shell in jsdom: it catches runtime errors the type
@@ -110,44 +111,140 @@ describe('shell', () => {
     expect(within(desktopEn).queryByText('Sobre mí')).toBeNull();
   });
 
-  it('shows the pixel assistant, which offers a shortcut when clicked', async () => {
-    window.sessionStorage.setItem('mascot-greeted', '1');
-    render(<App />);
-    await screen.findByRole('listbox', { name: 'Escritorio' }, { timeout: 4000 });
+  describe('pixel assistant', () => {
+    const face = () => screen.getByRole('button', { name: /Asistente en píxeles/ });
+    /** What the assistant is saying, as announced to assistive technology. */
+    const says = (text: string) => screen.queryByText(text, { selector: '[role="status"]' });
 
-    fireEvent.click(screen.getByRole('button', { name: /Asistente en píxeles/ }));
-    expect(screen.getByText('¿Quieres ver en qué he trabajado?')).toBeTruthy();
-
-    fireEvent.click(screen.getAllByRole('button', { name: 'Ver mis proyectos' }).at(-1)!);
-    expect(await screen.findByRole('dialog', { name: 'Mis proyectos' })).toBeTruthy();
-    expect(screen.queryByText('¿Quieres ver en qué he trabajado?')).toBeNull();
-  });
-
-  it('puts the pixel assistant to sleep after a minute without input and wakes it on touch', async () => {
-    window.sessionStorage.setItem('mascot-greeted', '1');
-    /* The idle check is a 5 second interval: grab it instead of waiting a real minute. */
-    const idleChecks: Array<() => void> = [];
-    const realSetInterval = window.setInterval.bind(window);
-    vi.spyOn(window, 'setInterval').mockImplementation(((handler: () => void, delay?: number) => {
-      if (delay === 5000) idleChecks.push(handler);
-      return realSetInterval(handler, delay);
-    }) as typeof window.setInterval);
-
-    render(<App />);
-    await screen.findByRole('listbox', { name: 'Escritorio' }, { timeout: 4000 });
-    const face = () => screen.getByRole('button', { name: /Asistente en píxeles/ }).querySelector('img')!;
-    expect(face().getAttribute('src')).not.toMatch(/sleep/);
-
-    const start = Date.now();
-    vi.spyOn(Date, 'now').mockReturnValue(start + 66_000);
-    act(() => idleChecks.forEach((check) => check()));
-    expect(face().getAttribute('src')).toMatch(/sleep/);
-
-    act(() => {
-      fireEvent.pointerDown(window);
+    beforeEach(() => {
+      window.sessionStorage.setItem('mascot-greeted', '1');
     });
-    expect(face().getAttribute('src')).not.toMatch(/sleep/);
-    vi.restoreAllMocks();
+
+    it('offers a shortcut when clicked and goes quiet once it is followed', async () => {
+      render(<App />);
+      await screen.findByRole('listbox', { name: 'Escritorio' }, { timeout: 4000 });
+
+      fireEvent.click(face());
+      expect(says('¿Quieres ver en qué he trabajado?')).toBeTruthy();
+
+      fireEvent.click(screen.getAllByRole('button', { name: 'Ver mis proyectos' }).at(-1)!);
+      expect(await screen.findByRole('dialog', { name: 'Mis proyectos' })).toBeTruthy();
+      expect(says('¿Quieres ver en qué he trabajado?')).toBeNull();
+      expect(face().getAttribute('data-state')).toBe('idle');
+    });
+
+    it('skips the tip of an application that is already open', async () => {
+      render(<App />);
+      const desktop = await screen.findByRole('listbox', { name: 'Escritorio' }, { timeout: 4000 });
+      fireEvent.doubleClick(within(desktop).getByRole('option', { name: 'Sobre mí' }));
+      await screen.findByRole('dialog', { name: 'Sobre mí' });
+
+      fireEvent.click(face());
+      expect(says('¿Quieres ver en qué he trabajado?')).toBeTruthy();
+      fireEvent.click(face());
+      expect(says('Si prefieres saber quién soy, empieza por aquí.')).toBeNull();
+      expect(says('Mi CV está listo para descargar.')).toBeTruthy();
+    });
+
+    it('dismisses a tip with a press elsewhere on the desktop', async () => {
+      stubPointerCapture();
+      render(<App />);
+      const desktop = await screen.findByRole('listbox', { name: 'Escritorio' }, { timeout: 4000 });
+      fireEvent.click(face());
+      expect(says('¿Quieres ver en qué he trabajado?')).toBeTruthy();
+
+      fireEvent.pointerDown(desktop);
+      expect(says('¿Quieres ver en qué he trabajado?')).toBeNull();
+    });
+
+    it('loses its temper when poked and gives no tips until it is left alone', async () => {
+      const start = Date.now();
+      const now = vi.spyOn(Date, 'now').mockReturnValue(start);
+      try {
+        render(<App />);
+        await screen.findByRole('listbox', { name: 'Escritorio' }, { timeout: 4000 });
+        for (let click = 0; click < 5; click += 1) fireEvent.click(face());
+        expect(says('¡Eh, eh! Con un clic me basta.')).toBeTruthy();
+        expect(face().getAttribute('data-state')).toBe('annoyed');
+
+        // More clicks only keep it angry, and each one restarts the sulk.
+        now.mockReturnValue(start + 2000);
+        fireEvent.click(face());
+        now.mockReturnValue(start + 4000);
+        fireEvent.click(face());
+        expect(says('¡Eh, eh! Con un clic me basta.')).toBeTruthy();
+        expect(face().getAttribute('data-state')).toBe('annoyed');
+
+        now.mockReturnValue(start + 7000);
+        fireEvent.click(face());
+        expect(says('¡Eh, eh! Con un clic me basta.')).toBeNull();
+        expect(face().getAttribute('data-state')).toBe('happy');
+      } finally {
+        now.mockRestore();
+      }
+    });
+
+    it('stands on the desktop while no window fills the screen', async () => {
+      render(<App />);
+      await screen.findByRole('dialog', { name: 'Bienvenida' }, { timeout: 4000 });
+      const taskbar = screen.getByRole('toolbar', { name: 'Escritorio' });
+      expect(taskbar.contains(face())).toBe(false);
+    });
+
+    it('moves into the taskbar tray on a narrow screen and still talks from there', async () => {
+      const width = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 400 });
+      try {
+        render(<App />);
+        await screen.findByRole('dialog', { name: 'Bienvenida' }, { timeout: 4000 });
+        const taskbar = screen.getByRole('toolbar', { name: 'Escritorio' });
+        expect(taskbar.contains(face())).toBe(true);
+
+        fireEvent.click(face());
+        expect(says('¿Quieres ver en qué he trabajado?')).toBeTruthy();
+      } finally {
+        Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
+      }
+    });
+
+    it('reacts to the outcome of a game', async () => {
+      render(<App />);
+      await screen.findByRole('listbox', { name: 'Escritorio' }, { timeout: 4000 });
+
+      act(() => emitDesktopEvent({ type: 'game-lost', game: 'minesweeper' }));
+      expect(says('¡Bum! Esa mina no la vi venir.')).toBeTruthy();
+      expect(face().getAttribute('data-state')).toBe('ouch');
+
+      act(() => emitDesktopEvent({ type: 'game-won', game: 'minesweeper' }));
+      expect(says('¡Bien jugado!')).toBeTruthy();
+      expect(face().getAttribute('data-state')).toBe('joy');
+    });
+
+    it('falls asleep after a minute without input and wakes on touch', async () => {
+      /* The idle check is a 5 second interval: grab it instead of waiting a real minute. */
+      const idleChecks: Array<() => void> = [];
+      const realSetInterval = window.setInterval.bind(window);
+      vi.spyOn(window, 'setInterval').mockImplementation(((handler: () => void, delay?: number) => {
+        if (delay === 5000) idleChecks.push(handler);
+        return realSetInterval(handler, delay);
+      }) as typeof window.setInterval);
+
+      render(<App />);
+      await screen.findByRole('listbox', { name: 'Escritorio' }, { timeout: 4000 });
+      expect(face().getAttribute('data-state')).toBe('idle');
+
+      const start = Date.now();
+      vi.spyOn(Date, 'now').mockReturnValue(start + 66_000);
+      act(() => idleChecks.forEach((check) => check()));
+      expect(face().getAttribute('data-state')).toBe('asleep');
+
+      act(() => {
+        fireEvent.pointerDown(window);
+      });
+      expect(face().getAttribute('data-state')).not.toBe('asleep');
+      expect(says('Perdona, me había dormido.')).toBeTruthy();
+      vi.restoreAllMocks();
+    });
   });
 
   it('keeps the pixel assistant away when the preference is off', async () => {

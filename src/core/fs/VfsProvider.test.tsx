@@ -1,10 +1,13 @@
 // @vitest-environment jsdom
 import 'fake-indexeddb/auto';
-import { beforeEach, describe, expect, it } from 'vitest';
-import { render, waitFor } from '@testing-library/react';
+import { File as NativeFile } from 'node:buffer';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, cleanup, render, waitFor } from '@testing-library/react';
 import { I18nProvider } from '../i18n/I18nProvider';
 import { PreferencesProvider } from '../prefs/PreferencesProvider';
 import { useVfs, VfsProvider, type VfsValue } from './VfsProvider';
+import { deleteDatabase } from './db';
+import { loadNodes } from './vfs';
 
 /**
  * End to end test of the virtual disk, following the walkthrough of the brief:
@@ -44,11 +47,72 @@ async function expectNode(id: string): Promise<void> {
   await waitFor(() => expect(api().nodeById(id)).toBeTruthy());
 }
 
-beforeEach(() => {
+beforeEach(async () => {
   apiRef.current = null;
+  await deleteDatabase();
+});
+
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
 });
 
 describe('virtual disk', () => {
+  it('refuses to save text into a read-only portfolio file', async () => {
+    mount();
+    await ready();
+    const file = [...api().nodes.values()].find((node) => node.readonly && typeof node.content === 'string');
+    if (!file) throw new Error('Missing read-only file');
+    expect(await api().saveText(file.id, 'Overwritten')).toBe(false);
+    expect((await loadNodes()).find((node) => node.id === file.id)?.content).toBe(file.content);
+  });
+
+  it('reserves distinct names for concurrent folder creations', async () => {
+    mount();
+    await ready();
+    const parent = api().folders.documents;
+    if (!parent) throw new Error('Missing Documents folder');
+    await act(async () => {
+      const created = await Promise.all([api().createFolder(parent, 'Notes'), api().createFolder(parent, 'notes')]);
+      expect(created.map((node) => node?.name.toLowerCase()).sort()).toEqual(['notes', 'notes (2)']);
+    });
+    const stored = (await loadNodes()).filter((node) => node.parentId === parent && node.name.toLowerCase().startsWith('notes'));
+    expect(stored).toHaveLength(2);
+    expect(new Set(stored.map((node) => node.name.toLowerCase())).size).toBe(2);
+  });
+
+  it('reserves distinct names for concurrent text files and shortcuts', async () => {
+    mount();
+    await ready();
+    const parent = api().folders.documents;
+    if (!parent) throw new Error('Missing Documents folder');
+    await act(async () => {
+      const texts = await Promise.all([api().createTextFile(parent, 'note.txt', 'one'), api().createTextFile(parent, 'note.txt', 'two')]);
+      expect(texts.map((node) => node?.name).sort()).toEqual(['note (2).txt', 'note.txt']);
+      const shortcuts = await Promise.all([
+        api().createShortcut(parent, 'Link', { type: 'app', appId: 'notepad' }),
+        api().createShortcut(parent, 'Link', { type: 'app', appId: 'notepad' }),
+      ]);
+      expect(shortcuts.map((node) => node?.name).sort()).toEqual(['Link (2).lnk', 'Link.lnk']);
+    });
+  });
+
+  it('reserves names against the disk when two providers have separate snapshots', async () => {
+    mount();
+    await ready();
+    const first = api();
+    mount();
+    await ready();
+    const second = api();
+    const parent = first.folders.documents;
+    if (!parent) throw new Error('Missing Documents folder');
+    await act(async () => {
+      const created = await Promise.all([first.createFolder(parent, 'Shared'), second.createFolder(parent, 'Shared')]);
+      expect(created.map((node) => node?.name).sort()).toEqual(['Shared', 'Shared (2)']);
+    });
+    expect((await loadNodes()).filter((node) => node.parentId === parent && node.name.startsWith('Shared'))).toHaveLength(2);
+  });
+
   it('creates the initial structure with the system folders', async () => {
     mount();
     await ready();
@@ -58,6 +122,41 @@ describe('virtual disk', () => {
     expect(api().folders.pictures).toBeTruthy();
     expect(api().folders.recycleBin).toBeTruthy();
     expect(api().pathOf(api().folders.documents as string)?.path).toBe('C:\\Documents');
+  });
+
+  it('keeps concurrent binary imports distinct and preserves their contents', async () => {
+    // fake-indexeddb uses structuredClone, which cannot preserve jsdom's File objects.
+    vi.stubGlobal('File', NativeFile);
+    mount();
+    await ready();
+    const parent = api().folders.documents;
+    if (!parent) throw new Error('Missing Documents folder');
+    await act(async () => {
+      const imports = await Promise.all([
+        api().importFiles(parent, [new File(['one'], 'image.png', { type: 'image/png' })]),
+        api().importFiles(parent, [new File(['second'], 'image.png', { type: 'image/png' })]),
+      ]);
+      expect(imports.flat().map((node) => node.name).sort()).toEqual(['image (2).png', 'image.png']);
+    });
+    const files = api().liveChildren(parent).filter((node) => node.name.endsWith('.png'));
+    expect(files).toHaveLength(2);
+    for (const file of files) expect((await api().readFileBlob(file.id))?.size).toBe(file.size);
+  });
+
+  it('keeps names distinct when copying a document twice concurrently', async () => {
+    mount();
+    await ready();
+    const parent = api().folders.documents;
+    if (!parent) throw new Error('Missing Documents folder');
+    const file = await api().createTextFile(parent, 'note.txt', 'Copied text');
+    if (!file) throw new Error('Missing source file');
+    await expectNode(file.id);
+    await act(async () => {
+      expect(await Promise.all([api().copy([file.id], parent), api().copy([file.id], parent)])).toEqual([true, true]);
+    });
+    const files = api().liveChildren(parent).filter((node) => node.content === 'Copied text');
+    expect(files).toHaveLength(3);
+    expect(new Set(files.map((node) => node.name.toLowerCase())).size).toBe(3);
   });
 
   it('follows the acceptance walkthrough', async () => {

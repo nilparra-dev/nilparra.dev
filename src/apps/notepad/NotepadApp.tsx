@@ -96,6 +96,14 @@ export function NotepadApp({ windowId, params }: AppRenderProps) {
       .find((candidate) => candidate.name.toLowerCase() === result.name.toLowerCase());
 
     if (existing) {
+      if (existing.readonly) {
+        await dialogs.alert({
+          title: t('notepad.saveAs'),
+          kind: 'info',
+          message: t('dialog.readOnly', { name: existing.name }),
+        });
+        return false;
+      }
       const replace = await dialogs.confirm({
         title: t('notepad.saveAs'),
         kind: 'question',
@@ -167,18 +175,14 @@ export function NotepadApp({ windowId, params }: AppRenderProps) {
   }, [confirmSaveChanges, dialogs, documentsFolder, node?.parentId, save, t, vfs]);
 
   const exportDocument = useCallback(async () => {
-    if (fileId) {
-      await vfs.exportNode(fileId);
-      return;
-    }
     const blob = new Blob([text], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;
-    anchor.download = `${t('file.untitled')}.txt`;
+    anchor.download = node?.name ?? `${t('file.untitled')}.txt`;
     anchor.click();
     window.setTimeout(() => URL.revokeObjectURL(url), 4000);
-  }, [fileId, t, text, vfs]);
+  }, [node?.name, t, text]);
 
   /* Unsaved changes are never silently discarded. */
   useEffect(() => {

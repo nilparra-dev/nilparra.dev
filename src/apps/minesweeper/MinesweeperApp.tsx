@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { AppRenderProps } from '../../core/apps/launcher';
+import { emitDesktopEvent } from '../../core/desktop/events';
 import type { TranslationKey } from '../../core/i18n/es';
 import { useI18n } from '../../core/i18n/I18nProvider';
 import { usePreferences } from '../../core/prefs/PreferencesProvider';
@@ -260,6 +261,7 @@ export function MinesweeperApp({ windowId }: AppRenderProps) {
       setStatus('lost');
       playSound('error', sound);
       wm.announce(t('mine.lost'));
+      emitDesktopEvent({ type: 'game-lost', game: 'minesweeper' });
       return;
     }
     if (countSafeRevealed(result.board) >= level.cols * level.rows - level.mines) {
@@ -267,6 +269,7 @@ export function MinesweeperApp({ windowId }: AppRenderProps) {
       setStatus('won');
       playSound('ding', sound);
       wm.announce(t('mine.won', { time: seconds }));
+      emitDesktopEvent({ type: 'game-won', game: 'minesweeper' });
       return;
     }
     setBoard(result.board);

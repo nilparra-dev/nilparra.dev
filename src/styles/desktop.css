@@ -473,3 +473,184 @@
     height: 34px;
   }
 }
+
+/* ------------------------------------------------------------------ *
+ * Pixel mascot: portrait above the tray with a tooltip style bubble
+ * ------------------------------------------------------------------ */
+
+.mascot {
+  position: absolute;
+  right: 12px;
+  bottom: calc(var(--w95-taskbar-height) + 6px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  /* Above the windows, below the taskbar, so it never covers the start menu. */
+  z-index: calc(var(--w95-z-windows) + 800);
+  pointer-events: none;
+}
+
+.mascot-face {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: var(--cursor-hand);
+  pointer-events: auto;
+  line-height: 0;
+  transition: transform 0.12s steps(2);
+}
+
+.mascot-face:hover {
+  transform: translateY(-2px);
+}
+
+.mascot-face:focus-visible {
+  outline: 1px dotted var(--w95-black);
+  outline-offset: 2px;
+}
+
+/* The portrait is a stack of sprite sheet cells: head, eyes, mouth and overlay. */
+.mascot-sprite {
+  position: relative;
+  display: block;
+}
+
+.mascot-layer {
+  position: absolute;
+  inset: 0;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+
+/* Each new line replays a short reaction: a hop when pleased, a shake when not. */
+.mascot-face[data-state='happy'] .mascot-sprite,
+.mascot-face[data-state='joy'] .mascot-sprite,
+.mascot-face[data-state='surprised'] .mascot-sprite {
+  animation: mascot-hop 0.32s steps(4);
+}
+
+.mascot-face[data-state='ouch'] .mascot-sprite {
+  animation: mascot-shake 0.36s steps(6);
+}
+
+/* Losing its temper is the loudest reaction: it trembles with rage. */
+.mascot-face[data-state='annoyed'] .mascot-sprite {
+  animation: mascot-fume 0.6s steps(12);
+}
+
+@keyframes mascot-hop {
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes mascot-fume {
+  10%,
+  50%,
+  90% {
+    transform: translate(-3px, -1px);
+  }
+
+  30%,
+  70% {
+    transform: translate(3px, -1px);
+  }
+}
+
+@keyframes mascot-shake {
+  25% {
+    transform: translateX(-2px);
+  }
+
+  75% {
+    transform: translateX(2px);
+  }
+}
+
+.mascot-bubble {
+  position: relative;
+  max-width: 240px;
+  padding: 8px 10px;
+  background: var(--w95-tooltip-bg);
+  border: 1px solid var(--w95-black);
+  box-shadow: 2px 2px 0 rgb(0 0 0 / 35%);
+  pointer-events: auto;
+}
+
+/* Tail pointing down at the face. */
+.mascot-bubble::after {
+  content: '';
+  position: absolute;
+  right: var(--mascot-tail-inset, 22px);
+  bottom: -7px;
+  width: 8px;
+  height: 8px;
+  background: var(--w95-tooltip-bg);
+  border-right: 1px solid var(--w95-black);
+  border-bottom: 1px solid var(--w95-black);
+  transform: rotate(45deg);
+}
+
+.mascot-text {
+  margin: 0;
+}
+
+/* The part still to be written already takes its room, so the bubble never resizes. */
+.mascot-text-pending {
+  visibility: hidden;
+}
+
+.mascot-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+/*
+ * Tucked away: the portrait is a small head in the taskbar tray and only the
+ * bubble is left in the corner, wide enough to reach over the head.
+ */
+.mascot--tucked {
+  bottom: calc(var(--w95-taskbar-height) + 8px);
+  /* The taskbar is above the windows; so must be the bubble that points at it. */
+  z-index: var(--w95-z-taskbar);
+}
+
+.mascot--tucked .mascot-bubble {
+  min-width: calc(var(--mascot-tail-inset, 22px) + 24px);
+}
+
+/* Takes no room in the tray until the mascot moves in. */
+.tray-slot {
+  display: contents;
+}
+
+.mascot-face--tray {
+  display: inline-flex;
+  cursor: var(--cursor-arrow);
+  transition: none;
+}
+
+.mascot-face--tray:hover {
+  transform: none;
+}
+
+.mascot-face--tray:focus-visible {
+  outline-offset: 1px;
+}
+
+.shutdown-screen .mascot-sprite {
+  flex-shrink: 0;
+}
+
+.w95--reduce-motion .mascot-face {
+  transition: none;
+}
+
+.w95--reduce-motion .mascot-sprite {
+  animation: none;
+}

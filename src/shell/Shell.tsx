@@ -9,6 +9,8 @@ import { usePreferences } from '../core/prefs/PreferencesProvider';
 import { WindowsLayer } from '../core/window/WindowsLayer';
 import { useWindowManager } from '../core/window/WindowManagerProvider';
 import { Desktop } from '../desktop/Desktop';
+import { Mascot } from '../desktop/Mascot';
+import { SleepingMascot } from '../ui/mascot/MascotSprite';
 import { StartMenu } from '../desktop/StartMenu';
 import { Taskbar } from '../desktop/Taskbar';
 import { Button } from '../ui/Button';
@@ -36,6 +38,7 @@ export function Shell() {
   const [shutdownDialog, setShutdownDialog] = useState(false);
   const [shutdownChoice, setShutdownChoice] = useState<'shutdown' | 'restart' | 'suspend'>('shutdown');
   const bootstrapped = useRef(false);
+  const [mascotTraySlot, setMascotTraySlot] = useState<HTMLElement | null>(null);
 
   /* First visit (or after a restart) opens the Welcome window. */
   useEffect(() => {
@@ -160,6 +163,7 @@ export function Shell() {
   if (power === 'shutdown') {
     return (
       <div className="shutdown-screen" role="status">
+        {preferences.showMascot && <SleepingMascot scale={3} still={preferences.reduceMotion} />}
         <p className="shutdown-title">{t('shutdown.safeTitle')}</p>
         <p className="shutdown-note">{t('shutdown.safeNote')}</p>
         <Button primary onClick={resumeSession}>
@@ -197,7 +201,12 @@ export function Shell() {
     >
       <Desktop />
       <WindowsLayer />
-      <Taskbar startOpen={startOpen} onToggleStart={() => setStartOpen((current) => !current)} />
+      <Mascot traySlot={mascotTraySlot} />
+      <Taskbar
+        startOpen={startOpen}
+        onToggleStart={() => setStartOpen((current) => !current)}
+        mascotSlotRef={setMascotTraySlot}
+      />
       {startOpen && (
         <StartMenu
           onClose={() => setStartOpen(false)}

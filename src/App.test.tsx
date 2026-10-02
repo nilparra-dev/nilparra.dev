@@ -111,6 +111,20 @@ describe('shell', () => {
     expect(within(desktopEn).queryByText('Sobre mí')).toBeNull();
   });
 
+  it('retitles the Welcome window and its taskbar button when the language changes', async () => {
+    render(<App />);
+    const welcome = await screen.findByRole('dialog', { name: 'Bienvenida' }, { timeout: 4000 });
+    const taskbar = screen.getByRole('toolbar', { name: 'Escritorio' });
+    expect(within(taskbar).getByRole('button', { name: /Bienvenida/ })).toBeTruthy();
+
+    fireEvent.click(within(welcome).getByRole('button', { name: 'Idioma del escritorio' }));
+    fireEvent.click(await screen.findByRole('option', { name: 'English' }));
+
+    expect(await screen.findByRole('dialog', { name: 'Welcome' })).toBeTruthy();
+    expect(within(screen.getByRole('toolbar', { name: 'Desktop' })).getByRole('button', { name: /Welcome/ })).toBeTruthy();
+    expect(screen.queryByRole('dialog', { name: 'Bienvenida' })).toBeNull();
+  });
+
   describe('pixel assistant', () => {
     const face = () => screen.getByRole('button', { name: /Asistente en píxeles/ });
     /** What the assistant is saying, as announced to assistive technology. */

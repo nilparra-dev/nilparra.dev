@@ -4,6 +4,7 @@ import { useT } from '../i18n/I18nProvider';
 import { usePreferences } from '../prefs/PreferencesProvider';
 import { playSound } from '../sound/sounds';
 import { WindowFrame } from './WindowFrame';
+import { windowTitle } from './windowTitle';
 import { useWindowManager } from './WindowManagerProvider';
 
 /**
@@ -25,10 +26,10 @@ export function WindowsLayer() {
     const currentIds = new Set(wm.windows.map((window) => window.id));
     for (const window of wm.windows) {
       if (!knownTitles.current.has(window.id)) {
-        wm.announce(t('a11y.windowOpened', { name: window.title }));
+        wm.announce(t('a11y.windowOpened', { name: windowTitle(window, t) }));
         playSound('open', soundOptions);
       }
-      knownTitles.current.set(window.id, window.title);
+      knownTitles.current.set(window.id, windowTitle(window, t));
     }
     for (const [id, title] of [...knownTitles.current.entries()]) {
       if (!currentIds.has(id)) {

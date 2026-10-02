@@ -4,6 +4,7 @@ import { uiPixels } from '../../ui/scale';
 import { clampRect } from './layout';
 import type { WindowInstance, WindowRect } from './types';
 import { useWindowManager } from './WindowManagerProvider';
+import { windowTitle } from './windowTitle';
 import { Icon } from '../../ui/Icon';
 import { useMenuLayer } from '../../ui/menu/MenuLayer';
 import { menuSeparator, type MenuEntry } from '../../ui/menu/types';
@@ -295,7 +296,7 @@ export function WindowFrame({ instance, active, hidden = false, children }: Wind
           <Icon id={instance.icon} size={16} />
         </button>
         <h2 className="title-bar-text" id={`window-title-${instance.id}`}>
-          {instance.title}
+          {windowTitle(instance, t)}
         </h2>
         <div className="title-bar-buttons">
           {instance.minimizable && (

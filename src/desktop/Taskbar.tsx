@@ -1,6 +1,7 @@
 import { SMALL_ICON_URLS } from '../assets/generated/icons';
 import { useI18n } from '../core/i18n/I18nProvider';
 import { useWindowManager } from '../core/window/WindowManagerProvider';
+import { windowTitle } from '../core/window/windowTitle';
 import { Icon } from '../ui/Icon';
 import { useMenuLayer } from '../ui/menu/MenuLayer';
 import { menuSeparator, type MenuEntry } from '../ui/menu/types';
@@ -97,7 +98,7 @@ export function Taskbar({ startOpen, onToggleStart }: TaskbarProps) {
                 type="button"
                 className="task-button"
                 aria-pressed={isActive}
-                title={window.title}
+                title={windowTitle(window, t)}
                 onClick={() => wm.taskbarClick(window.id)}
                 onContextMenu={(event) => {
                   event.preventDefault();
@@ -109,7 +110,7 @@ export function Taskbar({ startOpen, onToggleStart }: TaskbarProps) {
                 }}
               >
                 <Icon id={window.icon} size={16} />
-                <span className="task-button-label">{window.title}</span>
+                <span className="task-button-label">{windowTitle(window, t)}</span>
               </button>
             );
           })}

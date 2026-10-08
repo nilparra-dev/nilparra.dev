@@ -13,13 +13,13 @@ import type { MenuEntry } from '../../ui/menu/types';
 import { menuSeparator } from '../../ui/menu/types';
 
 /**
- * Reading order of the desktop: the personal shortcuts lead (projects, about,
+ * Reading order of the desktop: the personal shortcuts lead (about, projects,
  * the CV, contact), then the profile links, then other app shortcuts (such as
  * the welcome shortcut older disks still keep) and whatever the visitor puts
  * on the desktop. The system items close the list so the portfolio is what the
  * eye lands on first.
  */
-const PERSONAL_SHORTCUTS = ['app:projects', 'app:about', 'cv', 'app:mail'];
+const PERSONAL_SHORTCUTS = ['app:about', 'app:projects', 'cv', 'app:mail'];
 
 function desktopRank(node: FsNode): number {
   const target = node.shortcut;

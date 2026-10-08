@@ -145,18 +145,18 @@ export function Mascot({ traySlot }: MascotProps) {
   const tips = useMemo<Tip[]>(() => {
     const list: Tip[] = [
       {
-        id: 'projects',
-        textKey: 'mascot.tipProjects',
-        actionKey: 'welcome.exploreProjects',
-        appId: 'projects',
-        run: () => launch({ appId: 'projects' }),
-      },
-      {
         id: 'about',
         textKey: 'mascot.tipAbout',
         actionKey: 'welcome.aboutMe',
         appId: 'about',
         run: () => launch({ appId: 'about' }),
+      },
+      {
+        id: 'projects',
+        textKey: 'mascot.tipProjects',
+        actionKey: 'welcome.exploreProjects',
+        appId: 'projects',
+        run: () => launch({ appId: 'projects' }),
       },
     ];
     if (cvUrl) {

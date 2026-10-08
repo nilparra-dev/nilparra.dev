@@ -139,11 +139,11 @@ describe('shell', () => {
       await screen.findByRole('listbox', { name: 'Escritorio' }, { timeout: 4000 });
 
       fireEvent.click(face());
-      expect(says('¿Quieres ver en qué he trabajado?')).toBeTruthy();
+      expect(says('Si prefieres saber quién soy, empieza por aquí.')).toBeTruthy();
 
-      fireEvent.click(screen.getAllByRole('button', { name: 'Ver mis proyectos' }).at(-1)!);
-      expect(await screen.findByRole('dialog', { name: 'Mis proyectos' })).toBeTruthy();
-      expect(says('¿Quieres ver en qué he trabajado?')).toBeNull();
+      fireEvent.click(screen.getAllByRole('button', { name: 'Sobre mí' }).at(-1)!);
+      expect(await screen.findByRole('dialog', { name: 'Sobre mí' })).toBeTruthy();
+      expect(says('Si prefieres saber quién soy, empieza por aquí.')).toBeNull();
       expect(face().getAttribute('data-state')).toBe('idle');
     });
 
@@ -165,10 +165,10 @@ describe('shell', () => {
       render(<App />);
       const desktop = await screen.findByRole('listbox', { name: 'Escritorio' }, { timeout: 4000 });
       fireEvent.click(face());
-      expect(says('¿Quieres ver en qué he trabajado?')).toBeTruthy();
+      expect(says('Si prefieres saber quién soy, empieza por aquí.')).toBeTruthy();
 
       fireEvent.pointerDown(desktop);
-      expect(says('¿Quieres ver en qué he trabajado?')).toBeNull();
+      expect(says('Si prefieres saber quién soy, empieza por aquí.')).toBeNull();
     });
 
     it('loses its temper when poked and gives no tips until it is left alone', async () => {
@@ -215,7 +215,7 @@ describe('shell', () => {
         expect(taskbar.contains(face())).toBe(true);
 
         fireEvent.click(face());
-        expect(says('¿Quieres ver en qué he trabajado?')).toBeTruthy();
+        expect(says('Si prefieres saber quién soy, empieza por aquí.')).toBeTruthy();
       } finally {
         Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
       }

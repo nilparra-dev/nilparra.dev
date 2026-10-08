@@ -171,7 +171,7 @@ export function buildSeed(locale: Locale, now = Date.now()): SeedResult {
 }
 
 /**
- * Shortcuts the seed puts on the desktop: projects, about, the CV and contact,
+ * Shortcuts the seed puts on the desktop: about, projects, the CV and contact,
  * then the profile links. The welcome window opens by itself on the first
  * visit and stays in the Start menu, so it no longer takes a desktop slot.
  */
@@ -179,8 +179,8 @@ export function seedShortcuts(desktopId: string, now = Date.now()): FsNode[] {
   const app = (name: string, appId: string, icon: NonNullable<FsNode['icon']>) =>
     shortcut(desktopId, name, { type: 'app', appId }, APP_CATALOG[appId]?.icon ?? icon, now);
   const nodes = [
-    app('Mis proyectos.lnk', 'projects', 'projects'),
     app('Sobre mí.lnk', 'about', 'about-me'),
+    app('Mis proyectos.lnk', 'projects', 'projects'),
   ];
   if (PROFILE.cvUrl) nodes.push(shortcut(desktopId, 'Currículum.lnk', { type: 'cv' }, 'doc-pdf', now));
   nodes.push(app('Contacto.lnk', 'mail', 'mail'));

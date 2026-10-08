@@ -65,11 +65,11 @@ export function WelcomeApp({ windowId }: AppRenderProps) {
         </dl>
 
         <div className="u-row app-welcome-actions">
+          <Button onClick={() => launch({ appId: 'about' })}>{t('welcome.aboutMe')}</Button>
           <Button primary onClick={() => launch({ appId: 'projects' })}>
             {t('welcome.exploreProjects')}
           </Button>
           {cvUrl && <Button onClick={() => void openExternal(cvUrl)}>{t('welcome.downloadCv')}</Button>}
-          <Button onClick={() => launch({ appId: 'about' })}>{t('welcome.aboutMe')}</Button>
           <Button onClick={() => launch({ appId: 'mail' })}>{t('welcome.contact')}</Button>
           <Button onClick={() => launch({ appId: 'help', params: { topicId: 'welcome' } })}>
             {t('start.help')}

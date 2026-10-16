@@ -72,6 +72,8 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
   const folder = vfs.nodeById(folderId);
   const isMyComputer = folderId === ROOT_ID;
   const isBin = folder?.systemKey === 'recycleBin';
+  /* The portfolio folders only hold the published content. */
+  const writable = vfs.canWriteInto(folderId);
   const collator = useMemo(() => new Intl.Collator(locale, { sensitivity: 'base', numeric: true }), [locale]);
 
   /* Keep the window title in sync with the folder being browsed. */
@@ -313,14 +315,15 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
             id: 'new',
             label: t('desktop.new'),
             items: [
-              { kind: 'item', id: 'new-folder', label: t('desktop.newFolder'), onSelect: () => void createFolder() },
-              { kind: 'item', id: 'new-doc', label: t('desktop.newDocument'), onSelect: () => void createDocument() },
+              { kind: 'item', id: 'new-folder', label: t('desktop.newFolder'), disabled: !writable, onSelect: () => void createFolder() },
+              { kind: 'item', id: 'new-doc', label: t('desktop.newDocument'), disabled: !writable, onSelect: () => void createDocument() },
             ],
           },
           {
             kind: 'item',
             id: 'import',
             label: t('menu.import'),
+            disabled: !writable,
             onSelect: () => fileInputRef.current?.click(),
           },
           {
@@ -345,7 +348,7 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
         entries: [
           { kind: 'item', id: 'cut', label: t('desktop.cut'), disabled: selectionEmpty, onSelect: () => cut(selectedNodes) },
           { kind: 'item', id: 'copy', label: t('desktop.copy'), disabled: selectionEmpty, onSelect: () => copy(selectedNodes) },
-          { kind: 'item', id: 'paste', label: t('desktop.paste'), disabled: !clipboard, onSelect: () => void paste(folderId) },
+          { kind: 'item', id: 'paste', label: t('desktop.paste'), disabled: !clipboard || !writable, onSelect: () => void paste(folderId) },
           menuSeparator('sep1'),
           { kind: 'item', id: 'select-all', label: t('desktop.selectAll'), onSelect: () => setSelected(items.map((item) => item.id)) },
         ],
@@ -437,6 +440,7 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
     selected,
     selectedNodes,
     sort.key,
+    writable,
     t,
     update,
     view,
@@ -789,7 +793,7 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
           <Icon id="copy" size={16} />
           <span>{t('desktop.copy')}</span>
         </button>
-        <button type="button" className="tool-btn" onClick={() => void paste(folderId)} disabled={!clipboard}>
+        <button type="button" className="tool-btn" onClick={() => void paste(folderId)} disabled={!clipboard || !writable}>
           <Icon id="paste" size={16} />
           <span>{t('desktop.paste')}</span>
         </button>
@@ -899,12 +903,12 @@ export function ExplorerApp({ windowId, params }: AppRenderProps) {
             openMenu({
               entries: [
                 { kind: 'submenu', id: 'new', label: t('desktop.new'), items: [
-                  { kind: 'item', id: 'new-folder', label: t('desktop.newFolder'), onSelect: () => void createFolder() },
-                  { kind: 'item', id: 'new-doc', label: t('desktop.newDocument'), onSelect: () => void createDocument() },
+                  { kind: 'item', id: 'new-folder', label: t('desktop.newFolder'), disabled: !writable, onSelect: () => void createFolder() },
+                  { kind: 'item', id: 'new-doc', label: t('desktop.newDocument'), disabled: !writable, onSelect: () => void createDocument() },
                 ] },
-                { kind: 'item', id: 'import', label: t('menu.import'), onSelect: () => fileInputRef.current?.click() },
+                { kind: 'item', id: 'import', label: t('menu.import'), disabled: !writable, onSelect: () => fileInputRef.current?.click() },
                 menuSeparator('sep'),
-                { kind: 'item', id: 'paste', label: t('desktop.paste'), disabled: !clipboard, onSelect: () => void paste(folderId) },
+                { kind: 'item', id: 'paste', label: t('desktop.paste'), disabled: !clipboard || !writable, onSelect: () => void paste(folderId) },
                 { kind: 'item', id: 'select-all', label: t('desktop.selectAll'), onSelect: () => setSelected(items.map((item) => item.id)) },
               ],
               x: event.clientX,

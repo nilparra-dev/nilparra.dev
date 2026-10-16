@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
+import { nodeDisplayName } from '../fs/display';
 import { useVfs } from '../fs/VfsProvider';
 import type { FsNode } from '../fs/types';
 import { FileDialog } from '../../ui/dialogs/FileDialog';
@@ -86,6 +87,16 @@ export function DialogProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!vfs.error || vfs.error === lastError.current) return;
     lastError.current = vfs.error;
+    if (vfs.error.code === 'readonly') {
+      const folder = vfs.nodeById(vfs.error.message);
+      void api.alert({
+        title: t('dialog.errorTitle'),
+        kind: 'warning',
+        message: t('dialog.folderReadOnly', { name: folder ? nodeDisplayName(folder, t) : 'Portfolio' }),
+      });
+      vfs.clearError();
+      return;
+    }
     const isQuota = vfs.error.code === 'quota';
     void api.alert({
       title: t('dialog.errorTitle'),

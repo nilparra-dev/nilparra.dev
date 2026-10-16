@@ -84,22 +84,44 @@ export function planSeedSync(
   if (portfolioId) {
     const currentPaths = portfolioPaths(nodes, portfolioId);
     const current = nodes.filter((node) => currentPaths.has(node.id));
-    const fresh = buildPortfolioSeed(locale, portfolioId, now);
-    const freshPaths = portfolioPaths(fresh, portfolioId);
-    if (signature(current, currentPaths) !== signature(fresh, freshPaths)) {
+    const published = buildPortfolioSeed(locale, portfolioId, now);
+    const publishedPaths = portfolioPaths(published, portfolioId);
+    if (signature(current, currentPaths) !== signature(published, publishedPaths)) {
+      /*
+       * A file that keeps its path keeps its id, so open windows, shortcuts
+       * and the saved session still point at it when only its text changed
+       * (a new release, or a new interface language).
+       */
+      const currentByPath = new Map(current.map((node) => [currentPaths.get(node.id) ?? '', node]));
+      const reused = new Map<string, string>();
+      for (const node of published) {
+        const previous = currentByPath.get(publishedPaths.get(node.id) ?? '');
+        if (previous && previous.kind === node.kind) reused.set(node.id, previous.id);
+      }
+      const fresh = published.map((node) => ({
+        ...node,
+        id: reused.get(node.id) ?? node.id,
+        parentId: node.parentId === null ? null : reused.get(node.parentId) ?? node.parentId,
+      }));
+      const freshPaths = portfolioPaths(fresh, portfolioId);
       const idByPath = new Map([...freshPaths].map(([id, path]) => [path, id]));
-      const movedParents = new Map<string, string>();
+      const kept = new Set(reused.values());
       for (const node of current) {
+        if (kept.has(node.id)) continue;
         removals.push(node.id);
         replaced.set(node.id, idByPath.get(currentPaths.get(node.id) ?? '') ?? portfolioId);
       }
-      for (const node of nodes) {
-        if (node.parentId === null || !replaced.has(node.parentId)) continue;
-        movedParents.set(node.id, replaced.get(node.parentId) ?? portfolioId);
-      }
       changes.push(...fresh);
 
-      /* Reserve names before moving visitor nodes so a fresh file cannot collide with them. */
+      /* Visitor nodes inside a portfolio folder stay there, or follow it when it is replaced. */
+      const freshFolders = new Set(fresh.filter((node) => node.kind === 'folder').map((node) => node.id));
+      freshFolders.add(portfolioId);
+      const homeOf = (node: FsNode): string | undefined => {
+        if (node.parentId === null || currentPaths.has(node.id)) return undefined;
+        return replaced.get(node.parentId) ?? (freshFolders.has(node.parentId) ? node.parentId : undefined);
+      };
+
+      /* Reserve names before placing visitor nodes so a fresh file cannot collide with them. */
       const reservedNames = new Map<string, Set<string>>();
       const reserve = (parentId: string | null, name: string) => {
         if (parentId === null) return;
@@ -109,30 +131,34 @@ export function planSeedSync(
       };
       fresh.forEach((node) => reserve(node.parentId, node.name));
       nodes.forEach((node) => {
-        if (!replaced.has(node.id) && !movedParents.has(node.id)) reserve(node.parentId, node.name);
+        if (!currentPaths.has(node.id) && homeOf(node) === undefined) reserve(node.parentId, node.name);
       });
 
       for (const node of nodes) {
-        if (replaced.has(node.id)) continue;
-        const movedParent = movedParents.get(node.id);
+        if (currentPaths.has(node.id)) continue;
+        const home = homeOf(node);
         const target = node.shortcut?.type === 'node' ? replaced.get(node.shortcut.nodeId) : undefined;
         const deletedParent =
           node.deletedFromParentId === null
             ? undefined
             : replaced.get(node.deletedFromParentId);
-        if (movedParent === undefined && target === undefined && deletedParent === undefined) continue;
+        if (home === undefined && target === undefined && deletedParent === undefined) continue;
 
         let name = node.name;
-        if (movedParent !== undefined) {
-          const names = reservedNames.get(movedParent) ?? new Set<string>();
+        if (home !== undefined) {
+          const names = reservedNames.get(home) ?? new Set<string>();
           name = uniqueName([...names], node.name);
           names.add(name.toLowerCase());
-          reservedNames.set(movedParent, names);
+          reservedNames.set(home, names);
+        }
+        const parentId = home ?? node.parentId;
+        if (parentId === node.parentId && name === node.name && target === undefined && deletedParent === undefined) {
+          continue;
         }
         changes.push({
           ...node,
           name,
-          parentId: movedParent ?? node.parentId,
+          parentId,
           deletedFromParentId: deletedParent ?? node.deletedFromParentId,
           shortcut: target === undefined ? node.shortcut : { type: 'node', nodeId: target },
         });

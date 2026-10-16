@@ -38,6 +38,9 @@ export function WindowFrame({ instance, active, hidden = false, children }: Wind
 
   const compact = wm.compact;
   const maximized = instance.state === 'maximized' || compact;
+  /* A compact screen already fills it with every window: nothing to maximise or place. */
+  const canMaximize = instance.maximizable && instance.resizable && !compact;
+  const canPlace = instance.state === 'normal' && !compact;
   const rect: WindowRect = draft ?? (maximized
     ? { x: 0, y: 0, width: wm.viewport.width, height: wm.viewport.height }
     : instance.rect);
@@ -156,7 +159,7 @@ export function WindowFrame({ instance, active, hidden = false, children }: Wind
   );
 
   const systemMenuEntries = useCallback((): MenuEntry[] => {
-    const canRestore = instance.state !== 'normal';
+    const canRestore = instance.state !== 'normal' && !compact;
     return [
       {
         kind: 'item',
@@ -169,7 +172,7 @@ export function WindowFrame({ instance, active, hidden = false, children }: Wind
         kind: 'item',
         id: 'move',
         label: t('window.move'),
-        disabled: instance.state !== 'normal',
+        disabled: !canPlace,
         onSelect: () => {
           keyboardOriginRef.current = instance.rect;
           setInteraction('move');
@@ -179,7 +182,7 @@ export function WindowFrame({ instance, active, hidden = false, children }: Wind
         kind: 'item',
         id: 'size',
         label: t('window.size'),
-        disabled: instance.state !== 'normal' || !instance.resizable,
+        disabled: !canPlace || !instance.resizable,
         onSelect: () => {
           keyboardOriginRef.current = instance.rect;
           setInteraction('size');
@@ -196,7 +199,7 @@ export function WindowFrame({ instance, active, hidden = false, children }: Wind
         kind: 'item',
         id: 'maximize',
         label: instance.state === 'maximized' ? t('window.restore') : t('window.maximize'),
-        disabled: !instance.maximizable,
+        disabled: !canMaximize,
         onSelect: () => wm.toggleMaximize(instance.id),
       },
       menuSeparator('sep-1'),
@@ -207,7 +210,7 @@ export function WindowFrame({ instance, active, hidden = false, children }: Wind
         onSelect: () => wm.close(instance.id),
       },
     ];
-  }, [instance, t, wm]);
+  }, [canMaximize, canPlace, compact, instance, t, wm]);
 
   const openSystemMenuAt = useCallback(
     (x: number, y: number) => {
@@ -275,7 +278,7 @@ export function WindowFrame({ instance, active, hidden = false, children }: Wind
         }}
         onDoubleClick={(event) => {
           if ((event.target as HTMLElement).closest('.caption-btn')) return;
-          wm.toggleMaximize(instance.id);
+          if (canMaximize) wm.toggleMaximize(instance.id);
         }}
         onContextMenu={(event) => {
           event.preventDefault();
@@ -312,7 +315,7 @@ export function WindowFrame({ instance, active, hidden = false, children }: Wind
               <MinimizeGlyph size={8} />
             </button>
           )}
-          {instance.maximizable && instance.resizable && (
+          {canMaximize && (
             <button
               type="button"
               className="caption-btn"

@@ -2,7 +2,7 @@
 import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { deleteDatabase } from './db';
-import { buildPortfolioSeed, buildSeed } from './seed';
+import { buildSeed } from './seed';
 import { planSeedSync, shortcutKey } from './seedSync';
 import type { FsNode } from './types';
 import { loadNodes, putNodes, syncSeedNodes } from './vfs';
@@ -36,7 +36,7 @@ describe('seed sync', () => {
     expect(plan.removals).toEqual([]);
   });
 
-  it('rewrites a stale portfolio and redirects the visitor shortcuts to the new files', () => {
+  it('rewrites a stale portfolio in place, so references to its files stay valid', () => {
     const nodes = staleDisk();
     const about = nodes.find((node) => node.name === 'Sobre-mi.txt');
     if (!about) throw new Error('Missing Sobre-mi.txt');
@@ -52,13 +52,35 @@ describe('seed sync', () => {
     };
     const plan = planSeedSync([...nodes, reference], 'es', allOffered(nodes), 2000);
 
-    const oldPortfolio = nodes.filter((node) => node.origin === 'portfolio');
-    expect(plan.removals.sort()).toEqual(oldPortfolio.map((node) => node.id).sort());
+    expect(plan.removals).toEqual([]);
     const freshAbout = plan.changes.find((node) => node.name === 'Sobre-mi.txt');
+    expect(freshAbout?.id).toBe(about.id);
     expect(freshAbout?.parentId).toBe(portfolioId);
+    expect(freshAbout?.content).not.toContain('versión antigua');
+    expect(plan.changes.find((node) => node.id === 'reference')).toBeUndefined();
+  });
+
+  it('removes portfolio files that are no longer published and redirects their references', () => {
+    const nodes = staleDisk();
+    const about = nodes.find((node) => node.name === 'Sobre-mi.txt');
+    if (!about) throw new Error('Missing Sobre-mi.txt');
+    const retired: FsNode = { ...about, id: 'retired', name: 'Retirado.txt' };
+    const reference: FsNode = {
+      ...about,
+      id: 'reference',
+      parentId: desktopId,
+      name: 'Retirado.lnk',
+      origin: 'user',
+      readonly: false,
+      content: undefined,
+      shortcut: { type: 'node', nodeId: retired.id },
+    };
+    const plan = planSeedSync([...nodes, retired, reference], 'es', allOffered(nodes), 2000);
+
+    expect(plan.removals).toEqual([retired.id]);
     expect(plan.changes.find((node) => node.id === 'reference')?.shortcut).toEqual({
       type: 'node',
-      nodeId: freshAbout?.id,
+      nodeId: portfolioId,
     });
   });
 
@@ -66,16 +88,41 @@ describe('seed sync', () => {
     const nodes = staleDisk();
     const oldProjects = nodes.find((node) => node.name === 'Proyectos' && node.parentId === portfolioId);
     const oldWooster = oldProjects && nodes.find((node) => node.name === 'wooster.txt' && node.parentId === oldProjects.id);
-    const freshProjects = buildPortfolioSeed('es', portfolioId, 2000).find(
-      (node) => node.name === 'Proyectos' && node.parentId === portfolioId,
-    );
-    if (!oldProjects || !oldWooster || !freshProjects) throw new Error('Missing project folder');
+    if (!oldProjects || !oldWooster) throw new Error('Missing project folder');
 
     const visitorFile: FsNode = {
       ...oldWooster,
       id: 'visitor-file',
       parentId: oldProjects.id,
       name: 'wooster.txt',
+      origin: 'user',
+      readonly: false,
+      content: 'notas del visitante',
+    };
+    const plan = planSeedSync([...nodes, visitorFile], 'es', allOffered(nodes), 2000);
+    const moved = plan.changes.find((node) => node.id === visitorFile.id);
+    const plannedProjects = plan.changes.find(
+      (node) => node.name === 'Proyectos' && node.parentId === portfolioId,
+    );
+
+    expect(plannedProjects?.id).toBe(oldProjects.id);
+    expect(moved?.parentId).toBe(oldProjects.id);
+    expect(moved?.name).toBe('wooster (2).txt');
+    expect(moved?.content).toBe(visitorFile.content);
+  });
+
+  it('moves visitor files out of a replaced portfolio folder', () => {
+    const nodes = staleDisk();
+    const oldProjects = nodes.find((node) => node.name === 'Proyectos' && node.parentId === portfolioId);
+    if (!oldProjects) throw new Error('Missing project folder');
+    /* A folder published by an older release and gone from the current one. */
+    const retiredFolder: FsNode = { ...oldProjects, id: 'retired-folder', name: 'Antiguos' };
+    const visitorFile: FsNode = {
+      ...oldProjects,
+      id: 'visitor-file',
+      kind: 'file',
+      parentId: retiredFolder.id,
+      name: 'notas.txt',
       origin: 'user',
       readonly: false,
       content: 'notas del visitante',
@@ -87,20 +134,26 @@ describe('seed sync', () => {
       id: 'deleted-visitor-file',
       parentId: recycleBin.id,
       deletedAt: 1500,
-      deletedFromParentId: oldProjects.id,
+      deletedFromParentId: retiredFolder.id,
     };
-    const plan = planSeedSync([...nodes, visitorFile, deletedVisitorFile], 'es', allOffered(nodes), 2000);
-    const moved = plan.changes.find((node) => node.id === visitorFile.id);
-    const movedDeleted = plan.changes.find((node) => node.id === deletedVisitorFile.id);
-    const plannedProjects = plan.changes.find(
-      (node) => node.name === 'Proyectos' && node.parentId === portfolioId,
+    const plan = planSeedSync(
+      [...nodes, retiredFolder, visitorFile, deletedVisitorFile],
+      'es',
+      allOffered(nodes),
+      2000,
     );
 
-    expect(plannedProjects).toBeTruthy();
-    expect(moved?.parentId).toBe(plannedProjects?.id);
-    expect(moved?.name).toBe('wooster (2).txt');
-    expect(moved?.content).toBe(visitorFile.content);
-    expect(movedDeleted?.deletedFromParentId).toBe(plannedProjects?.id);
+    expect(plan.removals).toEqual([retiredFolder.id]);
+    expect(plan.changes.find((node) => node.id === visitorFile.id)?.parentId).toBe(portfolioId);
+    expect(plan.changes.find((node) => node.id === deletedVisitorFile.id)?.deletedFromParentId).toBe(portfolioId);
+  });
+
+  it('keeps every id when only the language changes', () => {
+    const nodes = buildSeed('es', 1000).nodes;
+    const plan = planSeedSync(nodes, 'en', allOffered(nodes), 2000);
+    const ids = new Set(nodes.map((node) => node.id));
+    expect(plan.removals).toEqual([]);
+    expect(plan.changes.every((node) => ids.has(node.id))).toBe(true);
   });
 
   it('follows the interface language on the next boot', () => {

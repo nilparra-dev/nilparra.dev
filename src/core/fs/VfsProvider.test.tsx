@@ -4,7 +4,7 @@ import { File as NativeFile } from 'node:buffer';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, render, waitFor } from '@testing-library/react';
 import { I18nProvider } from '../i18n/I18nProvider';
-import { PreferencesProvider } from '../prefs/PreferencesProvider';
+import { PreferencesProvider, usePreferences, type PreferencesValue } from '../prefs/PreferencesProvider';
 import { useVfs, VfsProvider, type VfsValue } from './VfsProvider';
 import { deleteDatabase } from './db';
 import { loadNodes } from './vfs';
@@ -18,9 +18,11 @@ import { loadNodes } from './vfs';
  * every assertion waits for the new tree to reach React.
  */
 const apiRef: { current: VfsValue | null } = { current: null };
+const prefsRef: { current: PreferencesValue | null } = { current: null };
 
 function Harness() {
   apiRef.current = useVfs();
+  prefsRef.current = usePreferences();
   return null;
 }
 
@@ -58,6 +60,30 @@ afterEach(() => {
 });
 
 describe('virtual disk', () => {
+  it('names new folders in the interface language', async () => {
+    mount();
+    await ready();
+    act(() => prefsRef.current?.update({ locale: 'es' }));
+    const documents = api().folders.documents as string;
+    expect((await api().createFolder(documents))?.name).toBe('Nueva carpeta');
+    act(() => prefsRef.current?.update({ locale: 'en' }));
+    expect((await api().createFolder(documents))?.name).toBe('New folder');
+  });
+
+  it('rewrites the portfolio in the new language at once, keeping its ids', async () => {
+    mount();
+    await ready();
+    const readme = () =>
+      [...api().nodes.values()].find(
+        (node) => node.name === 'README.txt' && node.parentId === api().folders.portfolio,
+      );
+    const before = readme();
+    expect(before?.content).toContain('This folder holds the portfolio');
+    act(() => prefsRef.current?.update({ locale: 'es' }));
+    await waitFor(() => expect(readme()?.content).not.toContain('This folder holds the portfolio'));
+    expect(readme()?.id).toBe(before?.id);
+  });
+
   it('refuses to save text into a read-only portfolio file', async () => {
     mount();
     await ready();
@@ -65,6 +91,26 @@ describe('virtual disk', () => {
     if (!file) throw new Error('Missing read-only file');
     expect(await api().saveText(file.id, 'Overwritten')).toBe(false);
     expect((await loadNodes()).find((node) => node.id === file.id)?.content).toBe(file.content);
+  });
+
+  it('adds nothing to the portfolio folders', async () => {
+    mount();
+    await ready();
+    const portfolio = api().folders.portfolio as string;
+    const documents = api().folders.documents as string;
+    const projects = [...api().nodes.values()].find((node) => node.parentId === portfolio && node.kind === 'folder');
+    if (!projects) throw new Error('Missing portfolio subfolder');
+    expect(api().canWriteInto(portfolio)).toBe(false);
+    expect(api().canWriteInto(projects.id)).toBe(false);
+    expect(api().canWriteInto(documents)).toBe(true);
+
+    expect(await api().createFolder(projects.id, 'Mine')).toBeNull();
+    await waitFor(() => expect(api().error?.code).toBe('readonly'));
+    const note = await api().createTextFile(documents, 'note.txt', 'text');
+    if (!note) throw new Error('Missing note');
+    expect(await api().move([note.id], portfolio)).toBe(false);
+    expect(await api().copy([note.id], portfolio)).toBe(false);
+    expect((await loadNodes()).some((node) => node.parentId === portfolio && node.name === 'note.txt')).toBe(false);
   });
 
   it('reserves distinct names for concurrent folder creations', async () => {

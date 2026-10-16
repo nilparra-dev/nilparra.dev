@@ -52,7 +52,7 @@ export interface FsBlob {
   data: Blob;
 }
 
-export type FsErrorCode = 'read' | 'write' | 'quota' | 'not-found' | 'invalid';
+export type FsErrorCode = 'read' | 'write' | 'quota' | 'not-found' | 'invalid' | 'readonly';
 
 /** Error with a code the UI can turn into a translated message. */
 export class FsError extends Error {

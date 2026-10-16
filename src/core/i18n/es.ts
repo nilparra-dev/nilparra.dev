@@ -166,6 +166,7 @@ export const es = {
   'dialog.cannotMoveIntoSelf': 'No se puede mover una carpeta dentro de sí misma.',
   'dialog.cannotDeleteSystem': 'Este elemento forma parte del sistema y no se puede eliminar.',
   'dialog.readOnly': '«{name}» es contenido del portfolio y solo se puede leer. Usa «Guardar como» para crear una copia.',
+  'dialog.folderReadOnly': '«{name}» es contenido del portfolio y solo se puede leer: no se le pueden añadir archivos ni carpetas.',
   'dialog.confirmDelete': '¿Seguro que quieres enviar «{name}» a la papelera?',
   'dialog.confirmDeleteMany': '¿Seguro que quieres enviar {count} {count|elemento|elementos} a la papelera?',
   'dialog.confirmEmptyBin': '¿Seguro que quieres borrar definitivamente {count} {count|elemento|elementos} de la papelera?',

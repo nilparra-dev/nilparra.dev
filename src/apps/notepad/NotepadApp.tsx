@@ -63,6 +63,19 @@ export function NotepadApp({ windowId, params }: AppRenderProps) {
     };
   }, [initialFileId, vfs.ready]);
 
+  /*
+   * Read-only portfolio files are rewritten when the language changes: show
+   * the new text, unless the visitor has typed over the old one.
+   */
+  const readonlyContent = node?.readonly ? node.content : undefined;
+  const dirtyRef = useRef(dirty);
+  dirtyRef.current = dirty;
+  useEffect(() => {
+    if (readonlyContent === undefined || dirtyRef.current) return;
+    setText(readonlyContent);
+    setSavedText(readonlyContent);
+  }, [readonlyContent]);
+
   useEffect(() => {
     if (!node) return;
     wm.setTitle(windowId, `${node.name} - ${t('app.notepad')}`);

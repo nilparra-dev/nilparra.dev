@@ -204,7 +204,13 @@ export function FileDialog({
             <Icon id="nav-up" size={16} />
             <span>{t('menu.up')}</span>
           </button>
-          <button type="button" className="tool-btn" onClick={() => void createFolder()} title={t('desktop.newFolder')}>
+          <button
+            type="button"
+            className="tool-btn"
+            onClick={() => void createFolder()}
+            disabled={!vfs.canWriteInto(folderId)}
+            title={t('desktop.newFolder')}
+          >
             <Icon id="folder" size={16} />
             <span>{t('desktop.newFolder')}</span>
           </button>

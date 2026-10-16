@@ -185,9 +185,9 @@ export const PROJECTS: ProjectContent[] = [
       en: 'Antevue',
     },
     summary: {
-      es: 'Proyecto de investigación en machine learning aplicado al fútbol: estudia cómo predecir mejor los partidos con datos profesionales de eventos y tracking, y se ejecuta cada jornada de forma autónoma en Linux.',
-      ca: 'Projecte de recerca en machine learning aplicat al futbol: estudia com predir millor els partits amb dades professionals d’esdeveniments i tracking, i s’executa cada jornada de manera autònoma a Linux.',
-      en: 'Machine learning research project on football: it studies how to forecast matches better from professional event and tracking data, and runs every matchday unattended on Linux.',
+      es: 'Proyecto de investigación sobre cómo predecir mejor los partidos de fútbol con machine learning y datos profesionales de eventos y tracking. Desplegado en un servidor Linux con Docker, PostgreSQL y Airflow.',
+      ca: 'Projecte de recerca sobre com predir millor els partits de futbol amb machine learning i dades professionals d’esdeveniments i tracking. Desplegat en un servidor Linux amb Docker, PostgreSQL i Airflow.',
+      en: 'Research project on forecasting football matches better with machine learning and professional event and tracking data. Deployed on a Linux server with Docker, PostgreSQL and Airflow.',
     },
     highlights: {
       es: [

@@ -184,7 +184,7 @@ export const es = {
 
   /* --- Welcome app -------------------------------------------------- */
   'welcome.title': 'Bienvenida',
-  'welcome.greeting': 'Hola, soy',
+  'welcome.greeting': 'Hola, soy {name}',
   'welcome.intro': 'Me interesan las redes, la ciberseguridad y la inteligencia artificial. Aquí tienes mis proyectos, mi experiencia y cómo contactar conmigo. Y sí, el escritorio funciona: ventanas, archivos y juegos, todo en tu navegador.',
   'welcome.exploreProjects': 'Ver mis proyectos',
   'welcome.aboutMe': 'Sobre mí',

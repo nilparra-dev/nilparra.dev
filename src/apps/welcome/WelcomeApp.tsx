@@ -49,10 +49,7 @@ export function WelcomeApp() {
           height={80}
         />
         <div className="u-grow">
-          <h1 className="app-welcome-greeting">
-            <span className="app-welcome-hello">{t('welcome.greeting')}</span>{' '}
-            <span className="app-welcome-name">{PROFILE.displayName}</span>
-          </h1>
+          <h1 className="app-welcome-greeting">{t('welcome.greeting', { name: PROFILE.shortName })}</h1>
           <p className="app-welcome-tagline">{tagline}</p>
         </div>
       </div>

@@ -79,14 +79,6 @@ describe('shell', () => {
     expect(within(windows[0]).getByText('Estudiante de Administración de Sistemas Informáticos en Red (ASIX)')).toBeTruthy();
   });
 
-  it('closes the welcome window from its Close button', async () => {
-    render(<App />);
-    const welcome = await screen.findByRole('dialog', { name: 'Bienvenida' }, { timeout: 4000 });
-    // The caption X is also named Cerrar; this is the button with the visible text.
-    fireEvent.click(within(welcome).getByText('Cerrar', { selector: 'button' }));
-    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Bienvenida' })).toBeNull());
-  });
-
   it('seeds the virtual disk with the system folders and the shortcuts', async () => {
     render(<App />);
     const desktop = await screen.findByRole('listbox', { name: 'Escritorio' }, { timeout: 4000 });

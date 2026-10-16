@@ -94,7 +94,7 @@ describe('applications', () => {
     expect(screen.getByRole('button', { name: 'Contacto' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Descargar CV' })).toBeTruthy();
     expect(screen.getByText('Blanes, Girona')).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Hola, soy Nil Parra Luna' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Hola, soy Nil Parra' })).toBeTruthy();
   });
 
   it('renders the help window with its topics', async () => {

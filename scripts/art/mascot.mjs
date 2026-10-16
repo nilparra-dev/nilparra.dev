@@ -311,6 +311,16 @@ export function composeMascot({ eyes, mouth, overlay }) {
   return canvas;
 }
 
+/** The Welcome icon: the mascot smiling, at full size. */
+export function drawMascotIcon(canvas) {
+  blit(canvas, composeMascot({ eyes: 'center', mouth: 'smile' }), 0, 0);
+}
+
+/** The 16x16 Welcome icon reuses the hand drawn tray head. */
+export function drawMascotIcon16(canvas) {
+  drawTray(canvas, 'idle');
+}
+
 /** The faces worth reviewing side by side (qa/mascot-sheet@4x.png). */
 export const MASCOT_REVIEW = [
   { eyes: 'center', mouth: 'neutral' },

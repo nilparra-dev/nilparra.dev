@@ -21,6 +21,7 @@ import {
   text,
   vLine,
 } from '../lib/raster.mjs';
+import { drawMascotIcon } from './mascot.mjs';
 
 /** White sheet of paper with the folded top-right corner used by file icons. */
 function drawPage(canvas, px = 6, py = 3) {
@@ -454,21 +455,8 @@ const aboutMe = (c) => {
   hLine(c, 6, 26, 12, 'A');
 };
 
-const welcome = (c) => {
-  bevelEllipse(c, 16, 12, 9, 9, { fill: 'Y', light: 'W', dark: 'O', outline: 'K' });
-  rect(c, 12, 20, 8, 3, 'L');
-  frame(c, 12, 20, 8, 3, 'K');
-  rect(c, 13, 23, 6, 2, 'A');
-  frame(c, 13, 23, 6, 2, 'K');
-  rect(c, 14, 25, 4, 2, 'G');
-  frame(c, 14, 25, 4, 2, 'K');
-  hLine(c, 3, 6, 3, 'C');
-  vLine(c, 4, 5, 5, 'C');
-  hLine(c, 26, 4, 3, 'C');
-  vLine(c, 27, 3, 5, 'C');
-  hLine(c, 24, 25, 3, 'C');
-  vLine(c, 26, 23, 5, 'C');
-};
+/* The Welcome window belongs to the owner of the desktop, so it shows the mascot. */
+const welcome = drawMascotIcon;
 
 /* ------------------------------------------------------------------ *
  * File type icons

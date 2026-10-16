@@ -21,6 +21,7 @@ import {
   text,
   vLine,
 } from '../lib/raster.mjs';
+import { drawMascotIcon16 } from './mascot.mjs';
 import { BRAND_COLOURS } from './icons.mjs';
 
 /** Stamp a full 16x16 sprite, rejecting rows that would shift the art. */
@@ -452,25 +453,7 @@ const aboutMe = (c) => {
   hLine(c, 8, 10, 4, 'A');
 };
 
-const welcome = (c) =>
-  sprite(c, [
-    '.C............C.',
-    '..C..KKKKKK..C..',
-    '....KWWYYYYK....',
-    '...KWYYYYYYOK...',
-    '...KWYYYYYYOK...',
-    'CC.KYYYYYYYOK.CC',
-    '...KYYYYYYYOK...',
-    '....KYYYYYOK....',
-    '.....KYYYOK.....',
-    '.....KKKKKK.....',
-    '.....KLLLLK.....',
-    '.....KKKKKK.....',
-    '.....KAAAAK.....',
-    '......KKKK......',
-    '................',
-    '................',
-  ]);
+const welcome = drawMascotIcon16;
 
 /* ------------------------------------------------------------------ *
  * File type icons

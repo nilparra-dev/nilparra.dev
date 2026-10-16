@@ -45,7 +45,9 @@ export function Shell() {
     if (power !== 'running' || !wm.booted) return;
     if (bootstrapped.current) return;
     if (wm.windows.length > 0) return;
-    if (!preferences.openWelcomeOnStart) {
+    /* A link such as #projects/wooster asks for one window: the hash effect
+     * below opens it, and the welcome would only cover it. */
+    if (!preferences.openWelcomeOnStart || parseDeepLink(window.location.hash)) {
       bootstrapped.current = true;
       return;
     }
@@ -84,16 +86,42 @@ export function Shell() {
     return () => window.clearTimeout(handle);
   }, [vfs.ready]);
 
-  /* Ctrl+Esc and the Windows key open the Start menu, as in the original. */
+  /*
+   * Ctrl+Esc and the Windows key open the Start menu, as in the original. The
+   * Windows key only counts when it is released on its own: it is also the
+   * modifier of Cmd+C or Win+Shift+S, and those must not open the menu.
+   */
   useEffect(() => {
+    let metaAlone = false;
     const onKeyDown = (event: KeyboardEvent) => {
-      const isStartShortcut = (event.ctrlKey && event.key === 'Escape') || event.key === 'Meta';
-      if (!isStartShortcut) return;
+      if (event.key === 'Meta') {
+        if (!event.repeat) metaAlone = true;
+        return;
+      }
+      metaAlone = false;
+      if (event.ctrlKey && event.key === 'Escape') {
+        event.preventDefault();
+        setStartOpen((current) => !current);
+      }
+    };
+    const onKeyUp = (event: KeyboardEvent) => {
+      if (event.key !== 'Meta' || !metaAlone) return;
+      metaAlone = false;
       event.preventDefault();
       setStartOpen((current) => !current);
     };
+    /* Switching window with the key held down never brings the keyup back. */
+    const onBlur = () => {
+      metaAlone = false;
+    };
     window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('blur', onBlur);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('blur', onBlur);
+    };
   }, []);
 
   /* The "?" caption button of any window, and the Help menu, land here. */

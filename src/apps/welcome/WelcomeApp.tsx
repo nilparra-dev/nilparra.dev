@@ -1,12 +1,10 @@
 import { PROFILE, pick } from '../../core/content';
-import type { AppRenderProps } from '../../core/apps/launcher';
 import { useAppLauncher } from '../../core/apps/launcher';
 import { useOpenExternal } from '../../core/dialogs/useOpenExternal';
 import { isLocale, LOCALE_LABELS, LOCALES, useI18n } from '../../core/i18n/I18nProvider';
 import { usePreferences } from '../../core/prefs/PreferencesProvider';
 import { Button } from '../../ui/Button';
 import { Checkbox } from '../../ui/Checkbox';
-import { Icon } from '../../ui/Icon';
 import { Select } from '../../ui/Select';
 
 /** Touch screens open desktop icons with a single tap, so the tip changes. */
@@ -18,12 +16,10 @@ function touchScreen(): boolean {
  * First visit window: who the desktop belongs to, the shortcut to the rest of
  * the portfolio, and the language switch kept below the main reading.
  */
-export function WelcomeApp({ windowId }: AppRenderProps) {
+export function WelcomeApp() {
   const { t, locale } = useI18n();
   const { preferences, update } = usePreferences();
   const launch = useAppLauncher();
-  void windowId;
-
   const openExternal = useOpenExternal();
 
   const tagline = pick(PROFILE.tagline, locale);
@@ -45,9 +41,18 @@ export function WelcomeApp({ windowId }: AppRenderProps) {
   return (
     <div className="client app-welcome">
       <div className="app-welcome-head">
-        <Icon id="welcome" size={32} />
+        <img
+          className="app-welcome-photo bevel-down"
+          src={`${import.meta.env.BASE_URL}${PROFILE.photoUrl}`}
+          alt=""
+          width={80}
+          height={80}
+        />
         <div className="u-grow">
-          <h1 className="app-welcome-greeting">{t('welcome.greeting', { name: PROFILE.displayName })}</h1>
+          <h1 className="app-welcome-greeting">
+            <span className="app-welcome-hello">{t('welcome.greeting')}</span>{' '}
+            <span className="app-welcome-name">{PROFILE.displayName}</span>
+          </h1>
           <p className="app-welcome-tagline">{tagline}</p>
         </div>
       </div>
@@ -65,15 +70,12 @@ export function WelcomeApp({ windowId }: AppRenderProps) {
         </dl>
 
         <div className="u-row app-welcome-actions">
-          <Button onClick={() => launch({ appId: 'about' })}>{t('welcome.aboutMe')}</Button>
-          <Button primary onClick={() => launch({ appId: 'projects' })}>
-            {t('welcome.exploreProjects')}
+          <Button primary onClick={() => launch({ appId: 'about' })}>
+            {t('welcome.aboutMe')}
           </Button>
+          <Button onClick={() => launch({ appId: 'projects' })}>{t('welcome.exploreProjects')}</Button>
           {cvUrl && <Button onClick={() => void openExternal(cvUrl)}>{t('welcome.downloadCv')}</Button>}
           <Button onClick={() => launch({ appId: 'mail' })}>{t('welcome.contact')}</Button>
-          <Button onClick={() => launch({ appId: 'help', params: { topicId: 'welcome' } })}>
-            {t('start.help')}
-          </Button>
         </div>
 
         {/* The switch stays one row below the actions instead of leading them. */}

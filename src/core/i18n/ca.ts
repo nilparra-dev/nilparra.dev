@@ -171,7 +171,7 @@ export const ca: Catalog = {
   'a11y.selectedItems': '{count} {count|element seleccionat|elements seleccionats}',
 
   'welcome.title': 'Benvinguda',
-  'welcome.greeting': 'Hola, soc {name}',
+  'welcome.greeting': 'Hola, soc',
   'welcome.intro': 'M’interessen les xarxes, la ciberseguretat i la intel·ligència artificial. Aquí tens els meus projectes, la meva experiència i com contactar amb mi. I sí, l’escriptori funciona: finestres, fitxers i jocs, tot al teu navegador.',
   'welcome.exploreProjects': 'Veure els meus projectes',
   'welcome.aboutMe': 'Sobre mi',

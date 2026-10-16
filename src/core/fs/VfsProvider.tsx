@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { translate, type Locale } from '../i18n/I18nProvider';
 import { usePreferences } from '../prefs/PreferencesProvider';
 import type { IconId } from '../../assets/generated/icons';
 import { createId } from '../ids';
@@ -55,6 +56,8 @@ export interface VfsValue {
   search: (options: { term: string; scopeId?: string; kind?: 'folder' | 'file' | 'any'; contents?: boolean }) => FsNode[];
   folderSize: (id: string) => number;
   validateName: (parentId: string, name: string, excludeId?: string) => NameProblem;
+  /** False for the portfolio folders, which only the published content may fill. */
+  canWriteInto: (folderId: string) => boolean;
   createFolder: (parentId: string, name?: string) => Promise<FsNode | null>;
   createTextFile: (parentId: string, name: string, content: string) => Promise<FsNode | null>;
   createShortcut: (
@@ -97,6 +100,9 @@ export function VfsProvider({ children }: { children: ReactNode }) {
     setUsage(await diskUsage());
   }, []);
 
+  /** Language the portfolio files were last written in; null until the boot sync. */
+  const syncedLocale = useRef<Locale | null>(null);
+
   /* --- boot: open the database and seed it the first time ----------- */
   useEffect(() => {
     let cancelled = false;
@@ -105,8 +111,10 @@ export function VfsProvider({ children }: { children: ReactNode }) {
         await initializeNodes(() => buildSeed(localeRef.current).nodes);
         if (cancelled) return;
         /* syncSeedNodes repairs old duplicate seeds and plans from the same transaction. */
-        const stored = await syncSeedNodes(localeRef.current);
+        const bootLocale = localeRef.current;
+        const stored = await syncSeedNodes(bootLocale);
         if (cancelled) return;
+        syncedLocale.current = bootLocale;
         setNodes(new Map(stored.map((node) => [node.id, node])));
         setReady(true);
         void refreshUsage();
@@ -121,6 +129,27 @@ export function VfsProvider({ children }: { children: ReactNode }) {
       cancelled = true;
     };
   }, [refreshUsage]);
+
+  /*
+   * The portfolio files are written in the interface language: when it
+   * changes, rewrite them now instead of on the next visit. Their ids stay,
+   * so open windows and shortcuts keep pointing at them.
+   */
+  useEffect(() => {
+    if (syncedLocale.current === null || syncedLocale.current === locale) return;
+    syncedLocale.current = locale;
+    let cancelled = false;
+    syncSeedNodes(locale)
+      .then((stored) => {
+        if (!cancelled) setNodes(new Map(stored.map((node) => [node.id, node])));
+      })
+      .catch((cause: unknown) => {
+        if (!cancelled) setError(cause instanceof FsError ? cause : new FsError('write', String(cause)));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [locale, ready]);
 
   const apply = useCallback((changes: FsNode[], removals: string[] = []) => {
     setNodes((current) => {
@@ -159,8 +188,31 @@ export function VfsProvider({ children }: { children: ReactNode }) {
     [apply, refreshUsage],
   );
 
+  const canWriteInto = useCallback(
+    (folderId: string) => {
+      const folder = nodes.get(folderId);
+      return !!folder && folder.kind === 'folder' && !folder.readonly && folder.systemKey !== 'portfolio';
+    },
+    [nodes],
+  );
+
+  /** Refuses to add nodes to a portfolio folder, with a message naming it. */
+  const refuseClosedFolder = useCallback(
+    (folderId: string): boolean => {
+      const folder = nodes.get(folderId);
+      if (!folder || canWriteInto(folderId)) return false;
+      /* The message carries the id: the dialog shows the translated folder name. */
+      setError(new FsError('readonly', folder.id));
+      return true;
+    },
+    [canWriteInto, nodes],
+  );
+
   const create = useCallback(
     async (input: Parameters<typeof createNodes>[0]): Promise<FsNode[]> => {
+      /* Nested copies point at parents that are created in the same call. */
+      const closed = input.nodes.find((node) => node.parentId !== null && nodes.has(node.parentId) && !canWriteInto(node.parentId));
+      if (closed?.parentId && refuseClosedFolder(closed.parentId)) return [];
       setBusyCount((count) => count + 1);
       try {
         const created = await createNodes(input);
@@ -174,7 +226,7 @@ export function VfsProvider({ children }: { children: ReactNode }) {
         setBusyCount((count) => Math.max(0, count - 1));
       }
     },
-    [apply, refreshUsage],
+    [apply, canWriteInto, nodes, refreshUsage, refuseClosedFolder],
   );
 
   const nodeById = useCallback((id: string) => nodes.get(id), [nodes]);
@@ -230,7 +282,7 @@ export function VfsProvider({ children }: { children: ReactNode }) {
 
   const createFolder = useCallback(
     async (parentId: string, name?: string) => {
-      const desired = name?.trim() || 'Nueva carpeta';
+      const desired = name?.trim() || translate(localeRef.current, 'file.newFolderName');
       const [node] = await create({ nodes: [makeFolder(parentId, desired)] });
       return node ?? null;
     },
@@ -239,7 +291,7 @@ export function VfsProvider({ children }: { children: ReactNode }) {
 
   const createTextFile = useCallback(
     async (parentId: string, name: string, content: string) => {
-      const [node] = await create({ nodes: [makeTextFile(parentId, name.trim() || 'Nuevo documento.txt', content)] });
+      const [node] = await create({ nodes: [makeTextFile(parentId, name.trim() || translate(localeRef.current, 'file.newFileName'), content)] });
       return node ?? null;
     },
     [create],
@@ -289,6 +341,7 @@ export function VfsProvider({ children }: { children: ReactNode }) {
     async (ids: string[], targetParentId: string) => {
       const target = nodes.get(targetParentId);
       if (!target || target.kind !== 'folder') return false;
+      if (refuseClosedFolder(targetParentId)) return false;
       const moved: FsNode[] = [];
       for (const id of ids) {
         const node = nodes.get(id);
@@ -312,13 +365,14 @@ export function VfsProvider({ children }: { children: ReactNode }) {
       if (!moved.length) return false;
       return commit(moved);
     },
-    [commit, liveChildren, nodes],
+    [commit, liveChildren, nodes, refuseClosedFolder],
   );
 
   const copy = useCallback(
     async (ids: string[], targetParentId: string) => {
       const target = nodes.get(targetParentId);
       if (!target || target.kind !== 'folder') return false;
+      if (refuseClosedFolder(targetParentId)) return false;
       const now = Date.now();
       const created: FsNode[] = [];
       const blobs: FsBlob[] = [];
@@ -335,7 +389,7 @@ export function VfsProvider({ children }: { children: ReactNode }) {
       if (!created.length) return false;
       return (await create({ nodes: created, blobs })).length > 0;
     },
-    [create, nodes],
+    [create, nodes, refuseClosedFolder],
   );
 
   const collectSubtree = useCallback(
@@ -587,6 +641,7 @@ export function VfsProvider({ children }: { children: ReactNode }) {
       search,
       folderSize,
       validateName,
+      canWriteInto,
       createFolder,
       createTextFile,
       createShortcut,
@@ -621,6 +676,7 @@ export function VfsProvider({ children }: { children: ReactNode }) {
       search,
       folderSize,
       validateName,
+      canWriteInto,
       createFolder,
       createTextFile,
       createShortcut,

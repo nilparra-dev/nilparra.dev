@@ -320,13 +320,14 @@ textarea.field {
 }
 
 .check-box--radio {
-  border-radius: 0;
+  border-radius: 50%;
 }
 
 .check-mark {
   position: absolute;
   left: 3px;
-  top: 2px;
+  top: 3px;
+  line-height: 0;
 }
 
 .check-glyph {
@@ -335,7 +336,8 @@ textarea.field {
   top: 2px;
 }
 
-.check:focus-visible .check-label {
+/* The real input is visually hidden: its focus ring goes around the label. */
+.check input:focus-visible ~ .check-label {
   outline: 1px dotted var(--w95-black);
   outline-offset: 1px;
 }

@@ -14,7 +14,7 @@ import { SleepingMascot } from '../ui/mascot/MascotSprite';
 import { StartMenu } from '../desktop/StartMenu';
 import { Taskbar } from '../desktop/Taskbar';
 import { Button } from '../ui/Button';
-import { Checkbox } from '../ui/Checkbox';
+import { Radio } from '../ui/Checkbox';
 import { Dialog } from '../ui/Dialog';
 import { Icon } from '../ui/Icon';
 
@@ -204,6 +204,8 @@ export function Shell() {
   if (power === 'suspended') {
     return (
       <div
+        /* Focused at once, so any key wakes the desktop as the hint promises. */
+        ref={(element) => element?.focus({ preventScroll: true })}
         className="shutdown-screen"
         role="status"
         onClick={() => setPower('running')}
@@ -268,22 +270,27 @@ export function Shell() {
           }
         >
           <div className="u-col" style={{ gap: 10 }}>
-            <p>{t('start.shutdownPrompt')}</p>
-            <Checkbox
-              checked={shutdownChoice === 'shutdown'}
-              onChange={() => setShutdownChoice('shutdown')}
-              label={t('start.optionShutdown')}
-            />
-            <Checkbox
-              checked={shutdownChoice === 'restart'}
-              onChange={() => setShutdownChoice('restart')}
-              label={t('start.optionRestart')}
-            />
-            <Checkbox
-              checked={shutdownChoice === 'suspend'}
-              onChange={() => setShutdownChoice('suspend')}
-              label={t('start.optionSuspend')}
-            />
+            <p id="shutdown-prompt">{t('start.shutdownPrompt')}</p>
+            <div className="u-col" role="radiogroup" aria-labelledby="shutdown-prompt" style={{ gap: 10 }}>
+              <Radio
+                name="shutdown-choice"
+                checked={shutdownChoice === 'shutdown'}
+                onChange={() => setShutdownChoice('shutdown')}
+                label={t('start.optionShutdown')}
+              />
+              <Radio
+                name="shutdown-choice"
+                checked={shutdownChoice === 'restart'}
+                onChange={() => setShutdownChoice('restart')}
+                label={t('start.optionRestart')}
+              />
+              <Radio
+                name="shutdown-choice"
+                checked={shutdownChoice === 'suspend'}
+                onChange={() => setShutdownChoice('suspend')}
+                label={t('start.optionSuspend')}
+              />
+            </div>
             <p className="u-muted u-selectable">{t('start.shutdownDescription')}</p>
           </div>
           <span className="dialog-illustration" aria-hidden="true">

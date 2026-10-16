@@ -427,6 +427,12 @@
   padding: 24px;
 }
 
+/* The suspended screen takes the focus to wake on a key; a ring around the
+ * whole screen would only look like a glitch. */
+.shutdown-screen:focus {
+  outline: none;
+}
+
 .shutdown-title {
   font-size: 20px;
   font-weight: var(--w95-font-weight-bold);

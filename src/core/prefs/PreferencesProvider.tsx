@@ -86,6 +86,19 @@ export function sanitizePreferences(input: unknown): Preferences {
   };
 }
 
+/**
+ * A first visit starts from the system settings the desktop can honour: a
+ * visitor who asked the operating system for less motion gets it here too,
+ * and can still change it from the Control Panel.
+ */
+function firstVisitPreferences(): Partial<Preferences> {
+  const reduceMotion =
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  return { reduceMotion };
+}
+
 export interface PreferencesValue {
   preferences: Preferences;
   update: (patch: Partial<Preferences>) => void;
@@ -96,7 +109,9 @@ const PreferencesContext = createContext<PreferencesValue | null>(null);
 
 export function PreferencesProvider({ children }: { children: ReactNode }) {
   const [preferences, setPreferences] = useState<Preferences>(() =>
-    sanitizePreferences(readStored<Preferences | null>(PREFERENCES_KEY, PREFERENCES_VERSION, null)),
+    sanitizePreferences(
+      readStored<Preferences | null>(PREFERENCES_KEY, PREFERENCES_VERSION, null) ?? firstVisitPreferences(),
+    ),
   );
 
   useEffect(() => {
@@ -108,7 +123,7 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const reset = useCallback(() => {
-    setPreferences({ ...DEFAULT_PREFERENCES });
+    setPreferences(sanitizePreferences(firstVisitPreferences()));
   }, []);
 
   const value = useMemo<PreferencesValue>(

@@ -29,7 +29,7 @@ export function Taskbar({ startOpen, onToggleStart, mascotSlotRef }: TaskbarProp
 
   const windows = [...wm.windows].sort((a, b) => a.createdAt - b.createdAt);
 
-  const windowMenu = (id: string, minimized: boolean): MenuEntry[] => [
+  const windowMenu = (id: string, minimized: boolean, canMaximize: boolean): MenuEntry[] => [
     {
       kind: 'item',
       id: 'restore',
@@ -47,6 +47,7 @@ export function Taskbar({ startOpen, onToggleStart, mascotSlotRef }: TaskbarProp
       kind: 'item',
       id: 'maximize',
       label: t('window.maximize'),
+      disabled: !canMaximize,
       onSelect: () => wm.maximize(id),
     },
     menuSeparator('sep'),
@@ -105,7 +106,11 @@ export function Taskbar({ startOpen, onToggleStart, mascotSlotRef }: TaskbarProp
                 onContextMenu={(event) => {
                   event.preventDefault();
                   openMenu({
-                    entries: windowMenu(window.id, window.state === 'minimized'),
+                    entries: windowMenu(
+                      window.id,
+                      window.state === 'minimized',
+                      window.maximizable && window.resizable && window.state !== 'maximized' && !wm.compact,
+                    ),
                     x: event.clientX,
                     y: event.clientY,
                   });

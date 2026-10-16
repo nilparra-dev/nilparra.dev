@@ -155,6 +155,7 @@ export const ca: Catalog = {
   'dialog.cannotMoveIntoSelf': 'No es pot moure una carpeta dins d’ella mateixa.',
   'dialog.cannotDeleteSystem': 'Aquest element forma part del sistema i no es pot eliminar.',
   'dialog.readOnly': '«{name}» és contingut del portfolio i només es pot llegir. Fes servir «Anomena i desa» per crear-ne una còpia.',
+  'dialog.folderReadOnly': '«{name}» és contingut del portfolio i només es pot llegir: no s’hi poden afegir fitxers ni carpetes.',
   'dialog.confirmDelete': 'Segur que vols enviar «{name}» a la paperera?',
   'dialog.confirmDeleteMany': 'Segur que vols enviar {count} {count|element|elements} a la paperera?',
   'dialog.confirmEmptyBin': 'Segur que vols esborrar definitivament {count} {count|element|elements} de la paperera?',

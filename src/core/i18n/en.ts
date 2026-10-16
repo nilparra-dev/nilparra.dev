@@ -155,6 +155,7 @@ export const en: Catalog = {
   'dialog.cannotMoveIntoSelf': 'A folder cannot be moved inside itself.',
   'dialog.cannotDeleteSystem': 'This item belongs to the system and cannot be deleted.',
   'dialog.readOnly': '“{name}” is portfolio content and is read only. Use “Save as” to create a copy.',
+  'dialog.folderReadOnly': '“{name}” is portfolio content and is read only: files and folders cannot be added to it.',
   'dialog.confirmDelete': 'Are you sure you want to send “{name}” to the Recycle Bin?',
   'dialog.confirmDeleteMany': 'Are you sure you want to send {count} {count|item|items} to the Recycle Bin?',
   'dialog.confirmEmptyBin': 'Are you sure you want to permanently delete {count} {count|item|items} from the Recycle Bin?',

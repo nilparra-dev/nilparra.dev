@@ -27,73 +27,87 @@
  * Welcome
  * ------------------------------------------------------------------ */
 
+/* Same layout as the Welcome screen of Windows 95: heading on top, the pale
+ * yellow tip panel on the left, a column of buttons on the right, and the
+ * check box next to the Close button at the bottom. */
 .client.app-welcome {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 132px;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'title title'
+    'panel side'
+    'footer close';
+  column-gap: 12px;
+  padding: 0 12px 10px;
   background: var(--w95-face);
   border: 0;
   box-shadow: none;
 }
 
-/* White band with a sunken edge, like the header of the old setup wizards. */
-.app-welcome-head {
+/* Three typefaces, as in "Welcome to Windows95": a bold serif, a black
+ * sans and a light white part. They are system fonts, so nothing extra
+ * downloads, and the fallbacks keep the same contrast between the three. */
+.app-welcome-title {
+  grid-area: title;
+  padding: 10px 0 8px;
+  font-size: 28px;
+  line-height: 1.15;
+  font-weight: normal;
+}
+
+.app-welcome-title-hello {
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: bold;
+}
+
+.app-welcome-title-name {
+  font-family: 'Arial Black', 'Arial Bold', Arial, sans-serif;
+  font-weight: 900;
+}
+
+.app-welcome-title-tail {
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--w95-white);
+}
+
+.app-welcome-panel {
+  grid-area: panel;
   display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 12px;
-  padding: 14px 12px;
-  background: var(--w95-white);
-  border-bottom: 1px solid var(--w95-gray);
-  box-shadow: 0 1px 0 var(--w95-white);
+  align-items: flex-start;
+  gap: 16px;
+  min-height: 0;
+  padding: 16px;
+  overflow: auto;
+  background: var(--w95-tooltip-bg);
+  border: 1px solid;
+  border-color: var(--w95-gray) var(--w95-white) var(--w95-white) var(--w95-gray);
 }
 
 .app-welcome-photo {
   display: block;
   flex-shrink: 0;
-  width: 80px;
-  height: 80px;
+  width: 64px;
+  height: 64px;
   object-fit: cover;
 }
 
-.app-welcome-greeting {
-  margin-bottom: 4px;
-  font-weight: var(--w95-font-weight-bold);
-}
-
-.app-welcome-hello {
-  display: block;
-  font-size: var(--w95-font-size);
-  font-weight: normal;
-  color: var(--w95-text-secondary);
-}
-
-.app-welcome-name {
-  display: block;
-  font-size: 24px;
-  line-height: 1.15;
-  color: var(--w95-navy);
-}
-
-.app-welcome-tagline {
-  line-height: 1.35;
-}
-
-.app-welcome-body {
-  flex: 1 1 auto;
-  min-height: 0;
-  padding: 0 12px 12px;
+.app-welcome-text {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  overflow: auto;
+  gap: 10px;
+  min-width: 0;
+  line-height: 1.45;
 }
 
-.app-welcome-intro {
-  line-height: 1.45;
+/* Where the original said "Did you know...". */
+.app-welcome-tagline {
+  font-weight: var(--w95-font-weight-bold);
 }
 
 .app-welcome-facts {
   display: grid;
-  gap: 4px;
-  line-height: 1.35;
+  gap: 2px;
 }
 
 .app-welcome-fact {
@@ -106,49 +120,78 @@
   font-weight: var(--w95-font-weight-bold);
 }
 
-.welcome-language-select {
-  width: 140px;
-  max-width: 100%;
+.app-welcome-note {
+  color: var(--w95-text-secondary);
+}
+
+.app-welcome-side {
+  grid-area: side;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
 }
 
 .app-welcome-actions {
+  display: flex;
+  flex-direction: column;
   gap: 8px;
-  flex-wrap: wrap;
 }
 
-/* The language switch reads as a quiet row below the actions. */
+.app-welcome-actions .btn,
+.app-welcome-close {
+  width: 100%;
+}
+
 .app-welcome-language {
-  gap: 8px;
-  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
 }
 
-/* How the desktop works and where the data lives stay secondary to the
- * presentation and the shortcuts. */
-.app-welcome-note {
-  font-size: 13px;
-  line-height: 1.45;
+.welcome-language-select {
+  width: 100%;
+}
+
+/* The etched line above Close sits at the bottom of the column. */
+.app-welcome-rule {
+  margin: auto 0 0;
 }
 
 .app-welcome-footer {
-  flex: 0 0 auto;
-  padding: 8px 12px 12px;
-  border-top: 1px solid var(--w95-gray);
-  box-shadow: inset 0 1px 0 var(--w95-white);
+  grid-area: footer;
+  align-self: center;
+  padding-top: 10px;
 }
 
-/* Compact mode fills the screen with the window. The header band keeps the
- * full width, the rest becomes a centred column, and the shortcuts become a
- * grid of touch sized buttons. */
+.app-welcome-close {
+  grid-area: close;
+  margin-top: 10px;
+}
+
+/* Compact mode fills the screen with the window: everything goes in one
+ * scrolling column and the buttons become a grid of touch sized targets. */
 @media (pointer: coarse), (max-width: 720px) {
-  .window--maximized .app-welcome-head {
-    padding-block: 20px;
+  .window--maximized .client.app-welcome {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    grid-template-areas:
+      'title'
+      'panel'
+      'side'
+      'footer'
+      'close';
+    align-content: start;
+    overflow: auto;
   }
 
-  .window--maximized .app-welcome-body,
-  .window--maximized .app-welcome-footer {
-    width: 100%;
-    max-width: 560px;
-    margin-inline: auto;
+  .window--maximized .app-welcome-panel {
+    overflow: visible;
+  }
+
+  .window--maximized .app-welcome-side {
+    margin-top: 12px;
   }
 
   .window--maximized .app-welcome-actions {
@@ -156,8 +199,19 @@
     grid-template-columns: 1fr 1fr;
   }
 
-  .window--maximized .app-welcome-actions .btn {
+  .window--maximized .app-welcome-actions .btn,
+  .window--maximized .app-welcome-close {
     height: 44px;
+  }
+
+  .window--maximized .app-welcome-language {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .window--maximized .welcome-language-select {
+    width: 160px;
   }
 }
 

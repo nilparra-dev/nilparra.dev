@@ -37,7 +37,7 @@ export const APP_CATALOG: Record<string, AppDefinition> = {
     nameKey: 'app.welcome',
     icon: 'welcome',
     instance: 'single',
-    defaultSize: { width: 540, height: 490 },
+    defaultSize: { width: 600, height: 480 },
     minSize: { width: 360, height: 260 },
     startMenu: 'main',
     helpTopicId: 'welcome',

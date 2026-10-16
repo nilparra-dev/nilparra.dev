@@ -125,17 +125,17 @@ export const PROFILE: ProfileContent = {
   bio: {
     es: [
       'Estudio segundo de ASIX en el Institut Sa Palomera, en Blanes. Me interesan la administración de redes, la ciberseguridad y la inteligencia artificial.',
-      'Me gusta entender cómo funcionan los sistemas y encontrar la causa de un problema antes de buscar la solución. Fuera de clase lo aplico en proyectos propios: una herramienta de línea de comandos publicada en npm y un sistema de predicción con machine learning que se ejecuta de forma autónoma en Linux.',
+      'Me gusta entender cómo funcionan los sistemas y encontrar la causa de un problema antes de buscar la solución. Fuera de clase lo aplico en proyectos propios: una herramienta de línea de comandos publicada en npm y un sistema de machine learning para predecir partidos de fútbol, que despliego y mantengo en un servidor Linux.',
       'Al terminar ASIX quiero continuar con el curso de especialización en Inteligencia Artificial y Big Data.',
     ],
     ca: [
       'Estudio segon d’ASIX a l’Institut Sa Palomera, a Blanes. M’interessen l’administració de xarxes, la ciberseguretat i la intel·ligència artificial.',
-      'M’agrada entendre com funcionen els sistemes i trobar la causa d’un problema abans de buscar-ne la solució. Fora de classe ho aplico en projectes propis: una eina de línia d’ordres publicada a npm i un sistema de predicció amb machine learning que s’executa de manera autònoma a Linux.',
+      'M’agrada entendre com funcionen els sistemes i trobar la causa d’un problema abans de buscar-ne la solució. Fora de classe ho aplico en projectes propis: una eina de línia d’ordres publicada a npm i un sistema de machine learning per predir partits de futbol, que desplego i mantinc en un servidor Linux.',
       'Quan acabi ASIX vull continuar amb el curs d’especialització en Intel·ligència Artificial i Big Data.',
     ],
     en: [
       'I am in my second year of ASIX, a two-year vocational programme in networked computer systems administration, at Institut Sa Palomera in Blanes. I am interested in network administration, cybersecurity and artificial intelligence.',
-      'I like understanding how systems work and finding the cause of a problem before looking for a fix. Outside class I put that into practice in my own projects: a command-line tool published on npm and a machine learning forecasting system that runs unattended on Linux.',
+      'I like understanding how systems work and finding the cause of a problem before looking for a fix. Outside class I put that into practice in my own projects: a command-line tool published on npm and a machine learning system for forecasting football matches, which I deploy and maintain on a Linux server.',
       'After ASIX I plan to take the specialisation course in Artificial Intelligence and Big Data.',
     ],
   },
@@ -187,8 +187,8 @@ export const PROFILE: ProfileContent = {
   experience: [
     {
       period: {
-        es: 'Oct. 2025 – mar. 2026 · 6 meses',
-        ca: 'Oct. 2025 – març 2026 · 6 mesos',
+        es: 'oct. 2025 – mar. 2026 · 6 meses',
+        ca: 'oct. 2025 – març 2026 · 6 mesos',
         en: 'Oct 2025 – Mar 2026 · 6 months',
       },
       role: {

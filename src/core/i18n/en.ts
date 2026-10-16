@@ -169,8 +169,8 @@ export const en: Catalog = {
   'a11y.selectedItems': '{count} {count|item selected|items selected}',
 
   'welcome.title': 'Welcome',
-  'welcome.greeting': 'Hi, I am {name}',
-  'welcome.intro': 'I am interested in networks, cybersecurity and artificial intelligence. Here you will find my projects, my experience and how to get in touch. And yes, the desktop works: windows, files and games, all in your browser.',
+  'welcome.greeting': "Hi, I'm {name}",
+  'welcome.intro': "I'm interested in networks, cybersecurity and artificial intelligence. Here you'll find my projects, my experience and how to get in touch. And yes, the desktop works: windows, files and games, all in your browser.",
   'welcome.exploreProjects': 'See my projects',
   'welcome.aboutMe': 'About me',
   'welcome.contact': 'Contact',

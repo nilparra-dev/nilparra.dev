@@ -335,6 +335,40 @@ describe('shell', () => {
     expect(await screen.findByRole('menu', { name: 'Inicio' })).toBeTruthy();
   });
 
+  it('opens the Start menu when the Windows key is released on its own', async () => {
+    render(<App />);
+    await screen.findByRole('listbox', { name: 'Escritorio' }, { timeout: 4000 });
+    const press = (type: string, key: string) =>
+      act(() => {
+        window.dispatchEvent(new KeyboardEvent(type, { key, metaKey: type === 'keydown' }));
+      });
+    press('keydown', 'Meta');
+    expect(screen.queryByRole('menu', { name: 'Inicio' })).toBeNull();
+    press('keyup', 'Meta');
+    expect(screen.getByRole('menu', { name: 'Inicio' })).toBeTruthy();
+  });
+
+  it('keeps the Start menu closed on shortcuts such as Cmd+C', async () => {
+    render(<App />);
+    await screen.findByRole('listbox', { name: 'Escritorio' }, { timeout: 4000 });
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Meta', metaKey: true }));
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'c', metaKey: true }));
+      window.dispatchEvent(new KeyboardEvent('keyup', { key: 'c', metaKey: true }));
+      window.dispatchEvent(new KeyboardEvent('keyup', { key: 'Meta' }));
+    });
+    expect(screen.queryByRole('menu', { name: 'Inicio' })).toBeNull();
+  });
+
+  it('opens only the linked window when the address carries a deep link', async () => {
+    window.history.replaceState(null, '', '/#projects/wooster');
+    render(<App />);
+    const windows = await screen.findAllByRole('dialog', {}, { timeout: 4000 });
+    expect(windows).toHaveLength(1);
+    expect(screen.queryByRole('dialog', { name: 'Bienvenida' })).toBeNull();
+    expect(window.location.hash).toBe('');
+  });
+
   it.each([
     ['Accesorios', 'Calculadora'],
     ['Juegos', 'Buscaminas'],

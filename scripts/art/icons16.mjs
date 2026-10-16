@@ -21,7 +21,7 @@ import {
   text,
   vLine,
 } from '../lib/raster.mjs';
-import { drawMascotIcon16 } from './mascot.mjs';
+import { drawEyeIcon16 } from './eye.mjs';
 import { BRAND_COLOURS } from './icons.mjs';
 
 /** Stamp a full 16x16 sprite, rejecting rows that would shift the art. */
@@ -453,7 +453,7 @@ const aboutMe = (c) => {
   hLine(c, 8, 10, 4, 'A');
 };
 
-const welcome = drawMascotIcon16;
+const welcome = drawEyeIcon16;
 
 /* ------------------------------------------------------------------ *
  * File type icons

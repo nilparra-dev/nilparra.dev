@@ -21,7 +21,7 @@ import {
   text,
   vLine,
 } from '../lib/raster.mjs';
-import { drawMascotIcon } from './mascot.mjs';
+import { drawEyeIcon } from './eye.mjs';
 
 /** White sheet of paper with the folded top-right corner used by file icons. */
 function drawPage(canvas, px = 6, py = 3) {
@@ -455,8 +455,8 @@ const aboutMe = (c) => {
   hLine(c, 6, 26, 12, 'A');
 };
 
-/* The Welcome window belongs to the owner of the desktop, so it shows the mascot. */
-const welcome = drawMascotIcon;
+/* The Welcome window belongs to the owner of the desktop, so it shows the owner's mark. */
+const welcome = drawEyeIcon;
 
 /* ------------------------------------------------------------------ *
  * File type icons

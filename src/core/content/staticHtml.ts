@@ -1,6 +1,7 @@
 import { CATALOGS, type Locale } from '../i18n/locales';
 import type { ProfileContent } from './profile';
 import type { ProjectContent } from './projects';
+import { SITE_REPOSITORY_URL } from './site';
 import { TECHNOLOGIES } from './technologies';
 import { isPlaceholder, pick } from './types';
 
@@ -124,6 +125,7 @@ export function staticProfileHtml(
     lines.push(`<li><a href="${text(link.url)}">${text(link.label)}</a></li>`);
   }
   lines.push('</ul>');
+  lines.push(`<p><a href="${text(SITE_REPOSITORY_URL)}">${text(catalog['site.source'])}</a></p>`);
   lines.push('</main>');
 
   return lines.join('\n');

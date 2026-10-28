@@ -7,9 +7,11 @@
  * the file cannot go stale while the site is maintained.
  */
 
+import { SITE_REPOSITORY_URL } from './site';
+
 /** GitHub's private vulnerability reporting form, the channel .github/SECURITY.md asks for. */
-const REPORT_URL = 'https://github.com/nilparra-dev/nilparra.dev/security/advisories/new';
-const POLICY_URL = 'https://github.com/nilparra-dev/nilparra.dev/security/policy';
+const REPORT_URL = `${SITE_REPOSITORY_URL}/security/advisories/new`;
+const POLICY_URL = `${SITE_REPOSITORY_URL}/security/policy`;
 
 const VALIDITY_DAYS = 365;
 const DAY_MS = 24 * 60 * 60 * 1000;

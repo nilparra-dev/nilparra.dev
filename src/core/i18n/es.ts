@@ -34,6 +34,9 @@ export const es = {
   'common.yesNo': 'Sí o No',
   'common.of': 'de',
 
+  /* --- Site --------------------------------------------------------- */
+  'site.source': 'Código fuente en GitHub',
+
   /* --- Applications ------------------------------------------------- */
   'app.welcome': 'Bienvenida',
   'app.myComputer': 'Mi PC',

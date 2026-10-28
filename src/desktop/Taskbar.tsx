@@ -1,4 +1,6 @@
 import { SMALL_ICON_URLS } from '../assets/generated/icons';
+import { SITE_REPOSITORY_URL } from '../core/content/site';
+import { useOpenExternal } from '../core/dialogs/useOpenExternal';
 import { useI18n } from '../core/i18n/I18nProvider';
 import { useWindowManager } from '../core/window/WindowManagerProvider';
 import { windowTitle } from '../core/window/windowTitle';
@@ -25,6 +27,7 @@ export function Taskbar({ startOpen, onToggleStart, mascotSlotRef }: TaskbarProp
   const { t } = useI18n();
   const wm = useWindowManager();
   const { open: openMenu } = useMenuLayer();
+  const openExternal = useOpenExternal();
   const [volumeOpen, setVolumeOpen] = useState(false);
 
   const windows = [...wm.windows].sort((a, b) => a.createdAt - b.createdAt);
@@ -125,6 +128,16 @@ export function Taskbar({ startOpen, onToggleStart, mascotSlotRef }: TaskbarProp
 
         <div className="taskbar-tray">
           <span className="tray-slot" ref={mascotSlotRef} />
+          <Tooltip text={t('site.source')}>
+            <button
+              type="button"
+              className="tray-button"
+              aria-label={t('site.source')}
+              onClick={() => void openExternal(SITE_REPOSITORY_URL)}
+            >
+              <Icon id="github" size={16} />
+            </button>
+          </Tooltip>
           <Tooltip text={t('tray.volume')}>
             <button
               type="button"

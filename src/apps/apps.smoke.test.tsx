@@ -95,6 +95,9 @@ describe('applications', () => {
     expect(screen.getByRole('button', { name: 'Descargar CV' })).toBeTruthy();
     expect(screen.getByText('Blanes, Girona')).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Hola, soy Nil Parra' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Código fuente en GitHub' }).getAttribute('href')).toBe(
+      'https://github.com/nilparra-dev/nilparra.dev',
+    );
   });
 
   it('renders the help window with its topics', async () => {

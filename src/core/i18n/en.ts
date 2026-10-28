@@ -30,6 +30,8 @@ export const en: Catalog = {
   'common.yesNo': 'Yes or No',
   'common.of': 'of',
 
+  'site.source': 'Source code on GitHub',
+
   'app.welcome': 'Welcome',
   'app.myComputer': 'My Computer',
   'app.explorer': 'Explorer',

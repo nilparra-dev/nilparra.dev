@@ -271,6 +271,24 @@ describe('shell', () => {
     expect(screen.queryByRole('button', { name: /Asistente en píxeles/ })).toBeNull();
   });
 
+  it('links to the source repository from the taskbar tray', async () => {
+    const open = vi.fn();
+    vi.stubGlobal('open', open);
+    render(<App />);
+
+    const taskbar = await screen.findByRole('toolbar', { name: 'Escritorio' }, { timeout: 4000 });
+    fireEvent.click(within(taskbar).getByRole('button', { name: 'Código fuente en GitHub' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Aceptar' }));
+
+    await vi.waitFor(() =>
+      expect(open).toHaveBeenCalledWith(
+        'https://github.com/nilparra-dev/nilparra.dev',
+        '_blank',
+        'noopener,noreferrer',
+      ),
+    );
+  });
+
   it('opens the GitHub shortcut inside the Internet window', async () => {
     render(<App />);
     const desktop = await screen.findByRole('listbox', { name: 'Escritorio' }, { timeout: 4000 });

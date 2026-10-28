@@ -30,6 +30,8 @@ export const ca: Catalog = {
   'common.yesNo': 'Sí o No',
   'common.of': 'de',
 
+  'site.source': 'Codi font a GitHub',
+
   'app.welcome': 'Benvinguda',
   'app.myComputer': 'El meu ordinador',
   'app.explorer': 'Explorador',

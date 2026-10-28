@@ -1,10 +1,12 @@
-import { PROFILE, pick } from '../../core/content';
+import { PROFILE, SITE_REPOSITORY_URL, pick } from '../../core/content';
 import { useAppLauncher } from '../../core/apps/launcher';
 import { useOpenExternal } from '../../core/dialogs/useOpenExternal';
 import { isLocale, LOCALE_LABELS, LOCALES, useI18n } from '../../core/i18n/I18nProvider';
 import { usePreferences } from '../../core/prefs/PreferencesProvider';
 import { Button } from '../../ui/Button';
 import { Checkbox } from '../../ui/Checkbox';
+import { ExternalLink } from '../../ui/ExternalLink';
+import { Icon } from '../../ui/Icon';
 import { Select } from '../../ui/Select';
 
 /** Touch screens open desktop icons with a single tap, so the tip changes. */
@@ -98,6 +100,10 @@ export function WelcomeApp() {
           onChange={(checked) => update({ openWelcomeOnStart: checked })}
           label={t('welcome.showOnStart')}
         />
+        <ExternalLink className="link app-welcome-source" href={SITE_REPOSITORY_URL}>
+          <Icon id="github" size={16} />
+          {t('site.source')}
+        </ExternalLink>
       </div>
     </div>
   );

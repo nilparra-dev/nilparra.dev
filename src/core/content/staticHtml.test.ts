@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PROFILE, type ProfileContent } from './profile';
 import { PROJECTS } from './projects';
+import { SITE_REPOSITORY_URL } from './site';
 import { staticProfileHtml } from './staticHtml';
 import { PLACEHOLDER } from './types';
 
@@ -10,6 +11,10 @@ describe('static profile html', () => {
     expect(html).toContain(`<h1>${PROFILE.displayName}</h1>`);
     for (const project of PROJECTS) expect(html).toContain(`href="#projects/${project.slug}"`);
     for (const link of PROFILE.links) expect(html).toContain(`href="${link.url}"`);
+  });
+
+  it('links the source repository', () => {
+    expect(staticProfileHtml(PROFILE, PROJECTS, 'en')).toContain(`href="${SITE_REPOSITORY_URL}"`);
   });
 
   it('is written in the language it is asked for', () => {

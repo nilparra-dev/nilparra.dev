@@ -187,9 +187,9 @@ export const PROFILE: ProfileContent = {
   experience: [
     {
       period: {
-        es: 'oct. 2025 – mar. 2026 · 6 meses',
-        ca: 'oct. 2025 – març 2026 · 6 mesos',
-        en: 'Oct 2025 – Mar 2026 · 6 months',
+        es: 'oct. 2024 – mar. 2025 · 6 meses',
+        ca: 'oct. 2024 – març 2025 · 6 mesos',
+        en: 'Oct 2024 – Mar 2025 · 6 months',
       },
       role: {
         es: 'Técnico informático en prácticas (SMX)',

@@ -187,6 +187,25 @@ export const PROFILE: ProfileContent = {
   experience: [
     {
       period: {
+        es: '3 nov. 2026 – actualidad',
+        ca: '3 nov. 2026 – actualitat',
+        en: 'Nov 3, 2026 – present',
+      },
+      role: {
+        es: 'Becario en ciberseguridad y automatización',
+        ca: 'Becari en ciberseguretat i automatització',
+        en: 'Cybersecurity & Automation Intern',
+      },
+      company: 'SERHS',
+      companyLogo: 'experience/serhs.png',
+      description: {
+        es: 'Prácticas de ciberseguridad y automatización en la sede de SERHS en Pineda de Mar. Presencial.',
+        ca: 'Pràctiques de ciberseguretat i automatització a la seu de SERHS a Pineda de Mar. Presencial.',
+        en: 'Cybersecurity and automation internship at the SERHS office in Pineda de Mar. On-site.',
+      },
+    },
+    {
+      period: {
         es: 'oct. 2024 – mar. 2025 · 6 meses',
         ca: 'oct. 2024 – març 2025 · 6 mesos',
         en: 'Oct 2024 – Mar 2025 · 6 months',
